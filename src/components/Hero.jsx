@@ -1,0 +1,335 @@
+import { useEffect, useRef, useState } from 'react';
+import { useGSAP } from '@gsap/react';
+import { gsap, ScrollTrigger } from '../utils/gsapSetup';
+
+const FRAME_COUNT = 110;
+const EAGER_FRAMES = 15;
+const SEQ = '/assets/sequences/scene_1';
+const framePath = (i) => `${SEQ}/frame_${String(i).padStart(3, '0')}.webp`;
+
+// Ventanas de scroll [entrada, salida] para cada bloque de texto
+const WINDOWS = [
+  [0, 0.1],
+  [0.13, 0.31],
+  [0.34, 0.52],
+  [0.55, 0.72],
+  [0.78, 1.001],
+];
+
+export default function Hero() {
+  const sectionRef = useRef(null);
+  const canvasRef = useRef(null);
+  const imagesRef = useRef([]);
+  const currentFrameRef = useRef(0);
+  const sizeRef = useRef({ width: 0, height: 0 });
+  const progressRef = useRef(0);
+  const stepsRef = useRef([]);
+  const [ready, setReady] = useState(false);
+  const [missing, setMissing] = useState(false);
+
+  const draw = (index) => {
+    const canvas = canvasRef.current;
+    const img = imagesRef.current[index];
+    if (!canvas || !img) return;
+    const ctx = canvas.getContext('2d');
+    const { width, height } = sizeRef.current;
+    ctx.clearRect(0, 0, width, height);
+
+    const p = progressRef.current;
+    const portrait = height / width > 1.15;
+
+    if (portrait) {
+      // Vertical: "cover" agrandaría al personaje hasta tapar el texto, y
+      // ajustar por ancho lo dejaría diminuto. Escalamos para que ocupe ~62%
+      // del alto y recuadramos sobre él (va a ~60% del ancho del fotograma),
+      // dejando la franja inferior libre para el copy.
+      const CHAR_X = 0.6;
+      const scale = ((height * 0.62) / img.height) * (1 + 0.08 * p);
+      const w = img.width * scale;
+      const h = img.height * scale;
+      // El ancho nunca debe quedar corto: si no, se ven franjas negras al lado.
+      const dx = Math.min(0, Math.max(width - w, width / 2 - img.width * CHAR_X * scale));
+      ctx.drawImage(img, dx, height * 0.02, w, h);
+      return;
+    }
+
+    // Horizontal: conforme avanza el scroll encuadramos al personaje hacia la
+    // derecha para dejar libre la mitad izquierda, donde entra el texto final.
+    // El zoom tiene que ser mayor que el doble del desplazamiento, o el encuadre
+    // se sale del lienzo y aparece la franja negra del fondo de la sección.
+    const SHIFT = 0.17;
+    const zoom = 1 + 2.2 * SHIFT * p;
+    const scale = Math.max(width / img.width, height / img.height) * zoom;
+    const w = img.width * scale;
+    const h = img.height * scale;
+    const shift = SHIFT * p * width;
+    // Clamp de seguridad: el dibujo siempre cubre el lienzo completo.
+    const dx = Math.min(0, Math.max(width - w, (width - w) / 2 + shift));
+    ctx.drawImage(img, dx, (height - h) / 2, w, h);
+  };
+
+  const resizeCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    sizeRef.current = { width: rect.width, height: rect.height };
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${rect.height}px`;
+    canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw(currentFrameRef.current);
+  };
+
+  // Carga progresiva: primeros frames eager, resto en background
+  useEffect(() => {
+    let cancelled = false;
+    const images = new Array(FRAME_COUNT);
+    imagesRef.current = images;
+
+    const load = (i) =>
+      new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = framePath(i);
+      });
+
+    (async () => {
+      const eager = await Promise.all(
+        Array.from({ length: Math.min(EAGER_FRAMES, FRAME_COUNT) }, (_, i) => load(i)),
+      );
+      if (cancelled) return;
+      eager.forEach((img, i) => {
+        images[i] = img;
+      });
+      if (!images[0]) {
+        setMissing(true);
+        return;
+      }
+      setReady(true);
+      resizeCanvas();
+      for (let i = EAGER_FRAMES; i < FRAME_COUNT; i += 1) {
+        if (cancelled) return;
+        images[i] = await load(i);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('resize', resizeCanvas);
+    return () => window.removeEventListener('resize', resizeCanvas);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useGSAP(
+    () => {
+      if (!ready) return undefined;
+      const mm = gsap.matchMedia();
+
+      const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+      const win = (p, s, e) => clamp((p - s) / (e - s), 0, 1);
+      const band = (p, s, e, f) => Math.min(win(p, s, s + f), 1 - win(p, e - f, e));
+
+      const applySteps = (p) => {
+        stepsRef.current.forEach((el, i) => {
+          if (!el) return;
+          const [s, e] = WINDOWS[i];
+          let o;
+          if (i === 0) o = 1 - win(p, 0.05, 0.11);
+          else if (i === 4) o = win(p, s, 0.9);
+          else o = band(p, s, e, 0.05);
+          el.style.opacity = String(o);
+          el.style.transform = `translateY(${((1 - o) * 26).toFixed(1)}px)`;
+          el.style.filter = `blur(${((1 - o) * 5).toFixed(1)}px)`;
+        });
+      };
+
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        const trigger = ScrollTrigger.create({
+          trigger: sectionRef.current,
+          start: 'top top',
+          end: '+=560%',
+          pin: true,
+          scrub: 1,
+          // El pin añade 560vh y desplaza todo lo que viene abajo. Como este
+          // trigger se crea tarde (al cargar los frames), sin prioridad las
+          // secciones siguientes quedan calculadas sin ese desplazamiento y
+          // llegan a su progreso final antes de tiempo.
+          refreshPriority: 1,
+          onUpdate: (self) => {
+            const p = self.progress;
+            progressRef.current = p;
+            const index = Math.min(
+              FRAME_COUNT - 1,
+              Math.round(p * (FRAME_COUNT - 1)),
+            );
+            currentFrameRef.current = index;
+            draw(index);
+            applySteps(p);
+          },
+        });
+        applySteps(0);
+
+        // El pin del hero se crea recién cuando cargan los frames y añade
+        // 560vh al documento: sin este refresh, todos los ScrollTrigger de
+        // las secciones de abajo quedan calculados sobre la altura vieja.
+        ScrollTrigger.refresh();
+
+        return () => trigger.kill();
+      });
+
+      mm.add('(prefers-reduced-motion: reduce)', () => {
+        progressRef.current = 1;
+        draw(FRAME_COUNT - 1);
+        stepsRef.current.forEach((el, i) => {
+          if (el) el.style.opacity = i === 4 ? '1' : '0';
+        });
+      });
+
+      return () => mm.revert();
+    },
+    { dependencies: [ready], scope: sectionRef },
+  );
+
+  const setStep = (i) => (el) => {
+    stepsRef.current[i] = el;
+  };
+
+  return (
+    // El fondo empata con el borde del propio video (azul marino, no negro),
+    // así cualquier costura del encuadre pasa desapercibida.
+    <section id="top" ref={sectionRef} className="relative h-[100dvh] w-full overflow-hidden bg-[#1d2230]">
+      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+
+      {/* viñeta */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(120% 90% at 50% 55%, rgba(0,0,0,0) 42%, rgba(0,0,0,0.72) 100%)',
+        }}
+      />
+
+      {/* Scrim de legibilidad. En móvil el copy va abajo, así que el degradado
+          sube desde el pie; en desktop no hace falta (el personaje va derecha). */}
+      <div
+        className="pointer-events-none absolute inset-0 lg:hidden"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(5,5,6,0) 30%, rgba(5,5,6,.55) 52%, rgba(5,5,6,.92) 72%, #050506 100%)',
+        }}
+      />
+
+      {missing && (
+        <div className="absolute inset-0 grid place-items-center px-6 text-center text-sm text-white/40">
+          Falta la secuencia en {SEQ}/ — agrega frame_000.webp en adelante.
+        </div>
+      )}
+
+      <div className="pointer-events-none absolute inset-0 grid place-items-center px-[clamp(24px,7vw,140px)]">
+        <div className="relative h-full w-[min(1560px,100%)]">
+          {/* 0 — intro */}
+          <div ref={setStep(0)} className="absolute inset-0 grid content-center justify-center gap-[22px] text-center">
+            <div
+              className="text-[12px] uppercase"
+              style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '.42em', color: 'rgba(237,234,228,.42)' }}
+            >
+              Grupo Espacio Creativo
+            </div>
+            <div
+              className="text-[clamp(13px,1.1vw,15px)]"
+              style={{ fontFamily: 'Poppins, sans-serif', color: 'rgba(237,234,228,.30)' }}
+            >
+              Desliza para encender la idea
+            </div>
+            <div
+              className="mx-auto h-14 w-px"
+              style={{ background: 'linear-gradient(180deg, rgba(245,179,1,.7), rgba(245,179,1,0))' }}
+            />
+          </div>
+
+          {/* 1 */}
+          <div ref={setStep(1)} className="absolute top-1/2 left-0 max-w-[640px] pr-4 opacity-0">
+            <p
+              className="m-0 text-[clamp(26px,5.4vw,60px)] leading-[1.08] font-semibold text-[#EDEAE4]"
+              style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-.02em', textWrap: 'pretty' }}
+            >
+              El crecimiento que buscas <em className="not-italic text-[#F5B301]">afuera</em>
+            </p>
+          </div>
+
+          {/* 2 */}
+          <div ref={setStep(2)} className="absolute top-[44%] right-0 max-w-[620px] pl-4 text-right opacity-0">
+            <p
+              className="m-0 text-[clamp(26px,5.4vw,60px)] leading-[1.08] font-semibold text-[#EDEAE4]"
+              style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-.02em' }}
+            >
+              inicia cuando lo construyes
+            </p>
+          </div>
+
+          {/* 3 */}
+          <div ref={setStep(3)} className="absolute top-[22%] right-0 left-0 text-center opacity-0">
+            <p
+              className="m-0 text-[clamp(30px,6.4vw,74px)] leading-[1.04] font-bold text-white"
+              style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-.025em' }}
+            >
+              desde adentro.
+            </p>
+          </div>
+
+          {/* 4 — cierre con CTA */}
+          <div
+            ref={setStep(4)}
+            // En desktop no se centra con translate (el bloque es alto y se
+            // metía bajo el header): ocupa la franja que va DESDE debajo del
+            // menú hasta abajo, y centra su contenido dentro de esa franja.
+            className="pointer-events-auto absolute bottom-[7%] left-0 flex w-full flex-col items-start justify-center gap-[18px] text-left opacity-0 sm:gap-[24px] md:w-[72%] lg:top-[104px] lg:bottom-[6%] lg:w-[min(520px,42%)]"
+          >
+            <h1
+              className="m-0 text-[clamp(30px,6vw,56px)] leading-[1.04] font-bold text-white"
+              style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-.03em', textWrap: 'balance' }}
+            >
+              Somos una agencia de <span className="text-[#F5B301]">Crecimiento Creativo Empresarial</span>.
+            </h1>
+            <p
+              className="m-0 max-w-[52ch] text-[clamp(14px,1.1vw,17px)] leading-[1.7]"
+              style={{ color: 'rgba(237,234,228,.74)' }}
+            >
+              Ayudamos a las empresas a crecer desde adentro hacia afuera con estrategia,
+              producción, formación, soluciones y experiencias en un solo ecosistema.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <a
+                href="#ecosistema"
+                className="rounded-full bg-[#F5B301] px-7 py-[15px] text-sm font-semibold text-[#0B0B0C] transition-colors hover:bg-[#FFD24A]"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              >
+                Conocer el ecosistema
+              </a>
+              <a
+                href="#contacto"
+                className="rounded-full border border-white/20 px-7 py-[15px] text-sm font-medium text-[#EDEAE4] transition-colors hover:border-[#F5B301] hover:text-[#F5B301]"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              >
+                Agendar una conversación
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        className="pointer-events-none absolute right-0 bottom-0 left-0 h-[120px]"
+        style={{ background: 'linear-gradient(180deg, rgba(6,6,7,0) 0%, #060607 100%)' }}
+      />
+    </section>
+  );
+}

@@ -1,0 +1,41 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# ── Material de trabajo, fuera del repo ──────────────────────────────────────
+# Cloudflare Pages clona el repositorio completo en CADA build. Estas carpetas
+# suman ~120 MB de fuentes (renders en alta, bosquejos, referencias) que NO se
+# necesitan para compilar ni para servir el sitio: lo que se publica ya está
+# derivado y optimizado dentro de public/. Se conservan en disco, no en git.
+web_merakis/
+web_referencias/
+Estructura Hero con Personajes Meraki/
+Pose & posture consistenc/
+
+# Capturas y trazas de las pruebas con Playwright
+.playwright-mcp/
+
+# Herramientas locales del agente
+.agents/
+.claude/
