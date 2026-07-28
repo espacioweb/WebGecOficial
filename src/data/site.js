@@ -36,7 +36,11 @@ export const pilares = [
     // Centro horizontal del personaje dentro del cuadro 16:9. En móvil el
     // video va en una franja vertical y `cover` recorta por los lados: sin
     // este encuadre el personaje queda fuera de cámara.
-    focus: 96,
+    // Este es el que más se desplaza dentro del bucle — estira el brazo para
+    // enseñar el teléfono y vuelve —, así que el valor cubre TODO el recorrido
+    // (del 30% al 80% del cuadro). En reposo queda tirado a la derecha, y con
+    // el brazo extendido, centrado; al revés se cortaba y dejaba hueco.
+    focus: 58,
     img: '/assets/pilares/marketing.webp',
     tagline: 'Estrategia, campañas y comunicación comercial.',
     blurb:

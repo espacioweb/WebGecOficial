@@ -64,8 +64,8 @@ export function Manifiesto() {
 /* ─────────────────────────── 03 Pilares ─────────────────────────── */
 
 // Reproduce el loop solo cuando la tarjeta está en pantalla, para no
-// tener 5 videos decodificando a la vez.
-function PilarMedia({ pilar }) {
+// tener 5 videos decodificando a la vez. Lo usan los pilares y Contacto.
+function LoopMedia({ pilar }) {
   const wrapRef = useRef(null);
   const videoRef = useRef(null);
   const [painted, setPainted] = useState(false);
@@ -101,7 +101,7 @@ function PilarMedia({ pilar }) {
         loading="lazy"
         decoding="async"
         src={pilar.img}
-        alt={pilar.name}
+        alt={pilar.alt ?? pilar.name}
         className={`absolute inset-0 block h-full w-full transition-opacity duration-500 ${encuadre}`}
         style={{ opacity: painted ? 0 : 1 }}
       />
@@ -183,7 +183,7 @@ export function Pilares({ onOpenPanel }) {
           {/* Móvil: el personaje ocupa su propia franja, entero y centrado.
               Desktop: el loop va a sangre detrás de todo. */}
           <div className="relative h-[min(44vh,420px)] min-h-[300px] lg:absolute lg:inset-0 lg:h-auto lg:min-h-0">
-            <PilarMedia pilar={b} />
+            <LoopMedia pilar={b} />
             {/* Funde el pie de la franja con el color de la tarjeta */}
             <div
               className="pointer-events-none absolute inset-0 lg:hidden"
@@ -1049,73 +1049,44 @@ export function Familia() {
 }
 
 /* ─────────────────── 09 Contacto ─────────────────── */
+// Mismo criterio que los pilares: en móvil el loop es 16:9 y `cover` en
+// vertical recortaba justo por donde está Meraki, así que va en su propia
+// franja arriba y el copy debajo. En desktop sigue a sangre detrás del texto.
+const CONTACTO_MEDIA = {
+  scene: 8,
+  img: '/assets/pilares/contacto.webp',
+  alt: 'Meraki saludando a cámara',
+  focus: 88,
+};
+
 export function Contacto() {
-  const wrapRef = useRef(null);
-  const videoRef = useRef(null);
-  const [painted, setPainted] = useState(false);
-
-  useEffect(() => {
-    const el = wrapRef.current;
-    const video = videoRef.current;
-    if (!el || !video) return undefined;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
-
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) video.play().catch(() => {});
-        else video.pause();
-      },
-      { rootMargin: '200px 0px', threshold: 0.05 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
   return (
     <section
       id="contacto"
-      className="relative flex min-h-[86vh] items-center overflow-hidden bg-[#1B1C1E] px-[clamp(24px,5vw,90px)] py-[clamp(70px,9vw,150px)]"
+      className="relative overflow-hidden bg-[#1B1C1E] lg:flex lg:min-h-[86vh] lg:items-center lg:px-[clamp(24px,5vw,90px)] lg:py-[clamp(70px,9vw,150px)]"
     >
-      {/* Franja a sangre: pared de piedra + halo ámbar detrás de Meraki */}
-      <div ref={wrapRef} className="absolute inset-0">
-        <img
-          loading="lazy"
-          decoding="async"
-          src="/assets/pilares/contacto.webp"
-          alt="Meraki saludando a cámara"
-          className="absolute inset-0 block h-full w-full object-cover transition-opacity duration-500"
-          style={{ opacity: painted ? 0 : 1 }}
+      {/* Pared de piedra + halo ámbar detrás de Meraki */}
+      <div className="relative h-[min(44vh,420px)] min-h-[300px] lg:absolute lg:inset-0 lg:h-auto lg:min-h-0">
+        <LoopMedia pilar={CONTACTO_MEDIA} />
+        {/* Funde el pie de la franja con el color de la sección */}
+        <div
+          className="pointer-events-none absolute inset-0 lg:hidden"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(27,28,30,0) 0%, rgba(27,28,30,0) 50%, rgba(27,28,30,.82) 84%, #1B1C1E 100%)',
+          }}
         />
-        <video
-          ref={videoRef}
-          muted
-          loop
-          playsInline
-          preload="none"
-          poster="/assets/pilares/contacto.webp"
-          onPlaying={() => setPainted(true)}
-          className="absolute inset-0 block h-full w-full object-cover"
-        >
-          <source src="/assets/videos/scene_8.mp4" type="video/mp4" />
-        </video>
       </div>
       {/* Velo para que el copy se lea sobre la pared */}
       <div
-        className="absolute inset-0 hidden lg:block"
+        className="pointer-events-none absolute inset-0 hidden lg:block"
         style={{
           background:
             'linear-gradient(100deg, #141517 0%, rgba(20,21,23,.94) 28%, rgba(20,21,23,.6) 46%, rgba(20,21,23,0) 66%)',
         }}
       />
-      <div
-        className="absolute inset-0 lg:hidden"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(20,21,23,.55) 0%, rgba(20,21,23,.8) 45%, rgba(20,21,23,.97) 100%)',
-        }}
-      />
 
-      <div className="relative z-[2] mx-auto grid w-full max-w-[1560px] items-center gap-[clamp(32px,5vw,80px)] lg:grid-cols-[1.05fr_.95fr]">
+      <div className="relative z-[2] mx-auto grid w-full max-w-[1560px] items-center gap-[clamp(32px,5vw,80px)] px-[clamp(24px,5vw,90px)] pt-2 pb-[clamp(56px,9vw,150px)] lg:grid-cols-[1.05fr_.95fr] lg:px-0 lg:pt-0 lg:pb-0">
         <div className="flex flex-col gap-[clamp(22px,3vw,40px)]">
           <Eyebrow color="rgba(237,234,228,.5)">Grupo Espacio Creativo</Eyebrow>
           <h2
