@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { icons } from './SocialIcons';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
+import { loadSequence, nearestLoaded } from '../utils/frameSequence';
 import {
   pilares,
   proceso,
@@ -89,14 +90,19 @@ function PilarMedia({ pilar }) {
     return () => io.disconnect();
   }, []);
 
+  // En móvil el video vive en una franja vertical y `object-cover` recorta por
+  // los lados justo por donde está el personaje: `--foco` reencuadra sobre él.
+  // En desktop la tarjeta es casi 16:9, el recorte es mínimo y va centrado.
+  const encuadre = 'object-cover [object-position:var(--foco)_50%] lg:[object-position:50%_50%]';
+
   return (
-    <div ref={wrapRef} className="absolute inset-0">
+    <div ref={wrapRef} className="absolute inset-0" style={{ '--foco': `${pilar.focus ?? 62}%` }}>
       <img
         loading="lazy"
         decoding="async"
         src={pilar.img}
         alt={pilar.name}
-        className="absolute inset-0 block h-full w-full object-cover transition-opacity duration-500"
+        className={`absolute inset-0 block h-full w-full transition-opacity duration-500 ${encuadre}`}
         style={{ opacity: painted ? 0 : 1 }}
       />
       <video
@@ -107,7 +113,7 @@ function PilarMedia({ pilar }) {
         preload="none"
         poster={pilar.img}
         onPlaying={() => setPainted(true)}
-        className="absolute inset-0 block h-full w-full object-cover"
+        className={`absolute inset-0 block h-full w-full ${encuadre}`}
       >
         <source src={`/assets/videos/scene_${pilar.scene}.mp4`} type="video/mp4" />
       </video>
@@ -166,29 +172,35 @@ export function Pilares({ onOpenPanel }) {
         <article
           key={b.id}
           id={b.id}
-          // sticky: cada pilar se estaciona en pantalla y el siguiente sube
-          // encima. El z-index creciente mantiene el orden del apilado.
-          className="sticky top-[calc(50dvh-46vh)] min-h-[92vh] overflow-hidden rounded-[clamp(24px,2.6vw,44px)]"
+          // Desktop, sticky: cada pilar se estaciona en pantalla y el siguiente
+          // sube encima; el z-index creciente mantiene el orden del apilado.
+          // En móvil no: el copy solo ya pide 678 de los 784px de la tarjeta,
+          // así que no queda sitio para el personaje. Ahí la tarjeta toma su
+          // altura natural y el pilar se lee de corrido.
+          className="relative overflow-hidden rounded-[clamp(24px,2.6vw,44px)] lg:sticky lg:top-[calc(50dvh-46vh)] lg:min-h-[92vh]"
           style={{ background: b.solid, zIndex: idx + 1 }}
         >
-          {/* Loop 3D a sangre; la imagen queda de póster hasta que pinta el video */}
-          <PilarMedia pilar={b} />
+          {/* Móvil: el personaje ocupa su propia franja, entero y centrado.
+              Desktop: el loop va a sangre detrás de todo. */}
+          <div className="relative h-[min(44vh,420px)] min-h-[300px] lg:absolute lg:inset-0 lg:h-auto lg:min-h-0">
+            <PilarMedia pilar={b} />
+            {/* Funde el pie de la franja con el color de la tarjeta */}
+            <div
+              className="pointer-events-none absolute inset-0 lg:hidden"
+              style={{
+                background: `linear-gradient(180deg, ${b.solid}00 0%, ${b.solid}00 52%, ${b.solid}CC 84%, ${b.solid} 100%)`,
+              }}
+            />
+          </div>
           {/* Desktop: el copy va a la izquierda y el personaje respira a la derecha */}
           <div
-            className="absolute inset-0 hidden lg:block"
+            className="pointer-events-none absolute inset-0 hidden lg:block"
             style={{
               background: `linear-gradient(100deg, ${b.solid} 0%, ${b.solid}F2 26%, ${b.solid}B3 44%, ${b.solid}00 68%)`,
             }}
           />
-          {/* Móvil: el copy ocupa toda la tarjeta, así que el velo es vertical */}
-          <div
-            className="absolute inset-0 lg:hidden"
-            style={{
-              background: `linear-gradient(180deg, ${b.solid}F0 0%, ${b.solid}C4 32%, ${b.solid}C4 58%, ${b.solid}FA 100%)`,
-            }}
-          />
 
-          <div className="relative z-[2] flex min-h-[92vh] w-full flex-col justify-between gap-10 p-[clamp(24px,4.4vw,88px)] lg:w-[56%]">
+          <div className="relative z-[2] flex w-full flex-col gap-8 p-[clamp(24px,4.4vw,88px)] pt-2 lg:min-h-[92vh] lg:w-[56%] lg:justify-between lg:gap-10 lg:pt-[clamp(24px,4.4vw,88px)]">
             <div className="flex items-center justify-between gap-5">
               <span className="text-[11px] uppercase" style={{ ...P, letterSpacing: '.34em', color: b.meta }}>
                 {b.kicker}
@@ -921,7 +933,8 @@ export function Familia() {
 
   const draw = (index) => {
     const canvas = canvasRef.current;
-    const img = imagesRef.current[index];
+    // Vecino cargado más cercano: la escena avanza aunque falten fotogramas.
+    const img = nearestLoaded(imagesRef.current, index);
     if (!canvas || !img) return;
     const ctx = canvas.getContext('2d');
     const { width, height } = sizeRef.current;
@@ -947,37 +960,25 @@ export function Familia() {
   };
 
   useEffect(() => {
-    let cancelled = false;
     const images = new Array(FAMILIA_FRAMES);
     imagesRef.current = images;
-    const load = (i) =>
-      new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = familiaFrame(i);
-      });
 
-    (async () => {
-      const eager = await Promise.all(
-        Array.from({ length: FAMILIA_EAGER }, (_, i) => load(i)),
-      );
-      if (cancelled) return;
-      eager.forEach((img, i) => {
-        images[i] = img;
-      });
-      if (!images[0]) return;
-      setReady(true);
-      resize();
-      for (let i = FAMILIA_EAGER; i < FAMILIA_FRAMES; i += 1) {
-        if (cancelled) return;
-        images[i] = await load(i);
-      }
-    })();
+    const cancelar = loadSequence({
+      total: FAMILIA_FRAMES,
+      eager: FAMILIA_EAGER,
+      src: familiaFrame,
+      images,
+      onReady: (ok) => {
+        if (!ok) return;
+        setReady(true);
+        resize();
+      },
+      onFrame: () => draw(frameRef.current),
+    });
 
     window.addEventListener('resize', resize);
     return () => {
-      cancelled = true;
+      cancelar();
       window.removeEventListener('resize', resize);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

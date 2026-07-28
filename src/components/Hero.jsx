@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
+import { loadSequence, nearestLoaded } from '../utils/frameSequence';
 
 const FRAME_COUNT = 110;
 const EAGER_FRAMES = 15;
@@ -29,7 +30,10 @@ export default function Hero() {
 
   const draw = (index) => {
     const canvas = canvasRef.current;
-    const img = imagesRef.current[index];
+    // Mientras la secuencia termina de llegar dibujamos el vecino cargado más
+    // cercano. Si aquí saliéramos sin pintar, el lienzo se congelaría en el
+    // último fotograma disponible y la escena se vería como una foto fija.
+    const img = nearestLoaded(imagesRef.current, index);
     if (!canvas || !img) return;
     const ctx = canvas.getContext('2d');
     const { width, height } = sizeRef.current;
@@ -82,43 +86,28 @@ export default function Hero() {
     draw(currentFrameRef.current);
   };
 
-  // Carga progresiva: primeros frames eager, resto en background
+  // Carga progresiva. El orden y la concurrencia los resuelve
+  // `loadSequence`: barre toda la escena con paso grueso y lo va afinando, en
+  // vez de pedir 0·1·2·3 (que dejaba el hero clavado en un teléfono).
   useEffect(() => {
-    let cancelled = false;
     const images = new Array(FRAME_COUNT);
     imagesRef.current = images;
 
-    const load = (i) =>
-      new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = framePath(i);
-      });
-
-    (async () => {
-      const eager = await Promise.all(
-        Array.from({ length: Math.min(EAGER_FRAMES, FRAME_COUNT) }, (_, i) => load(i)),
-      );
-      if (cancelled) return;
-      eager.forEach((img, i) => {
-        images[i] = img;
-      });
-      if (!images[0]) {
-        setMissing(true);
-        return;
-      }
-      setReady(true);
-      resizeCanvas();
-      for (let i = EAGER_FRAMES; i < FRAME_COUNT; i += 1) {
-        if (cancelled) return;
-        images[i] = await load(i);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
+    return loadSequence({
+      total: FRAME_COUNT,
+      eager: EAGER_FRAMES,
+      src: framePath,
+      images,
+      onReady: (ok) => {
+        if (!ok) {
+          setMissing(true);
+          return;
+        }
+        setReady(true);
+        resizeCanvas();
+      },
+      onFrame: () => draw(currentFrameRef.current),
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

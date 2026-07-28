@@ -33,6 +33,10 @@ export const pilares = [
     kicker: 'Pilar uno',
     name: 'Marketing',
     scene: 2,
+    // Centro horizontal del personaje dentro del cuadro 16:9. En móvil el
+    // video va en una franja vertical y `cover` recorta por los lados: sin
+    // este encuadre el personaje queda fuera de cámara.
+    focus: 96,
     img: '/assets/pilares/marketing.webp',
     tagline: 'Estrategia, campañas y comunicación comercial.',
     blurb:
@@ -56,6 +60,10 @@ export const pilares = [
     kicker: 'Pilar dos',
     name: 'Studio',
     scene: 3,
+    // Centro horizontal del personaje dentro del cuadro 16:9. En móvil el
+    // video va en una franja vertical y `cover` recorta por los lados: sin
+    // este encuadre el personaje queda fuera de cámara.
+    focus: 84,
     img: '/assets/pilares/studio.webp',
     tagline: 'Producción audiovisual, diseño y contenido visual.',
     blurb:
@@ -80,6 +88,10 @@ export const pilares = [
     kicker: 'Pilar tres',
     name: 'Educa',
     scene: 4,
+    // Centro horizontal del personaje dentro del cuadro 16:9. En móvil el
+    // video va en una franja vertical y `cover` recorta por los lados: sin
+    // este encuadre el personaje queda fuera de cámara.
+    focus: 71,
     img: '/assets/pilares/educa.webp',
     tagline: 'Formación, inspiración y desarrollo de equipos.',
     blurb:
@@ -96,6 +108,10 @@ export const pilares = [
     kicker: 'Pilar cuatro',
     name: 'Soluciona',
     scene: 5,
+    // Centro horizontal del personaje dentro del cuadro 16:9. En móvil el
+    // video va en una franja vertical y `cover` recorta por los lados: sin
+    // este encuadre el personaje queda fuera de cámara.
+    focus: 96,
     img: '/assets/pilares/soluciona.webp',
     tagline: 'Sistemas, herramientas y soluciones empresariales.',
     blurb:
@@ -116,6 +132,10 @@ export const pilares = [
     kicker: 'Pilar cinco',
     name: 'Experience',
     scene: 6,
+    // Centro horizontal del personaje dentro del cuadro 16:9. En móvil el
+    // video va en una franja vertical y `cover` recorta por los lados: sin
+    // este encuadre el personaje queda fuera de cámara.
+    focus: 80,
     img: '/assets/pilares/experience.webp',
     tagline: 'Experiencias, eventos e interacción con clientes.',
     blurb:

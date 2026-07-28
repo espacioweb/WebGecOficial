@@ -320,6 +320,27 @@ crf 24, `+faststart`, sin audio.
 10. **Playwright**: `window.scrollTo` no sirve para verificar — Lenis lo revierte y las
    capturas salen negras. Usar rueda real (`page.mouse.wheel`) o emular
    `reducedMotion: 'reduce'` para desactivar Lenis.
+11. **Nunca pedir los fotogramas en orden 0·1·2·3.** El hero se veía como una foto fija
+   en teléfono. Medido a 1.6 Mbps: el usuario cruzaba los 560vh del pin **a los 2.2 s**
+   con solo 26 de 110 fotogramas cargados — y todos del principio, así que la segunda
+   mitad de la escena no existía. Además `draw()` salía sin pintar cuando faltaba el
+   fotograma, congelando el lienzo. Hoy `src/utils/frameSequence.js` resuelve las tres
+   cosas: **orden por refinamiento** (barrido grueso 0·16·32… y se va partiendo el paso,
+   así hay material repartido por toda la escena desde el primer segundo),
+   **8 peticiones concurrentes** (antes ~7 fotogramas/s pasara lo que pasara con el ancho
+   de banda) y **`nearestLoaded()`**, que dibuja el vecino disponible en vez de nada.
+   Medido después: con 71 cargados el hueco mayor entre fotogramas es de **2**.
+   «La familia» disimulaba el fallo porque está al final y le sobraba tiempo de carga.
+12. **Los pilares no pueden llevar el loop a sangre en móvil.** El video es 16:9 y en
+   vertical `object-cover` recorta justo por donde está el personaje: en el sitio
+   publicado no se veía ninguno de los cinco. Y no cabía arreglarlo dentro del `sticky`:
+   medido, el copy solo ya ocupa **678 de los 784 px** de la tarjeta. Solución: en móvil
+   la tarjeta suelta el `sticky` y toma su altura natural, con el personaje en su propia
+   franja (`h-[min(44vh,420px)]`) y el copy debajo. En `lg` el apilado sigue igual.
+   Cada pilar lleva un `focus` en `site.js` (centro horizontal del personaje dentro del
+   cuadro) que alimenta `--foco` → `object-position`; sin él quedan fuera de cámara.
+   El valor se afina **mirando capturas**, no calculándolo: medir el centroide del cuerpo
+   da resultados que contradicen lo que se ve, porque props y destellos desvían la cuenta.
 
 ## Muro de acceso del catálogo GEC IA
 
