@@ -39,3 +39,6 @@ Pose & posture consistenc/
 # Herramientas locales del agente
 .agents/
 .claude/
+
+# Estado local de wrangler (pruebas de las functions)
+.wrangler/
