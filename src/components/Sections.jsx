@@ -456,7 +456,12 @@ export function InsideYourBrand() {
         />
 
         <div className="absolute inset-0 grid place-items-center px-[clamp(24px,5vw,90px)] pt-[86px]">
-          <div className="grid w-[min(1560px,100%)] items-center gap-[clamp(20px,4vw,70px)] [grid-template-columns:1fr_auto_1fr]">
+          {/* Una sola columna en móvil. Con las tres de siempre, los índices
+              laterales van en `display:none` y por tanto NO se colocan en el
+              grid: el bloque central caía en la primera columna (152px), el
+              texto se partía en 8 líneas y `Ver canal` se salía y lo recortaba
+              el overflow. */}
+          <div className="grid w-[min(1560px,100%)] items-center gap-[clamp(20px,4vw,70px)] [grid-template-columns:1fr] md:[grid-template-columns:1fr_auto_1fr]">
             <div className="hidden flex-col gap-1.5 justify-self-start md:flex">
               {proceso.map((p, i) => (
                 <span
