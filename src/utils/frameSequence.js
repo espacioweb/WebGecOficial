@@ -100,19 +100,31 @@ export const anchoDeDecodificado = () =>
 export function loadSequence({ total, src, images, eager = 12, maxWidth = null, onReady, onFrame }) {
   let cancelado = false;
 
-  const soportaBitmap = typeof createImageBitmap === 'function';
+  // Baja la fuente (bitmap o <img>) a `maxWidth` dibujándola en un lienzo.
+  // `drawImage` acepta un canvas como origen igual que una imagen, así que el
+  // techo de memoria lo ponemos nosotros y no depende del navegador.
+  const reducir = (fuente, ancho) => {
+    const alto = Math.round((fuente.height || fuente.naturalHeight) * (maxWidth / ancho));
+    const lienzo = document.createElement('canvas');
+    lienzo.width = maxWidth;
+    lienzo.height = alto;
+    lienzo.getContext('2d').drawImage(fuente, 0, 0, maxWidth, alto);
+    fuente.close?.();
+    return lienzo;
+  };
 
-  // Reserva para navegadores sin createImageBitmap. `decode()` antes de
-  // guardarla evita el otro fallo: que `drawImage` reciba una imagen a medio
-  // decodificar y no pinte nada.
-  const cargarConImg = (i) =>
+  const guardar = (i, fuente, ancho) => {
+    images[i] = maxWidth && ancho > maxWidth * 1.1 ? reducir(fuente, ancho) : fuente;
+    return images[i];
+  };
+
+  // Camino clásico. `decode()` antes de guardarla evita que `drawImage` reciba
+  // una imagen a medio decodificar y no pinte nada.
+  const desdeImg = (i) =>
     new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
-        const listo = () => {
-          images[i] = img;
-          resolve(img);
-        };
+        const listo = () => resolve(cancelado ? null : guardar(i, img, img.naturalWidth));
         if (img.decode) img.decode().then(listo, listo);
         else listo();
       };
@@ -120,43 +132,47 @@ export function loadSequence({ total, src, images, eager = 12, maxWidth = null, 
       img.src = src(i);
     });
 
-  // Safari solo respeta `resizeWidth` desde la 17. En versiones anteriores lo
-  // ignora en silencio y devuelve el mapa a tamaño completo — justo el caso que
-  // nos interesa acotar. Si vuelve grande, lo reducimos nosotros a un lienzo:
-  // `drawImage` acepta un canvas igual que un bitmap, y así el techo de memoria
-  // lo ponemos nosotros en cualquier navegador.
-  const reducir = (bmp) => {
-    const alto = Math.round(bmp.height * (maxWidth / bmp.width));
-    const lienzo = document.createElement('canvas');
-    lienzo.width = maxWidth;
-    lienzo.height = alto;
-    lienzo.getContext('2d').drawImage(bmp, 0, 0, maxWidth, alto);
-    bmp.close?.();
-    return lienzo;
-  };
-
-  const cargarConBitmap = async (i) => {
+  // Safari **anterior a la 17 lanza excepción** si le pasas las opciones de
+  // redimensionado — no las ignora, revienta. Y ese fallo dejaba la secuencia
+  // entera sin cargar: sin fotograma 0 no se crea el ScrollTrigger, el hero no
+  // se ancla y el scroll pasa de largo. Por eso se prueba en cascada y, si el
+  // bitmap no sale, se abandona ese camino para toda la secuencia.
+  const desdeBitmap = async (i) => {
     try {
       const res = await fetch(src(i));
-      if (!res.ok) return null;
+      if (!res.ok || cancelado) return null;
       const blob = await res.blob();
       if (cancelado) return null;
-      const bmp = await createImageBitmap(
-        blob,
-        maxWidth ? { resizeWidth: maxWidth, resizeQuality: 'high' } : undefined,
-      );
+      let bmp = null;
+      if (maxWidth) {
+        try {
+          bmp = await createImageBitmap(blob, { resizeWidth: maxWidth, resizeQuality: 'high' });
+        } catch {
+          bmp = null;
+        }
+      }
+      if (!bmp) bmp = await createImageBitmap(blob);
       if (cancelado) {
         bmp.close?.();
         return null;
       }
-      images[i] = maxWidth && bmp.width > maxWidth * 1.1 ? reducir(bmp) : bmp;
-      return images[i];
+      return guardar(i, bmp, bmp.width);
     } catch {
       return null;
     }
   };
 
-  const load = soportaBitmap ? cargarConBitmap : cargarConImg;
+  let usarBitmap = typeof createImageBitmap === 'function';
+
+  const load = async (i) => {
+    if (usarBitmap) {
+      const r = await desdeBitmap(i);
+      if (r) return r;
+      if (cancelado) return null;
+      usarBitmap = false;
+    }
+    return desdeImg(i);
+  };
 
   (async () => {
     // Arranque: los primeros de corrido y en paralelo, para pintar cuanto antes.

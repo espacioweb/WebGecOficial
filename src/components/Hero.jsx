@@ -224,10 +224,16 @@ export default function Hero() {
         }}
       />
 
+      {/* Si la secuencia no llega a cargar, el lienzo se queda vacío y la
+          sección se ve rota. Un solo fotograma de respaldo la deja legible
+          aunque no haya animación. */}
       {missing && (
-        <div className="absolute inset-0 grid place-items-center px-6 text-center text-sm text-white/40">
-          Falta la secuencia en {SEQ}/ — agrega frame_000.webp en adelante.
-        </div>
+        <img
+          src={framePath(0)}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full object-cover object-[50%_35%]"
+        />
       )}
 
       <div className="pointer-events-none absolute inset-0 grid place-items-center px-[clamp(24px,7vw,140px)]">
