@@ -4,7 +4,6 @@ import { PAISES, formatTelefono, validarCorreoEmpresarial } from '../data/paises
 import { AREAS, PUERTAS, C } from '../data/gecIA';
 
 const P = { fontFamily: 'Poppins, sans-serif' };
-const NOTIFY_URL = 'https://palabras-gec.operaciones-659.workers.dev/notify';
 const STORAGE_KEY = 'gec-ia-acceso';
 
 export function leerAcceso() {
@@ -37,6 +36,92 @@ function Campo({ label, error, children }) {
   );
 }
 
+/**
+ * Segundo paso: el código que llegó al correo.
+ *
+ * Un solo campo de 6 dígitos en vez de seis casillas sueltas — pegar el código
+ * desde el correo funciona a la primera, que es como lo va a hacer casi todo el
+ * mundo. `inputMode numeric` saca el teclado de números en el teléfono.
+ */
+function CodigoPaso({
+  codigo,
+  setCodigo,
+  enviando,
+  fallo,
+  reenviado,
+  onVerificar,
+  onReenviar,
+  onCambiarCorreo,
+}) {
+  return (
+    <form onSubmit={onVerificar} noValidate className="flex flex-col gap-5">
+      <Campo label="Código de verificación">
+        <input
+          type="text"
+          value={codigo}
+          onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
+          placeholder="000000"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          maxLength={6}
+          autoFocus
+          className={`${campoBase} w-full max-w-[260px] text-center text-[26px] font-bold`}
+          style={{
+            ...P,
+            letterSpacing: '.42em',
+            textIndent: '.42em',
+            borderColor: fallo ? '#C2410C' : 'rgba(20,24,31,.14)',
+          }}
+        />
+      </Campo>
+
+      {fallo && (
+        <p className="m-0 text-[13.5px] font-medium" style={{ color: '#C2410C' }}>
+          {fallo}
+        </p>
+      )}
+      {reenviado && !fallo && (
+        <p className="m-0 text-[13.5px] font-medium" style={{ color: '#0F6F63' }}>
+          Te mandamos un código nuevo.
+        </p>
+      )}
+
+      <div className="mt-1 flex flex-wrap items-center gap-4">
+        <button
+          type="submit"
+          disabled={enviando || codigo.length !== 6}
+          className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border-0 px-8 py-4 text-[15px] font-bold text-[#10131A] transition-transform duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+          style={{ ...P, background: C.amarillo }}
+        >
+          {enviando ? 'Comprobando…' : 'Verificar y entrar'} <span className="text-[17px]">→</span>
+        </button>
+        <button
+          type="button"
+          onClick={onReenviar}
+          disabled={enviando}
+          className="cursor-pointer border-0 bg-transparent p-0 text-[13px] font-semibold underline underline-offset-4 disabled:opacity-50"
+          style={{ ...P, color: '#0F6F63' }}
+        >
+          Reenviar código
+        </button>
+        <button
+          type="button"
+          onClick={onCambiarCorreo}
+          disabled={enviando}
+          className="cursor-pointer border-0 bg-transparent p-0 text-[13px] disabled:opacity-50"
+          style={{ ...P, color: 'rgba(20,24,31,.5)' }}
+        >
+          Usar otro correo
+        </button>
+      </div>
+
+      <p className="m-0 text-[12.5px] leading-[1.6]" style={{ color: 'rgba(20,24,31,.45)' }}>
+        El código caduca en 10 minutos. Si no lo ves, revisa la carpeta de spam.
+      </p>
+    </form>
+  );
+}
+
 export default function GateForm({ onUnlock }) {
   const [f, setF] = useState({
     nombre: '',
@@ -51,6 +136,11 @@ export default function GateForm({ onUnlock }) {
   const [errs, setErrs] = useState({});
   const [enviando, setEnviando] = useState(false);
   const [fallo, setFallo] = useState('');
+  // 'datos' → se piden los campos · 'codigo' → se comprueba el correo
+  const [paso, setPaso] = useState('datos');
+  const [token, setToken] = useState('');
+  const [codigo, setCodigo] = useState('');
+  const [reenviado, setReenviado] = useState(false);
 
   const pais = useMemo(() => PAISES.find((p) => p.code === f.pais) || PAISES[0], [f.pais]);
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }));
@@ -79,48 +169,76 @@ export default function GateForm({ onUnlock }) {
     return Object.keys(next).length === 0;
   };
 
-  const enviar = async (e) => {
-    e.preventDefault();
+  const datosCompletos = () => {
+    const area = AREAS.find((a) => a.badge === f.area);
+    const puerta = PUERTAS.find((p) => p.badge === f.puerta);
+    return {
+      ...f,
+      telefono: `+${pais.dial} ${formatTelefono(f.tel, pais.mask)}`,
+      areaLabel: area?.label ?? f.area,
+      puertaLabel: puerta?.label ?? f.puerta,
+      ts: Date.now(),
+    };
+  };
+
+  // Paso 1 — pedir el código al correo indicado.
+  const pedirCodigo = async (e) => {
+    e?.preventDefault();
     setFallo('');
     if (!validar()) return;
     setEnviando(true);
-
-    const area = AREAS.find((a) => a.badge === f.area);
-    const puerta = PUERTAS.find((p) => p.badge === f.puerta);
-    const telefono = `+${pais.dial} ${formatTelefono(f.tel, pais.mask)}`;
-
-    const message = `🔓 *ACCESO GEC IA*
-
-👤 ${f.nombre}
-🏢 ${f.empresa} — ${f.cargo}
-📧 ${f.email}
-📱 ${telefono}
-
-🗂️ Área: *${area ? area.label : f.area}*
-🚪 Punto de partida: *${puerta ? puerta.label : f.puerta}*
-🧭 Ruta sugerida: ${puerta ? puerta.ruta.length : 0} programas
-
-_Grupo Espacio Creativo · módulo interno_`;
-
-    const datos = { ...f, telefono, areaLabel: area?.label, puertaLabel: puerta?.label, ts: Date.now() };
-
     try {
-      const res = await fetch(NOTIFY_URL, {
+      const res = await fetch('/api/otp/enviar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'custom', message }),
+        body: JSON.stringify({ correo: f.email, nombre: f.nombre }),
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const cuerpo = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(cuerpo.mensaje || `HTTP ${res.status}`);
+      setToken(cuerpo.token);
+      setCodigo('');
+      setPaso('codigo');
+    } catch (err) {
+      setFallo(err.message || 'No pudimos enviar el código. Inténtalo de nuevo.');
+    }
+    setEnviando(false);
+  };
+
+  // Paso 2 — comprobar el código. El aviso interno lo manda el servidor, y solo
+  // si el correo quedó verificado.
+  const verificar = async (e) => {
+    e.preventDefault();
+    setFallo('');
+    if (codigo.replace(/\D/g, '').length !== 6) {
+      setFallo('El código son 6 dígitos.');
+      return;
+    }
+    setEnviando(true);
+    const datos = datosCompletos();
+    try {
+      const res = await fetch('/api/otp/verificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, codigo, datos }),
+      });
+      const cuerpo = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(cuerpo.mensaje || `HTTP ${res.status}`);
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(datos));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...datos, verificado: true }));
       } catch {
         /* modo privado: se desbloquea igual, solo no persiste */
       }
       onUnlock(datos);
-    } catch {
-      setFallo('No pudimos registrar tu acceso. Revisa tu conexión e inténtalo de nuevo.');
+    } catch (err) {
+      setFallo(err.message || 'No pudimos verificar el código.');
       setEnviando(false);
     }
+  };
+
+  const reenviar = async () => {
+    setReenviado(false);
+    await pedirCodigo();
+    setReenviado(true);
   };
 
   return (
@@ -147,18 +265,45 @@ _Grupo Espacio Creativo · módulo interno_`;
             className="m-0 text-[clamp(22px,2.8vw,32px)] leading-[1.14] font-bold text-[#101720]"
             style={{ ...P, letterSpacing: '-.03em' }}
           >
-            Desbloquea el catálogo completo
+            {paso === 'datos' ? 'Desbloquea el catálogo completo' : 'Confirma tu correo'}
           </h3>
           <p
             className="m-0 max-w-[58ch] text-[15px] leading-[1.65]"
             style={{ color: 'rgba(20,24,31,.62)' }}
           >
-            Déjanos tus datos con tu <strong className="font-semibold">correo empresarial</strong> y
-            te abrimos las tres guías del módulo: por punto de partida, por programa y por área.
+            {paso === 'datos' ? (
+              <>
+                Déjanos tus datos con tu{' '}
+                <strong className="font-semibold">correo empresarial</strong> y te abrimos las tres
+                guías del módulo: por punto de partida, por programa y por área.
+              </>
+            ) : (
+              <>
+                Enviamos un código de 6 dígitos a{' '}
+                <strong className="font-semibold text-[#101720]">{f.email}</strong>. Escríbelo aquí
+                para abrir el catálogo.
+              </>
+            )}
           </p>
         </div>
 
-        <form onSubmit={enviar} noValidate className="flex flex-col gap-5">
+        {paso === 'codigo' ? (
+          <CodigoPaso
+            codigo={codigo}
+            setCodigo={setCodigo}
+            enviando={enviando}
+            fallo={fallo}
+            reenviado={reenviado}
+            onVerificar={verificar}
+            onReenviar={reenviar}
+            onCambiarCorreo={() => {
+              setPaso('datos');
+              setFallo('');
+              setReenviado(false);
+            }}
+          />
+        ) : (
+        <form onSubmit={pedirCodigo} noValidate className="flex flex-col gap-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <Campo label="Nombre y apellido" error={errs.nombre}>
               <input
@@ -284,7 +429,8 @@ _Grupo Espacio Creativo · módulo interno_`;
               className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border-0 px-8 py-4 text-[15px] font-bold text-[#10131A] transition-transform duration-200 hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-70"
               style={{ ...P, background: C.amarillo }}
             >
-              {enviando ? 'Abriendo…' : 'Ver el catálogo'} <span className="text-[17px]">→</span>
+              {enviando ? 'Enviando código…' : 'Enviarme el código'}{' '}
+              <span className="text-[17px]">→</span>
             </button>
             <span
               className="inline-flex items-center gap-1.5 text-[12.5px]"
@@ -294,6 +440,7 @@ _Grupo Espacio Creativo · módulo interno_`;
             </span>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

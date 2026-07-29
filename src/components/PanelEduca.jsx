@@ -12,6 +12,11 @@ import {
 } from '../data/gecIA';
 
 const P = { fontFamily: 'Poppins, sans-serif' };
+
+// Cuánto dura la salida del panel. Vive aquí porque lo necesitan la transición
+// CSS y el temporizador que retrasa el `visibility: hidden`: si se separan, uno
+// de los dos corta al otro.
+const SALIDA_MS = 520;
 const TARGETS = { fases: 4, programas: 9, areas: 6 };
 
 /* Contadores que suben con easing al abrir el panel */
@@ -277,10 +282,26 @@ export default function PanelEduca({ open, onClose }) {
       aria-hidden={!open}
       data-lenis-prevent
       // Por encima del header del sitio (z-130): el panel trae su propia barra
-      className="fixed inset-0 z-[150] overflow-y-auto bg-[#06090D] transition-transform duration-700 [transition-timing-function:cubic-bezier(.22,1,.36,1)]"
+      className="fixed inset-0 z-[150] overflow-y-auto bg-[#06090D]"
       style={{
         transform: open ? 'translateX(0)' : 'translateX(100%)',
+        // Un punto de opacidad al final quita la sensación de "corte": el panel
+        // se apaga mientras se va, en vez de desaparecer al llegar al borde.
+        opacity: open ? 1 : 0,
         visibility: open ? 'visible' : 'hidden',
+        transitionProperty: 'transform, opacity, visibility',
+        // Entrada larga y con aterrizaje suave; salida algo más corta y con
+        // ease-in-out, que es lo que se lee como "se retira" en vez de "se va".
+        //
+        // El truco está en `visibility`: al cerrar se le pone el mismo retardo
+        // que dura la salida, así el panel sigue visible mientras se desliza.
+        // Antes cambiaba en el mismo instante que `open` y cortaba la animación
+        // en seco — que es justo lo que se veía.
+        transitionDuration: open ? '700ms, 700ms, 0s' : `${SALIDA_MS}ms, ${SALIDA_MS}ms, 0s`,
+        transitionDelay: open ? '0s, 0s, 0s' : `0s, 0s, ${SALIDA_MS}ms`,
+        transitionTimingFunction: open
+          ? 'cubic-bezier(.22,1,.36,1)'
+          : 'cubic-bezier(.65,0,.35,1)',
         overscrollBehavior: 'contain',
         boxShadow: '-40px 0 120px rgba(0,0,0,.7)',
       }}
