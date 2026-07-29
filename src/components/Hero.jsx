@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
-import { loadSequence, nearestLoaded } from '../utils/frameSequence';
+import { loadSequence, nearestLoaded, anchoDeDecodificado } from '../utils/frameSequence';
 
 const FRAME_COUNT = 110;
 const EAGER_FRAMES = 15;
@@ -44,15 +44,22 @@ export default function Hero() {
 
     if (portrait) {
       // Vertical: "cover" agrandaría al personaje hasta tapar el texto, y
-      // ajustar por ancho lo dejaría diminuto. Escalamos para que ocupe ~62%
-      // del alto y recuadramos sobre él (va a ~60% del ancho del fotograma),
-      // dejando la franja inferior libre para el copy.
-      const CHAR_X = 0.6;
-      const scale = ((height * 0.62) / img.height) * (1 + 0.08 * p);
+      // ajustar por ancho lo dejaría diminuto. Lo encajamos en la franja
+      // superior y dejamos la inferior libre para el copy.
+      //
+      // Medido sobre los 110 fotogramas: el personaje se mantiene centrado en
+      // el 50% del cuadro (entre 47.8 y 51.7), nunca en el 60% que se suponía
+      // antes — por eso quedaba descuadrado y se salía por un lado.
+      const CHAR_X = 0.5;
+      // Y encoge con el scroll en vez de crecer: al final del recorrido el
+      // copy ocupa el tercio inferior, así que el personaje tiene que haberse
+      // recogido para no quedar debajo del texto.
+      const alto = 0.62 - 0.13 * p;
+      const scale = (height * alto) / img.height;
       const w = img.width * scale;
       const h = img.height * scale;
       // El ancho nunca debe quedar corto: si no, se ven franjas negras al lado.
-      const dx = Math.min(0, Math.max(width - w, width / 2 - img.width * CHAR_X * scale));
+      const dx = Math.min(0, Math.max(width - w, width / 2 - w * CHAR_X));
       ctx.drawImage(img, dx, height * 0.02, w, h);
       return;
     }
@@ -98,6 +105,7 @@ export default function Hero() {
       eager: EAGER_FRAMES,
       src: framePath,
       images,
+      maxWidth: anchoDeDecodificado(),
       onReady: (ok) => {
         if (!ok) {
           setMissing(true);

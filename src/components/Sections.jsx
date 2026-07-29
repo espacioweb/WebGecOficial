@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { icons } from './SocialIcons';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
-import { loadSequence, nearestLoaded } from '../utils/frameSequence';
+import { loadSequence, nearestLoaded, anchoDeDecodificado } from '../utils/frameSequence';
 import {
   pilares,
   proceso,
@@ -967,23 +967,44 @@ export function Familia() {
   useEffect(() => {
     const images = new Array(FAMILIA_FRAMES);
     imagesRef.current = images;
+    let cancelar = null;
 
-    const cancelar = loadSequence({
-      total: FAMILIA_FRAMES,
-      eager: FAMILIA_EAGER,
-      src: familiaFrame,
-      images,
-      onReady: (ok) => {
-        if (!ok) return;
-        setReady(true);
-        resize();
+    const arrancar = () => {
+      if (cancelar) return;
+      cancelar = loadSequence({
+        total: FAMILIA_FRAMES,
+        eager: FAMILIA_EAGER,
+        src: familiaFrame,
+        images,
+        maxWidth: anchoDeDecodificado(),
+        onReady: (ok) => {
+          if (!ok) return;
+          setReady(true);
+          resize();
+        },
+        onFrame: () => draw(frameRef.current),
+      });
+    };
+
+    // Esta escena está al final del sitio. Si empieza a cargar con el hero,
+    // en un teléfono las dos secuencias compiten por la memoria y ninguna
+    // termina de decodificar. Espera a estar a un par de pantallas.
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          arrancar();
+          io.disconnect();
+        }
       },
-      onFrame: () => draw(frameRef.current),
-    });
+      { rootMargin: '200% 0px' },
+    );
+    if (secRef.current) io.observe(secRef.current);
+    else arrancar();
 
     window.addEventListener('resize', resize);
     return () => {
-      cancelar();
+      io.disconnect();
+      cancelar?.();
       window.removeEventListener('resize', resize);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

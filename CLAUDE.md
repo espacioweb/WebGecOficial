@@ -331,7 +331,30 @@ crf 24, `+faststart`, sin audio.
    de banda) y **`nearestLoaded()`**, que dibuja el vecino disponible en vez de nada.
    Medido después: con 71 cargados el hueco mayor entre fotogramas es de **2**.
    «La familia» disimulaba el fallo porque está al final y le sobraba tiempo de carga.
-12. **Los pilares no pueden llevar el loop a sangre en móvil.** El video es 16:9 y en
+12. **En un iPhone de verdad no basta con cargar rápido: hay que decodificar
+   poco.** El simulador de escritorio mentía — ahí el hero iba bien y en el
+   teléfono se quedaba clavado en el fotograma 0 con el copy final encima.
+   Dos causas, las dos en `frameSequence.js`:
+   · **Memoria.** Cada fotograma mide 1600×900 = **5.76 MB decodificado**; los
+     110 son **634 MB** por escena. Safari en iOS descarta los mapas de bits.
+     Hoy se usa `createImageBitmap` con `resizeWidth` (800 px por debajo de
+     768 px de ancho): 1.37 MB por fotograma, **151 MB** la escena. Ojo:
+     Safari solo respeta `resizeWidth` desde la **17**; antes lo ignora en
+     silencio, así que si el mapa vuelve grande se reduce a mano en un lienzo.
+   · **`<img decoding="async">` puede pintar NADA.** Si el mapa aún no está
+     decodificado, `drawImage` no dibuja y el lienzo se queda con lo último que
+     sí pintó. `createImageBitmap` devuelve el mapa ya listo; la reserva para
+     navegadores sin él hace `await img.decode()` antes de guardarlo.
+   Además **la secuencia de La familia no arranca hasta estar a dos pantallas**
+   (`IntersectionObserver`, `rootMargin: '200%'`): si las dos escenas cargan a
+   la vez, en un teléfono compiten por la memoria y no termina ninguna.
+   Y los `ImageBitmap` **no los recoge el GC**: hay que `close()` al desmontar.
+13. **El personaje del hero está centrado al 50% del cuadro, no al 60%.**
+   Medido sobre los 110 fotogramas: oscila entre 47.8 y 51.7. El encuadre
+   vertical suponía 60% y por eso se salía por un lado. Y la escala **encoge**
+   con el scroll (`0.62 - 0.13·p`) en vez de crecer: al final el copy ocupa el
+   tercio inferior y con el personaje creciendo le quedaba debajo del texto.
+14. **Los pilares no pueden llevar el loop a sangre en móvil.** El video es 16:9 y en
    vertical `object-cover` recorta justo por donde está el personaje: en el sitio
    publicado no se veía ninguno de los cinco. Y no cabía arreglarlo dentro del `sticky`:
    medido, el copy solo ya ocupa **678 de los 784 px** de la tarjeta. Solución: en móvil
