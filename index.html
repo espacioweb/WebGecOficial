@@ -39,8 +39,21 @@
     />
     <meta name="twitter:image" content="https://grupoespaciocreativo.com/og.png" />
 
-    <!-- El hero pinta desde el primer frame de la secuencia: lo pedimos de una -->
-    <link rel="preload" as="image" href="/assets/sequences/scene_1/frame_000.webp" />
+    <!-- El hero pinta desde el primer frame de la secuencia: lo pedimos de una.
+         Cada pantalla el suyo — en el teléfono se sirve la secuencia ligera y
+         precargar la grande son 40 KB tirados. -->
+    <link
+      rel="preload"
+      as="image"
+      href="/assets/sequences/scene_1/frame_000.webp"
+      media="(min-width: 768px)"
+    />
+    <link
+      rel="preload"
+      as="image"
+      href="/assets/sequences/scene_1_m/frame_000.webp"
+      media="(max-width: 767px)"
+    />
   </head>
   <body>
     <div id="root"></div>

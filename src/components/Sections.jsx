@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { icons } from './SocialIcons';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
-import { loadSequence, nearestLoaded, anchoDeDecodificado } from '../utils/frameSequence';
+import { loadSequence, nearestLoaded, esPantallaChica } from '../utils/frameSequence';
 import {
   pilares,
   proceso,
@@ -921,10 +921,12 @@ export function Testimonios() {
 }
 
 /* ─────────────────── 08 Familia Meraki ─────────────────── */
-const FAMILIA_FRAMES = 110;
+// Igual que el hero: en un teléfono se sirve la secuencia ligera. La grande
+// son 110 fotogramas de 1600×900 — 634 MB decodificados — y Safari en iOS no
+// los sostiene; la de móvil son 56 recortados a 640 px, 77 MB.
+const FAMILIA_ESCRITORIO = { dir: '/assets/sequences/scene_7', frames: 110 };
+const FAMILIA_MOVIL = { dir: '/assets/sequences/scene_7_m', frames: 56 };
 const FAMILIA_EAGER = 12;
-const familiaFrame = (i) =>
-  `/assets/sequences/scene_7/frame_${String(i).padStart(3, '0')}.webp`;
 
 export function Familia() {
   const secRef = useRef(null);
@@ -935,6 +937,10 @@ export function Familia() {
   const veilRef = useRef(null);
   const barRef = useRef(null);
   const [ready, setReady] = useState(false);
+  // Se decide una sola vez, al montar: cambiar de secuencia a mitad de scroll
+  // no aporta nada y obligaría a recargarlo todo.
+  const [SEQ] = useState(() => (esPantallaChica() ? FAMILIA_MOVIL : FAMILIA_ESCRITORIO));
+  const framePath = (i) => `${SEQ.dir}/frame_${String(i).padStart(3, '0')}.webp`;
 
   const draw = (index) => {
     const canvas = canvasRef.current;
@@ -965,18 +971,17 @@ export function Familia() {
   };
 
   useEffect(() => {
-    const images = new Array(FAMILIA_FRAMES);
+    const images = new Array(SEQ.frames);
     imagesRef.current = images;
     let cancelar = null;
 
     const arrancar = () => {
       if (cancelar) return;
       cancelar = loadSequence({
-        total: FAMILIA_FRAMES,
+        total: SEQ.frames,
         eager: FAMILIA_EAGER,
-        src: familiaFrame,
+        src: framePath,
         images,
-        maxWidth: anchoDeDecodificado(),
         onReady: (ok) => {
           if (!ok) return;
           setReady(true);
@@ -1020,8 +1025,8 @@ export function Familia() {
         onUpdate: (self) => {
           const p = self.progress;
           const idx = Math.min(
-            FAMILIA_FRAMES - 1,
-            Math.round(p * (FAMILIA_FRAMES - 1)),
+            SEQ.frames - 1,
+            Math.round(p * (SEQ.frames - 1)),
           );
           frameRef.current = idx;
           draw(idx);

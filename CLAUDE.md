@@ -331,7 +331,26 @@ crf 24, `+faststart`, sin audio.
    de banda) y **`nearestLoaded()`**, que dibuja el vecino disponible en vez de nada.
    Medido después: con 71 cargados el hueco mayor entre fotogramas es de **2**.
    «La familia» disimulaba el fallo porque está al final y le sobraba tiempo de carga.
-12. **En un iPhone de verdad no basta con cargar rápido: hay que decodificar
+12b. **REGLA DURA: el teléfono no redimensiona nada.** Costó tres intentos
+   fallidos. Se le sirve una secuencia **ya pequeña** (`scene_N_m/`: 56
+   fotogramas recortados a 640×562, 77 MB decodificados frente a 634 MB) y el
+   navegador solo descarga y decodifica. Los dos atajos que parecían listos y
+   rompieron iOS —los dos con el mismo síntoma: hero clavado en la nuca:
+   · `createImageBitmap(blob, { resizeWidth })` **lanza excepción** en Safari
+     < 17. No lo ignora. Sin fotograma 0 no hay ScrollTrigger, el hero no se
+     ancla y el scroll pasa de largo con el lienzo vacío.
+   · Reducir cada fotograma en un `<canvas>` — **iOS limita cuántos lienzos
+     tiene vivos una página**. Pasado el cupo `getContext('2d')` devuelve null,
+     el `drawImage` revienta dentro del `onload`, la promesa **nunca se
+     resuelve** y el obrero se cuelga. Con los obreros colgados la carga muere
+     callada a los ~15 fotogramas, todos del arranque.
+   De ahí que `loadSequence` lleve ahora **plazo máximo por fotograma**: nada
+   puede dejar la cola detenida. Las secuencias `_m` se generan con
+   `crop=1024:900:288:0,scale=640:562` — recorte **simétrico**, así el centro
+   del personaje no se mueve y el encuadre del canvas no cambia.
+   Y el `<link rel=preload>` del fotograma 0 va duplicado con `media`, uno por
+   secuencia, para no bajar en el teléfono el que no se usa.
+13. **En un iPhone de verdad no basta con cargar rápido: hay que decodificar
    poco.** El simulador de escritorio mentía — ahí el hero iba bien y en el
    teléfono se quedaba clavado en el fotograma 0 con el copy final encima.
    Dos causas, las dos en `frameSequence.js`:

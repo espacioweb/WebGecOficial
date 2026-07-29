@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
-import { loadSequence, nearestLoaded, anchoDeDecodificado } from '../utils/frameSequence';
+import { loadSequence, nearestLoaded, esPantallaChica } from '../utils/frameSequence';
 
-const FRAME_COUNT = 110;
-const EAGER_FRAMES = 15;
-const SEQ = '/assets/sequences/scene_1';
-const framePath = (i) => `${SEQ}/frame_${String(i).padStart(3, '0')}.webp`;
+// En un teléfono no se sirve la secuencia grande: son 110 fotogramas de
+// 1600×900, que decodificados pesan 634 MB y Safari en iOS no los sostiene.
+// `scene_1_m` trae 56 fotogramas ya recortados y a 640 px — 77 MB — con el
+// mismo recorrido y el mismo centro, así que el encuadre no cambia.
+const ESCRITORIO = { dir: '/assets/sequences/scene_1', frames: 110 };
+const MOVIL = { dir: '/assets/sequences/scene_1_m', frames: 56 };
+const EAGER_FRAMES = 12;
 
 // Ventanas de scroll [entrada, salida] para cada bloque de texto
 const WINDOWS = [
@@ -27,6 +30,10 @@ export default function Hero() {
   const stepsRef = useRef([]);
   const [ready, setReady] = useState(false);
   const [missing, setMissing] = useState(false);
+  // Se decide una sola vez, al montar: cambiar de secuencia a mitad de scroll
+  // no aporta nada y obligaría a recargarlo todo.
+  const [SEQ] = useState(() => (esPantallaChica() ? MOVIL : ESCRITORIO));
+  const framePath = (i) => `${SEQ.dir}/frame_${String(i).padStart(3, '0')}.webp`;
 
   const draw = (index) => {
     const canvas = canvasRef.current;
@@ -97,15 +104,14 @@ export default function Hero() {
   // `loadSequence`: barre toda la escena con paso grueso y lo va afinando, en
   // vez de pedir 0·1·2·3 (que dejaba el hero clavado en un teléfono).
   useEffect(() => {
-    const images = new Array(FRAME_COUNT);
+    const images = new Array(SEQ.frames);
     imagesRef.current = images;
 
     return loadSequence({
-      total: FRAME_COUNT,
+      total: SEQ.frames,
       eager: EAGER_FRAMES,
       src: framePath,
       images,
-      maxWidth: anchoDeDecodificado(),
       onReady: (ok) => {
         if (!ok) {
           setMissing(true);
@@ -164,8 +170,8 @@ export default function Hero() {
             const p = self.progress;
             progressRef.current = p;
             const index = Math.min(
-              FRAME_COUNT - 1,
-              Math.round(p * (FRAME_COUNT - 1)),
+              SEQ.frames - 1,
+              Math.round(p * (SEQ.frames - 1)),
             );
             currentFrameRef.current = index;
             draw(index);
@@ -184,7 +190,7 @@ export default function Hero() {
 
       mm.add('(prefers-reduced-motion: reduce)', () => {
         progressRef.current = 1;
-        draw(FRAME_COUNT - 1);
+        draw(SEQ.frames - 1);
         stepsRef.current.forEach((el, i) => {
           if (el) el.style.opacity = i === 4 ? '1' : '0';
         });
