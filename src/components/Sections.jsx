@@ -4,6 +4,7 @@ import { icons } from './SocialIcons';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
 import { loadSequence, nearestLoaded, esPantallaChica } from '../utils/frameSequence';
+import ScrollHint from './ScrollHint';
 import {
   pilares,
   proceso,
@@ -666,7 +667,14 @@ export function ValorHorizontal() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 px-[clamp(24px,5vw,90px)] pb-[clamp(40px,6vh,70px)]">
+        {/* La barra dice DÓNDE estás; el indicador dice QUÉ hacer. Hacen falta
+            las dos: las tarjetas corren en horizontal y el scroll que las mueve
+            es vertical, así que la gente intenta arrastrarlas con el dedo.
+            Va en el flujo, no en absoluto: flotando se montaba sobre el texto
+            de las tarjetas en cuanto la pantalla era estrecha. */}
+        <ScrollHint label="" className="pb-[clamp(6px,1.4vh,14px)]" />
+
+        <div className="flex items-center gap-4 px-[clamp(24px,5vw,90px)] pb-[clamp(28px,4.5vh,56px)]">
           <span className="text-[11px]" style={{ ...P, letterSpacing: '.2em', color: 'rgba(237,234,228,.35)' }}>
             SCROLL
           </span>
@@ -794,6 +802,11 @@ export function Portafolio() {
               />
             ))}
           </div>
+
+          {/* Las tarjetas se abren en horizontal pero las mueve el scroll
+              vertical: sin aviso, la gente intenta arrastrarlas con el dedo.
+              En el flujo y centrado — flotando pisaba la descripción. */}
+          <ScrollHint label="Sigue bajando" className="mt-1" />
         </div>
       </div>
     </section>

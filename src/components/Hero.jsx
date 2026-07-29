@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
 import { loadSequence, nearestLoaded, esPantallaChica } from '../utils/frameSequence';
+import ScrollHint from './ScrollHint';
 
 // En un teléfono no se sirve la secuencia grande: son 110 fotogramas de
 // 1600×900, que decodificados pesan 634 MB y Safari en iOS no los sostiene.
@@ -258,10 +259,9 @@ export default function Hero() {
             >
               Desliza para encender la idea
             </div>
-            <div
-              className="mx-auto h-14 w-px"
-              style={{ background: 'linear-gradient(180deg, rgba(245,179,1,.7), rgba(245,179,1,0))' }}
-            />
+            {/* Antes había una línea fija aquí. No se leía como "hay que
+                bajar": parecía un adorno. */}
+            <ScrollHint label="" className="mx-auto" />
           </div>
 
           {/* 1 */}

@@ -83,6 +83,52 @@
   }
 }
 
+/* Indicador de scroll — la rueda del ratón, cayendo y desvaneciéndose.
+   El recorrido acaba antes del borde inferior de la cápsula para que no
+   parezca que se sale. */
+@keyframes gecScrollDot {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(11px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(15px);
+    opacity: 0;
+  }
+}
+
+/* Las flechas laten en cascada: cada una arranca con un retardo distinto y
+   así se lee una dirección, no un parpadeo suelto. */
+@keyframes gecScrollChevron {
+  0%,
+  100% {
+    opacity: 0.18;
+    transform: translateY(-2px);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(2px);
+  }
+}
+
+/* Respiración de la cápsula, para que el conjunto no se sienta estático */
+@keyframes gecScrollHalo {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 179, 1, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(245, 179, 1, 0);
+  }
+}
+
 /* Módulo GEC IA */
 @keyframes panelIn {
   from {
