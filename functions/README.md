@@ -38,6 +38,13 @@ Sin estas dos variables los endpoints responden 500 con un mensaje claro, y el
 formulario no deja pasar a nadie. Es a propósito: preferimos que no abra a que
 abra sin verificar.
 
+> **Ojo, esto muerde:** Cloudflare Pages **no aplica las variables al
+> guardarlas**, las inyecta en el siguiente despliegue. Si las agregas después
+> del último build, el sitio sigue corriendo sin ellas y el formulario responde
+> *«El verificador aún no está configurado»* aunque en el panel se vean puestas.
+> Basta con relanzar el despliegue (Deployments → el último → Retry deployment)
+> o empujar cualquier commit.
+
 ## El remitente
 
 Se envía desde `no-reply@updates.grupoespaciocreativo.com`, que es el subdominio
