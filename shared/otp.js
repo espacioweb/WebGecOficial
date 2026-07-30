@@ -7,20 +7,36 @@
  * se recalcula la firma con el código que teclea la persona: si coincide, el
  * código es el bueno.
  *
+ * El token va en dos firmas, y la razón importa:
+ *
+ *   token = datos . firmaCodigo . intentos . firmaIntentos
+ *
+ * · `firmaCodigo` = HMAC(datos + código). Es la que valida el código, y el
+ *   servidor no puede recalcularla sin el código: por eso nunca cambia.
+ * · `firmaIntentos` = HMAC(datos + firmaCodigo + intentos). Esta sí la puede
+ *   recalcular el servidor cuando quiera, y es lo que permite **reemitir el
+ *   token con el contador subido** después de cada fallo. Sin separarlas, el
+ *   contador era imposible: subirlo obligaba a refirmar con el código.
+ *
  * Qué protege, y qué no — conviene tenerlo claro:
  * · El código NO se puede leer del token: solo viaja su firma.
- * · Nadie puede fabricar un token válido sin `OTP_SECRET`.
- * · Caduca a los 10 minutos.
- * · **No limita los intentos.** Sin almacén, el servidor no puede llevar la
- *   cuenta: cualquier contador que viajara en el token lo podría reiniciar
- *   quien lo reenvíe. Esto frena el correo inventado, que es el problema real,
- *   pero no es una defensa contra fuerza bruta dedicada. Para eso, una regla
- *   de rate limiting en Cloudflare sobre /api/otp/verificar (está documentado
- *   en el README de despliegue).
+ * · Nadie puede fabricar un token válido, ni bajar el contador, sin `OTP_SECRET`.
+ * · Caduca a **90 segundos** y admite **2 intentos**.
+ * · **Replay:** quien guarde una copia del token anterior puede volver a
+ *   presentarlo con el contador a cero. El límite de 2 intentos es real para el
+ *   uso normal (frena el dedo torpe), pero un atacante decidido tiene tantos
+ *   intentos como quepan en la ventana de 1 minuto. Lo que cierra esa puerta de
+ *   verdad es la regla de rate limiting en Cloudflare sobre /api/otp/verificar,
+ *   documentada en functions/README.md. Con 90 s de ventana, además, el margen
+ *   para intentarlo es minúsculo.
  */
 
 const enc = new TextEncoder();
-export const VIDA_MS = 10 * 60 * 1000;
+// 90 segundos. Es una ventana corta a propósito: hay que recibir el correo,
+// abrirlo y volver. Si empieza a bloquear a gente legítima —sobre todo en el
+// teléfono, al cambiar de app— este es el número que hay que subir.
+export const VIDA_MS = 90 * 1000;
+export const MAX_INTENTOS = 2;
 
 const aB64url = (buf) =>
   btoa(String.fromCharCode(...new Uint8Array(buf)))
@@ -56,19 +72,34 @@ export function nuevoCodigo() {
   return String(n).padStart(6, '0');
 }
 
+/** Arma el token completo a partir de sus piezas. */
+async function ensamblar(datos, firmaCodigo, intentos, secreto) {
+  const firmaIntentos = await firmar(`${datos}.${firmaCodigo}.${intentos}`, secreto);
+  return `${datos}.${firmaCodigo}.${intentos}.${firmaIntentos}`;
+}
+
 export async function crearToken(correo, codigo, secreto) {
   const datos = aB64url(
     enc.encode(JSON.stringify({ correo: correo.toLowerCase(), exp: Date.now() + VIDA_MS })),
   );
-  return `${datos}.${await firmar(`${datos}.${codigo}`, secreto)}`;
+  return ensamblar(datos, await firmar(`${datos}.${codigo}`, secreto), 0, secreto);
 }
 
-/** @returns {{ok: true, correo: string} | {ok: false, motivo: string}} */
+/**
+ * @returns {{ok: true, correo: string}
+ *         | {ok: false, motivo: string, restantes?: number, token?: string}}
+ * Cuando falla por código incorrecto devuelve un token nuevo con el contador
+ * subido: el cliente debe usar ESE en el siguiente intento.
+ */
 export async function comprobarToken(token, codigo, secreto) {
-  if (typeof token !== 'string' || !token.includes('.')) {
+  const partes = typeof token === 'string' ? token.split('.') : [];
+  if (partes.length !== 4) return { ok: false, motivo: 'token-invalido' };
+  const [datos, firmaCodigo, intentosTxt, firmaIntentos] = partes;
+
+  // El contador va firmado aparte: si no cuadra, alguien lo tocó a mano.
+  if (!igual(firmaIntentos, await firmar(`${datos}.${firmaCodigo}.${intentosTxt}`, secreto))) {
     return { ok: false, motivo: 'token-invalido' };
   }
-  const [datos, firma] = token.split('.');
 
   let payload;
   try {
@@ -76,14 +107,24 @@ export async function comprobarToken(token, codigo, secreto) {
   } catch {
     return { ok: false, motivo: 'token-invalido' };
   }
-
   if (!payload?.correo || typeof payload.exp !== 'number') {
     return { ok: false, motivo: 'token-invalido' };
   }
   if (Date.now() > payload.exp) return { ok: false, motivo: 'caducado' };
 
-  if (igual(firma, await firmar(`${datos}.${String(codigo).trim()}`, secreto))) {
+  const intentos = Number(intentosTxt);
+  if (!Number.isInteger(intentos) || intentos < 0) return { ok: false, motivo: 'token-invalido' };
+  if (intentos >= MAX_INTENTOS) return { ok: false, motivo: 'sin-intentos' };
+
+  if (igual(firmaCodigo, await firmar(`${datos}.${String(codigo).trim()}`, secreto))) {
     return { ok: true, correo: payload.correo };
   }
-  return { ok: false, motivo: 'codigo-incorrecto' };
+
+  const usados = intentos + 1;
+  return {
+    ok: false,
+    motivo: usados >= MAX_INTENTOS ? 'sin-intentos' : 'codigo-incorrecto',
+    restantes: MAX_INTENTOS - usados,
+    token: await ensamblar(datos, firmaCodigo, usados, secreto),
+  };
 }

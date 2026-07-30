@@ -9,7 +9,8 @@ const json = (datos, status = 200) =>
 const NOTIFY_URL = 'https://palabras-gec.operaciones-659.workers.dev/notify';
 
 const MOTIVOS = {
-  'codigo-incorrecto': 'Ese código no es correcto. Revísalo e inténtalo de nuevo.',
+  'codigo-incorrecto': 'Ese código no es correcto.',
+  'sin-intentos': 'Se acabaron los intentos. Pide un código nuevo.',
   caducado: 'El código caducó. Pide uno nuevo.',
   'token-invalido': 'Algo se perdió por el camino. Pide un código nuevo.',
 };
@@ -30,8 +31,17 @@ export async function onRequestPost({ request, env }) {
 
   const revision = await comprobarToken(body?.token, body?.codigo, env.OTP_SECRET);
   if (!revision.ok) {
+    const base = MOTIVOS[revision.motivo] || 'No pudimos verificar el código.';
     return json(
-      { error: revision.motivo, mensaje: MOTIVOS[revision.motivo] || 'No pudimos verificar el código.' },
+      {
+        error: revision.motivo,
+        mensaje:
+          revision.restantes > 0 ? `${base} Te queda ${revision.restantes} intento.` : base,
+        // Token con el contador subido: el cliente tiene que usar este para el
+        // siguiente intento, o se le agotarán igualmente.
+        token: revision.token,
+        restantes: revision.restantes ?? 0,
+      },
       400,
     );
   }

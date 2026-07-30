@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Lock, Check } from 'lucide-react';
 import { PAISES, formatTelefono, validarCorreoEmpresarial } from '../data/paises';
 import { AREAS, PUERTAS, C } from '../data/gecIA';
@@ -49,10 +49,13 @@ function CodigoPaso({
   enviando,
   fallo,
   reenviado,
+  restan,
+  agotado,
   onVerificar,
   onReenviar,
   onCambiarCorreo,
 }) {
+  const vencido = restan <= 0;
   return (
     <form onSubmit={onVerificar} noValidate className="flex flex-col gap-5">
       <Campo label="Código de verificación">
@@ -65,7 +68,8 @@ function CodigoPaso({
           autoComplete="one-time-code"
           maxLength={6}
           autoFocus
-          className={`${campoBase} w-full max-w-[260px] text-center text-[26px] font-bold`}
+          disabled={vencido || agotado}
+          className={`${campoBase} w-full max-w-[260px] text-center text-[26px] font-bold disabled:opacity-50`}
           style={{
             ...P,
             letterSpacing: '.42em',
@@ -74,6 +78,24 @@ function CodigoPaso({
           }}
         />
       </Campo>
+
+      {/* La ventana es de 90 s: sin cuenta atrás, quien tarde no entiende por
+          qué de pronto le dice que caducó. */}
+      {!agotado && (
+        <p className="m-0 -mt-1 text-[13px] font-medium" style={{ ...P, color: vencido ? '#C2410C' : 'rgba(20,24,31,.55)' }}>
+          {vencido ? (
+            'El código caducó. Pide uno nuevo.'
+          ) : (
+            <>
+              Caduca en{' '}
+              <span style={{ color: restan <= 20 ? '#C2410C' : '#0F6F63', fontWeight: 700 }}>
+                {String(Math.floor(restan / 60)).padStart(2, '0')}:
+                {String(restan % 60).padStart(2, '0')}
+              </span>
+            </>
+          )}
+        </p>
+      )}
 
       {fallo && (
         <p className="m-0 text-[13.5px] font-medium" style={{ color: '#C2410C' }}>
@@ -89,7 +111,7 @@ function CodigoPaso({
       <div className="mt-1 flex flex-wrap items-center gap-4">
         <button
           type="submit"
-          disabled={enviando || codigo.length !== 6}
+          disabled={enviando || codigo.length !== 6 || vencido || agotado}
           className="inline-flex cursor-pointer items-center gap-2.5 rounded-full border-0 px-8 py-4 text-[15px] font-bold text-[#10131A] transition-transform duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
           style={{ ...P, background: C.amarillo }}
         >
@@ -116,7 +138,7 @@ function CodigoPaso({
       </div>
 
       <p className="m-0 text-[12.5px] leading-[1.6]" style={{ color: 'rgba(20,24,31,.45)' }}>
-        El código caduca en 10 minutos. Si no lo ves, revisa la carpeta de spam.
+        Tienes 2 intentos por código. Si no lo ves llegar, revisa la carpeta de spam.
       </p>
     </form>
   );
@@ -141,6 +163,15 @@ export default function GateForm({ onUnlock }) {
   const [token, setToken] = useState('');
   const [codigo, setCodigo] = useState('');
   const [reenviado, setReenviado] = useState(false);
+  // Cuenta atrás de la ventana y bandera de intentos agotados
+  const [restan, setRestan] = useState(0);
+  const [agotado, setAgotado] = useState(false);
+
+  useEffect(() => {
+    if (paso !== 'codigo' || restan <= 0) return undefined;
+    const t = setInterval(() => setRestan((s) => (s > 0 ? s - 1 : 0)), 1000);
+    return () => clearInterval(t);
+  }, [paso, restan]);
 
   const pais = useMemo(() => PAISES.find((p) => p.code === f.pais) || PAISES[0], [f.pais]);
   const set = (k) => (e) => setF((s) => ({ ...s, [k]: e.target.value }));
@@ -197,6 +228,8 @@ export default function GateForm({ onUnlock }) {
       if (!res.ok) throw new Error(cuerpo.mensaje || `HTTP ${res.status}`);
       setToken(cuerpo.token);
       setCodigo('');
+      setAgotado(false);
+      setRestan(cuerpo.segundos ?? 90);
       setPaso('codigo');
     } catch (err) {
       setFallo(err.message || 'No pudimos enviar el código. Inténtalo de nuevo.');
@@ -222,7 +255,15 @@ export default function GateForm({ onUnlock }) {
         body: JSON.stringify({ token, codigo, datos }),
       });
       const cuerpo = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(cuerpo.mensaje || `HTTP ${res.status}`);
+      if (!res.ok) {
+        // El servidor reemite el token con el contador subido: sin guardarlo,
+        // el siguiente intento volvería a contar desde cero.
+        if (cuerpo.token) setToken(cuerpo.token);
+        if (cuerpo.error === 'sin-intentos') setAgotado(true);
+        if (cuerpo.error === 'caducado') setRestan(0);
+        setCodigo('');
+        throw new Error(cuerpo.mensaje || `HTTP ${res.status}`);
+      }
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...datos, verificado: true }));
       } catch {
@@ -294,6 +335,8 @@ export default function GateForm({ onUnlock }) {
             enviando={enviando}
             fallo={fallo}
             reenviado={reenviado}
+            restan={restan}
+            agotado={agotado}
             onVerificar={verificar}
             onReenviar={reenviar}
             onCambiarCorreo={() => {

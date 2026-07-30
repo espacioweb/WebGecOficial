@@ -15,8 +15,18 @@ dos pasos: se pide el código, llega por correo, se comprueba.
 | `POST /api/otp/verificar` | Comprueba el código contra el token y, solo si cuadra, avisa a Telegram |
 
 No hay base de datos. El código nunca se guarda: el token lleva una firma HMAC
-calculada sobre `datos + código`, y para verificar se recalcula. Está explicado
-en `shared/otp.js`, incluido **lo que no cubre**.
+calculada sobre `datos + código`, y para verificar se recalcula.
+
+**Caduca a los 90 segundos y admite 2 intentos.** Los dos números viven en
+`shared/otp.js` (`VIDA_MS` y `MAX_INTENTOS`) y de ahí salen también el texto del
+correo y la cuenta atrás del formulario — no hay que tocarlos en más sitios.
+Si 90 s resulta demasiado justo en la práctica y empieza a bloquear a gente
+legítima, `VIDA_MS` es lo único que hay que subir.
+
+El contador de intentos funciona porque el token va con **dos firmas** separadas:
+una sobre el código (que el servidor no puede recalcular) y otra sobre el
+contador (que sí). Así puede reemitir el token con un intento más sin conocer el
+código. Está explicado en `shared/otp.js`, incluido **lo que no cubre**.
 
 ## Variables que hay que configurar
 
@@ -54,9 +64,10 @@ los correos dejarán de salir.
 
 ## Recomendado: limitar los intentos
 
-El código son 6 dígitos y caduca a los 10 minutos, pero al no haber almacén el
-servidor no puede contar intentos. Para cerrar esa puerta, en **Cloudflare →
-Security → WAF → Rate limiting rules**:
+El límite de 2 intentos es real para el uso normal, pero al no haber almacén
+nadie impide reenviar una copia del token anterior con el contador a cero. La
+ventana de 90 s deja muy poco margen para intentarlo; para cerrarlo del todo, en
+**Cloudflare → Security → WAF → Rate limiting rules**:
 
 - Si `http.request.uri.path eq "/api/otp/verificar"`
 - Más de **10 peticiones por minuto** desde la misma IP

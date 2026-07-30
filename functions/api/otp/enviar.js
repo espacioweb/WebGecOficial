@@ -1,4 +1,4 @@
-import { crearToken, nuevoCodigo } from '../../../shared/otp.js';
+import { crearToken, nuevoCodigo, VIDA_MS } from '../../../shared/otp.js';
 import { validarCorreoEmpresarial } from '../../../src/data/paises.js';
 
 const json = (datos, status = 200) =>
@@ -30,7 +30,7 @@ const plantilla = (codigo, nombre) => `
         </td></tr>
         <tr><td style="padding:0 34px 34px">
           <p style="margin:0;font-size:13px;line-height:1.6;color:rgba(20,24,31,.5)">
-            Caduca en 10 minutos. Si no pediste este código, puedes ignorar este correo.
+            Caduca en 90 segundos, así que úsalo enseguida. Si no lo pediste, ignora este correo.
           </p>
         </td></tr>
       </table>
@@ -85,5 +85,11 @@ export async function onRequestPost({ request, env }) {
     );
   }
 
-  return json({ ok: true, token: await crearToken(correo, codigo, env.OTP_SECRET) });
+  return json({
+    ok: true,
+    token: await crearToken(correo, codigo, env.OTP_SECRET),
+    // La cuenta atrás del formulario sale de aquí: así el plazo vive en un
+    // único sitio y no hay dos números que se puedan desincronizar.
+    segundos: Math.floor(VIDA_MS / 1000),
+  });
 }
