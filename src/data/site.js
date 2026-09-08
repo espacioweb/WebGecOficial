@@ -100,7 +100,7 @@ export const pilares = [
     tagline: 'Formación, inspiración y desarrollo de equipos.',
     blurb:
       'Desarrollamos capacidades, inspiramos a las personas y diseñamos experiencias que transforman la forma de trabajar.',
-    items: ['IA Productiva', 'Sprint Audiovisual', 'Inspira Teams by GEC'],
+    items: ['Formación Ejecutiva IA', 'Formación Especializada IA', 'Comunidad IA'],
     panel: 'educa',
     ctaLabel: 'Explorar GEC IA',
     ...dark('linear-gradient(140deg,#0C332C 0%,#0F4A3D 52%,#04120F 100%)'),
@@ -218,7 +218,7 @@ export const testimonios = [
   {
     id: 't2',
     quote:
-      'El Sprint Audiovisual con IA cambió nuestro ritmo de producción. Pasamos de semanas a días sin perder criterio.',
+      'La Formación Especializada IA: Audiovisual cambió nuestro ritmo de producción. Pasamos de semanas a días sin perder criterio.',
     name: 'Gerencia de Marketing',
     role: 'Supermercados La Colonia',
     initials: 'LC',
@@ -226,7 +226,7 @@ export const testimonios = [
   {
     id: 't3',
     quote:
-      'Lo que más valoramos fue el IA Scan. Nos mostró dónde estábamos parados antes de invertir en herramientas.',
+      'Lo que más valoramos fue el Escaneo IA. Nos mostró dónde estábamos parados antes de invertir en herramientas.',
     name: 'Coordinación Académica',
     role: 'UJCV',
     initials: 'UJ',
@@ -297,58 +297,6 @@ export const footerCols = [
       { label: 'WhatsApp', href: WHATSAPP, externo: true },
     ],
   },
-];
-
-const EDU = { tag: 'EDUCA', tagBg: '#F5B301', tagFg: '#0B0B0C' };
-const SOL = { tag: 'SOLUCIONA', tagBg: '#13314F', tagFg: '#FFFFFF' };
-
-export const fases = [
-  {
-    n: '01',
-    t: 'Entender',
-    d: 'Abrir la conversación sobre IA en la organización y alinear la visión del liderazgo.',
-    progs: [
-      { ...EDU, t: 'Inspira Teams IA', d: 'Taller de 90 minutos para sensibilizar e inspirar al equipo: la IA como una nueva forma de trabajar, decidir, crear y ordenar procesos.' },
-      { ...EDU, t: '60 Minutos IA para Líderes', d: 'Sesión ejecutiva para alinear visión, identificar oportunidades y riesgos, y definir reglas iniciales de uso responsable.' },
-    ],
-  },
-  {
-    n: '02',
-    t: 'Ordenar',
-    d: 'Conocer la realidad del equipo y definir las herramientas correctas antes de capacitar.',
-    progs: [
-      { ...EDU, t: 'IA Scan', d: 'Diagnóstico con colaboradores clave (60–90 min): nivel actual, herramientas, tareas y barreras. Entregable: hallazgos y recomendación de ruta.' },
-      { ...SOL, t: 'Diseño del Ecosistema IA', d: 'Documento estratégico con mapa de herramientas, recomendaciones, licencias, prioridades y ruta por fases según áreas y presupuesto.' },
-    ],
-  },
-  {
-    n: '03',
-    t: 'Formar',
-    d: 'Capacitar al equipo con las herramientas correctas y consolidar la adopción.',
-    progs: [
-      { ...EDU, t: 'IA Productiva', d: '4 sesiones para usar IA con criterio en tareas reales: comunicación, reportes, análisis, presentaciones, organización e ideas.' },
-      { ...EDU, t: 'Sprint Audiovisual con IA', d: '4 sesiones para equipos creativos: de la idea al concepto, prompts visuales, producción de video con IA y flujo de revisión.' },
-      { ...EDU, t: 'Inspira Teams IA de cierre', d: 'Taller que consolida cultura y hábitos: IA como hábito, creatividad con criterio humano y trabajo más claro.' },
-    ],
-  },
-  {
-    n: '04',
-    t: 'Aplicar e implementar',
-    d: 'Resolver problemas concretos y construir las soluciones que la operación necesita.',
-    progs: [
-      { ...EDU, t: 'IA Aplicada', d: '3 sesiones, 1 problema real, 1 entregable práctico. Ediciones por área: Protocolo Empresarial, Marketing, Ventas, Servicio al Cliente, Administración, Producción y Creatividad.' },
-      { ...SOL, t: 'Soluciones con GEC Soluciona', d: 'Configuración de plataformas, automatizaciones, integraciones, agentes avanzados, dashboards, CRM y desarrollos a medida.' },
-    ],
-  },
-];
-
-export const rutas = [
-  { i: 0, perfil: 'Apenas están explorando la IA', pasos: ['Inspira Teams IA', '60 Minutos IA para Líderes', 'IA Scan', 'Diseño del Ecosistema IA', 'IA Productiva'] },
-  { i: 1, perfil: 'El liderazgo ya tiene claridad, el equipo no', pasos: ['60 Minutos IA para Líderes', 'IA Scan', 'IA Productiva o Sprint Audiovisual', 'IA Aplicada'] },
-  { i: 2, perfil: 'Ya decidieron capacitar al equipo', pasos: ['IA Productiva', 'Diseño del Ecosistema IA', 'Inspira Teams IA de cierre', 'IA Aplicada'] },
-  { i: 3, perfil: 'Equipo creativo, marketing o audiovisual', pasos: ['IA Scan o 60 Minutos IA', 'Diseño del Ecosistema IA', 'Sprint Audiovisual con IA', 'IA Aplicada: Marketing'] },
-  { i: 4, perfil: 'Hay resistencia cultural al cambio', pasos: ['Inspira Teams IA', '60 Minutos IA para Líderes', 'IA Scan', 'IA Productiva', 'Inspira Teams IA de cierre'] },
-  { i: 5, perfil: 'El equipo ya está capacitado', pasos: ['IA Aplicada', 'Diseño del Ecosistema IA', 'Soluciones con GEC Soluciona'] },
 ];
 
 export const nav = [

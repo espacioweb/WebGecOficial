@@ -1,11 +1,14 @@
 // Módulo interno GEC IA — datos extraídos del bosquejo
 // "Landing educativo con tabs animadas/GEC IA Landing.dc.html"
+// Nomenclatura de productos sincronizada con
+// "EDUCA_Propuesta_Comercial_Precios_Actuales_2026.md" (documento maestro comercial).
 
 export const C = {
   turquesa: '#3CBFAE',
   amarillo: '#F5B301',
   naranja: '#E8762B',
   azul: '#5B8FF9',
+  morado: '#8B5CF6',
 };
 
 export const FASES = [
@@ -15,8 +18,8 @@ export const FASES = [
     color: C.turquesa,
     desc: 'Abrir la conversación sobre IA y alinear la visión del liderazgo.',
     items: [
-      { pilar: 'Educa', name: 'Inspira Teams IA' },
-      { pilar: 'Educa', name: '60 Minutos IA para Líderes' },
+      { pilar: 'Educa', name: 'Visión Ejecutiva IA' },
+      { pilar: 'Educa', name: 'Comunidad IA: Ruta Iniciada' },
     ],
   },
   {
@@ -25,8 +28,8 @@ export const FASES = [
     color: C.amarillo,
     desc: 'Conocer la realidad del equipo y definir herramientas antes de capacitar.',
     items: [
-      { pilar: 'Educa', name: 'IA Scan' },
-      { pilar: 'Soluciona', name: 'Diseño del Ecosistema IA' },
+      { pilar: 'Educa', name: 'Escaneo IA' },
+      { pilar: 'Educa', name: 'Ecosistema y Protocolo IA' },
     ],
   },
   {
@@ -35,9 +38,9 @@ export const FASES = [
     color: C.naranja,
     desc: 'Capacitar con las herramientas correctas y consolidar la adopción.',
     items: [
-      { pilar: 'Educa', name: 'IA Productiva' },
-      { pilar: 'Educa', name: 'Sprint Audiovisual con IA' },
-      { pilar: 'Educa', name: 'Inspira Teams de cierre' },
+      { pilar: 'Educa', name: 'Formación Ejecutiva IA' },
+      { pilar: 'Educa', name: 'Comunidad IA: Ruta Completada' },
+      { pilar: 'Educa', name: 'Formación Especializada IA: Audiovisual' },
     ],
   },
   {
@@ -46,22 +49,36 @@ export const FASES = [
     color: C.azul,
     desc: 'Resolver problemas concretos y construir las soluciones que la operación necesita.',
     items: [
-      { pilar: 'Educa', name: 'IA Aplicada' },
-      { pilar: 'Soluciona', name: 'Soluciones GEC Soluciona' },
+      { pilar: 'Educa', name: 'Aplica IA' },
+      { pilar: 'Soluciona', name: 'Implementación con GEC Soluciona' },
+    ],
+  },
+  {
+    n: '05',
+    name: 'CONTINUAR',
+    color: C.morado,
+    desc: 'Revisar uso, vigencia y evolución de lo implementado, y mantener actualizados el protocolo y el ecosistema.',
+    items: [
+      { pilar: 'Educa', name: 'Seguimiento de Aplica IA' },
+      { pilar: 'Educa', name: 'Auditoría de Protocolo y Ecosistema IA' },
+      { pilar: 'Educa', name: 'Actualización de Protocolo y Ecosistema IA' },
     ],
   },
 ];
 
 export const PROG = {
-  inspira: { name: 'Inspira Teams IA', fase: 0, pilar: 'Educa' },
-  lideres: { name: '60 Minutos IA para Líderes', fase: 0, pilar: 'Educa' },
-  scan: { name: 'IA Scan', fase: 1, pilar: 'Educa' },
-  eco: { name: 'Diseño del Ecosistema IA', fase: 1, pilar: 'Soluciona' },
-  productiva: { name: 'IA Productiva', fase: 2, pilar: 'Educa' },
-  sprint: { name: 'Sprint Audiovisual con IA', fase: 2, pilar: 'Educa' },
-  cierre: { name: 'Inspira Teams IA de cierre', fase: 2, pilar: 'Educa' },
-  aplicada: { name: 'IA Aplicada', fase: 3, pilar: 'Educa' },
-  soluciona: { name: 'Soluciones con GEC Soluciona', fase: 3, pilar: 'Soluciona' },
+  inspira: { name: 'Comunidad IA: Ruta Iniciada', fase: 0, pilar: 'Educa' },
+  lideres: { name: 'Visión Ejecutiva IA', fase: 0, pilar: 'Educa' },
+  scan: { name: 'Escaneo IA', fase: 1, pilar: 'Educa' },
+  eco: { name: 'Ecosistema y Protocolo IA', fase: 1, pilar: 'Educa' },
+  productiva: { name: 'Formación Ejecutiva IA', fase: 2, pilar: 'Educa' },
+  sprint: { name: 'Formación Especializada IA: Audiovisual', fase: 2, pilar: 'Educa' },
+  cierre: { name: 'Comunidad IA: Ruta Completada', fase: 2, pilar: 'Educa' },
+  aplicada: { name: 'Aplica IA', fase: 3, pilar: 'Educa' },
+  soluciona: { name: 'Implementación con GEC Soluciona', fase: 3, pilar: 'Soluciona' },
+  seguimiento: { name: 'Seguimiento de Aplica IA', fase: 4, pilar: 'Educa' },
+  auditoria: { name: 'Auditoría de Protocolo y Ecosistema IA', fase: 4, pilar: 'Educa' },
+  actualizacion: { name: 'Actualización de Protocolo y Ecosistema IA', fase: 4, pilar: 'Educa' },
 };
 
 export const PUERTAS = [
@@ -70,19 +87,19 @@ export const PUERTAS = [
     label: 'Apenas están explorando la IA',
     meta: 'Sin criterio ni herramientas definidas',
     fase: 0,
-    lead: 'Nadie en la empresa sabe todavía qué puede hacer la IA en su trabajo. Primero se inspira, luego se ordena.',
-    ruta: ['inspira', 'lideres', 'scan', 'eco', 'productiva'],
+    lead: 'Nadie en la empresa sabe todavía qué puede hacer la IA en su trabajo. Primero se alinea el liderazgo, luego se ordena.',
+    ruta: ['lideres', 'inspira', 'scan', 'eco', 'productiva', 'cierre'],
     left: [
       'La conversación arranca por cultura, no por herramientas.',
       'El liderazgo define reglas de uso responsable desde el inicio.',
       'El diagnóstico evita comprar licencias que nadie usará.',
     ],
     right: [
-      ['Duración total', '6 a 10 semanas'],
-      ['Primer entregable', 'Hallazgos del IA Scan'],
-      ['Pilares', 'Educa + Soluciona'],
+      ['Duración total', '9 a 11 semanas'],
+      ['Primer entregable', 'Resumen de Visión Ejecutiva IA'],
+      ['Pilares', 'Educa'],
     ],
-    footnote: 'Es la puerta más común en empresas que nunca han capacitado en IA.',
+    footnote: 'Es la puerta más común en empresas que nunca han capacitado en IA. Esta ruta corresponde al programa CompañIA.',
   },
   {
     badge: 'B',
@@ -93,7 +110,7 @@ export const PUERTAS = [
     ruta: ['lideres', 'scan', 'productiva', 'aplicada'],
     left: [
       'Se alinea el mensaje del liderazgo antes de formar.',
-      'El IA Scan revela la brecha real entre discurso y práctica.',
+      'El Escaneo IA revela la brecha real entre discurso y práctica.',
       'La formación aterriza en tareas del día a día.',
     ],
     right: [
@@ -132,7 +149,7 @@ export const PUERTAS = [
     left: [
       'De la idea al concepto con prompts visuales.',
       'Producción de video con IA y flujo de revisión.',
-      'Edición de IA Aplicada para Marketing y Creatividad.',
+      'Edición de Aplica IA para Marketing y Creatividad.',
     ],
     right: [
       ['Duración total', '4 a 5 semanas'],
@@ -151,11 +168,11 @@ export const PUERTAS = [
     left: [
       'La IA se presenta como apoyo, no como reemplazo.',
       'El liderazgo comunica reglas claras y límites.',
-      'El taller de cierre convierte la IA en hábito de equipo.',
+      'La sesión de cierre convierte la IA en hábito de equipo.',
     ],
     right: [
       ['Duración total', '4 a 6 semanas'],
-      ['Primer entregable', 'Taller Inspira Teams'],
+      ['Primer entregable', 'Línea base de percepción'],
       ['Pilares', 'Educa'],
     ],
     footnote: 'Sin este paso, cualquier capacitación posterior se desperdicia.',
@@ -175,7 +192,7 @@ export const PUERTAS = [
     right: [
       ['Duración total', 'Según alcance'],
       ['Primer entregable', 'Documento de ecosistema'],
-      ['Pilares', 'Soluciona'],
+      ['Pilares', 'Educa + Soluciona'],
     ],
     footnote: 'Aquí el módulo pasa de formar a construir.',
   },
@@ -184,10 +201,10 @@ export const PUERTAS = [
 export const PROGRAMAS = [
   {
     key: 'inspira',
-    meta: 'Taller · 90 min',
-    lead: 'Taller para sensibilizar e inspirar al equipo: la IA como una nueva forma de trabajar, decidir, crear y ordenar procesos.',
+    meta: 'Sesión · 60 min',
+    lead: 'Sesión para sensibilizar e inspirar al equipo: la IA como una nueva forma de trabajar, decidir, crear y ordenar procesos.',
     left: ['Sensibiliza sin tecnicismos.', 'Rompe el miedo inicial al cambio.', 'Deja al equipo con ganas de probar.'],
-    right: [['Para quién', 'Todo el equipo'], ['Entregable', 'Ejercicios y acuerdos iniciales'], ['Formato', 'Presencial o virtual']],
+    right: [['Para quién', 'Todo el equipo'], ['Entregable', 'Ejercicios y línea base de percepción'], ['Formato', 'Preferiblemente presencial']],
     footnote: 'Suele ser el primer contacto de la empresa con GEC IA.',
   },
   {
@@ -211,8 +228,8 @@ export const PROGRAMAS = [
     meta: 'Documento estratégico',
     lead: 'Mapa de herramientas, recomendaciones, licencias, prioridades y ruta por fases según áreas y presupuesto.',
     left: ['Ordena el gasto en licencias.', 'Define responsables por herramienta.', 'Traza la ruta por fases.'],
-    right: [['Para quién', 'Dirección y TI'], ['Entregable', 'Documento de ecosistema IA'], ['Formato', 'Consultoría']],
-    footnote: 'Único programa de la fase Ordenar que pertenece a Soluciona.',
+    right: [['Para quién', 'Dirección y TI'], ['Entregable', 'Protocolo, guía rápida y plan de activación'], ['Formato', 'Consultoría']],
+    footnote: 'Requiere Escaneo IA vigente; no incluye configuración, integraciones ni licencias.',
   },
   {
     key: 'productiva',
@@ -223,12 +240,20 @@ export const PROGRAMAS = [
     footnote: 'El programa más solicitado del pilar Educa.',
   },
   {
+    key: 'cierre',
+    meta: 'Sesión de cierre · 60 min',
+    lead: 'Presentación de resultados, medición comparada de percepción, protocolo vigente y próximos pasos de continuidad.',
+    left: ['Cierra el ciclo con medición comparada.', 'Presenta responsables y protocolo vigente.', 'Deja claros los próximos pasos de continuidad.'],
+    right: [['Para quién', 'Colaboradores, responsables y líderes'], ['Entregable', 'Medición final + recomendaciones'], ['Formato', 'Preferiblemente presencial']],
+    footnote: 'Cierra la ruta corporativa CompañIA; sin este paso el equipo no ve el resultado colectivo.',
+  },
+  {
     key: 'sprint',
     meta: '4 sesiones creativas',
     lead: 'Para equipos creativos: de la idea al concepto, prompts visuales, producción de video con IA y flujo de revisión.',
     left: ['Enfocado en producción audiovisual.', 'Incluye flujo de revisión y aprobación.', 'Resultado tangible al terminar.'],
-    right: [['Para quién', 'Marketing y creativos'], ['Entregable', 'Piezas producidas con IA'], ['Formato', 'Sprint de 4 sesiones']],
-    footnote: 'Se puede combinar con IA Aplicada · Marketing.',
+    right: [['Para quién', 'Marketing y creativos'], ['Entregable', 'Kit de Producción Audiovisual con IA'], ['Formato', 'Sprint de 4 sesiones']],
+    footnote: 'Se puede combinar con la edición Marketing de Aplica IA.',
   },
   {
     key: 'aplicada',
@@ -244,7 +269,31 @@ export const PROGRAMAS = [
     lead: 'Configuración de plataformas, automatizaciones, integraciones, agentes avanzados, dashboards, CRM y desarrollos a medida.',
     left: ['Construye lo que la formación dejó identificado.', 'Integra las herramientas ya contratadas.', 'Deja sistemas operando, no recomendaciones.'],
     right: [['Para quién', 'Empresa con equipo formado'], ['Entregable', 'Sistemas en producción'], ['Formato', 'Proyecto por alcance']],
-    footnote: 'Alcance y tiempos se definen tras el Diseño del Ecosistema IA.',
+    footnote: 'Alcance y tiempos se definen tras el Ecosistema y Protocolo IA.',
+  },
+  {
+    key: 'seguimiento',
+    meta: 'Sesión · 90 min',
+    lead: 'Revisión de uso del recurso creado en Aplica IA, con ajustes menores dentro del mismo caso, sugerida 30–45 días después.',
+    left: ['Comprueba si el recurso realmente se usa.', 'Detecta dificultades tempranas de adopción.', 'Ajusta sin abrir un caso nuevo.'],
+    right: [['Para quién', 'Participantes del caso trabajado'], ['Entregable', 'Registro de observaciones + versión ajustada'], ['Formato', 'Sesión de 90 min, 30–45 días después']],
+    footnote: 'Mismo caso y mismos participantes; una necesidad nueva se cotiza como Aplica IA aparte.',
+  },
+  {
+    key: 'auditoria',
+    meta: 'Sesión · 90 min + revisión interna',
+    lead: 'Verifica herramientas autorizadas, responsables e incidencias, y confirma si el protocolo sigue vigente.',
+    left: ['Primera auditoría sugerida a los 90 días.', 'Después, cadencia semestral.', 'Detecta desvíos antes de que se vuelvan hábito.'],
+    right: [['Para quién', 'Responsable interno o Comité de IA'], ['Entregable', 'Reporte de cumplimiento + recomendaciones'], ['Formato', 'Sesión + revisión documental']],
+    footnote: 'Requiere el Ecosistema y Protocolo IA vigente y registro de incidencias.',
+  },
+  {
+    key: 'actualizacion',
+    meta: 'Desde 60 min de validación',
+    lead: 'Incorpora los cambios que dejó una auditoría: herramientas, responsables, reglas e inventario quedan al día.',
+    left: ['Parte de una auditoría o lista de cambios aprobada.', 'Mantiene un control de versión del protocolo.', 'No es un rediseño: son ajustes documentales.'],
+    right: [['Para quién', 'Responsable interno o Comité de IA'], ['Entregable', 'Protocolo, inventario y guía rápida al día'], ['Formato', 'Trabajo interno + validación de 60 min']],
+    footnote: 'Precio final según cantidad y profundidad de los cambios.',
   },
 ];
 
@@ -256,8 +305,8 @@ export const AREAS = [
     fase: 2,
     lead: 'El área que más rápido muestra resultados con IA: volumen de contenido, velocidad de campaña y análisis de desempeño.',
     tareas: ['Redacción de campañas y copies', 'Conceptos y prompts visuales', 'Análisis de resultados y reportes'],
-    ruta: ['scan', 'sprint', 'aplicada'],
-    footnote: 'Combinar Sprint Audiovisual con la edición Marketing de IA Aplicada.',
+    ruta: ['scan', 'sprint', 'aplicada', 'seguimiento'],
+    footnote: 'Combinar Formación Especializada Audiovisual con la edición Marketing de Aplica IA.',
   },
   {
     badge: 'VT',
@@ -266,8 +315,8 @@ export const AREAS = [
     fase: 3,
     lead: 'IA para preparar reuniones, responder más rápido y no perder seguimiento de oportunidades.',
     tareas: ['Investigación previa de clientes', 'Propuestas y correos de seguimiento', 'Resúmenes de reunión y próximos pasos'],
-    ruta: ['scan', 'productiva', 'aplicada'],
-    footnote: 'La edición Ventas de IA Aplicada trabaja sobre el pipeline real.',
+    ruta: ['scan', 'productiva', 'aplicada', 'seguimiento'],
+    footnote: 'La edición Ventas de Aplica IA trabaja sobre el pipeline real.',
   },
   {
     badge: 'SC',
@@ -286,8 +335,8 @@ export const AREAS = [
     fase: 2,
     lead: 'Ordenar información, redactar documentos y controlar procesos administrativos con menos fricción.',
     tareas: ['Redacción de documentos internos', 'Resúmenes y actas', 'Control de reportes recurrentes'],
-    ruta: ['scan', 'productiva', 'aplicada'],
-    footnote: 'Edición Protocolo Empresarial de IA Aplicada.',
+    ruta: ['scan', 'productiva', 'aplicada', 'seguimiento'],
+    footnote: 'Edición Protocolo Empresarial de Aplica IA.',
   },
   {
     badge: 'PR',
@@ -306,7 +355,7 @@ export const AREAS = [
     fase: 2,
     lead: 'Más exploración creativa en menos tiempo, manteniendo criterio y sello propio.',
     tareas: ['Ideación y variantes de concepto', 'Prompts visuales y storyboards', 'Producción de video con IA'],
-    ruta: ['sprint', 'aplicada'],
+    ruta: ['sprint', 'aplicada', 'seguimiento'],
     footnote: 'La IA amplía las opciones; el criterio sigue siendo humano.',
   },
 ];
@@ -417,7 +466,7 @@ export function navSource(mode) {
 
 export const navTitle = (mode) =>
   mode === 'programas'
-    ? 'Los 9 programas'
+    ? 'Los 12 programas'
     : mode === 'areas'
       ? 'Áreas de la empresa'
       : '¿Dónde está la empresa hoy?';

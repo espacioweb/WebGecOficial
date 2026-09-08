@@ -17,7 +17,7 @@ const P = { fontFamily: 'Poppins, sans-serif' };
 // CSS y el temporizador que retrasa el `visibility: hidden`: si se separan, uno
 // de los dos corta al otro.
 const SALIDA_MS = 520;
-const TARGETS = { fases: 4, programas: 9, areas: 6 };
+const TARGETS = { fases: 5, programas: 12, areas: 6 };
 
 /* Contadores que suben con easing al abrir el panel */
 function useCountUp(active) {
@@ -226,7 +226,7 @@ function ModalComparativa({ open, onClose }) {
             className="rounded-full px-5 py-3 text-[13px] font-bold text-[#10131A] transition-colors hover:bg-[#FFD25E]"
             style={{ ...P, background: C.amarillo }}
           >
-            Empezar por el IA Scan →
+            Empezar por el Escaneo IA →
           </a>
         </div>
       </div>
@@ -338,7 +338,7 @@ export default function PanelEduca({ open, onClose }) {
           className="hidden rounded-full px-[18px] py-2.5 text-[13px] font-bold text-[#10131A] transition-colors hover:bg-[#FFD25E] sm:inline-block"
           style={{ ...P, background: C.amarillo }}
         >
-          Agendar IA Scan
+          Agendar Escaneo IA
         </a>
       </div>
 
@@ -401,7 +401,7 @@ export default function PanelEduca({ open, onClose }) {
               className="m-0 mb-8 max-w-[46ch] text-[16px] leading-[1.7]"
               style={{ color: 'rgba(242,239,233,.62)', textWrap: 'pretty' }}
             >
-              La IA no se adopta con una sola capacitación. Este módulo ordena el camino en cuatro
+              La IA no se adopta con una sola capacitación. Este módulo ordena el camino en cinco
               fases y dos pilares:{' '}
               <strong className="font-semibold" style={{ color: C.amarillo }}>
                 Educa
@@ -419,7 +419,7 @@ export default function PanelEduca({ open, onClose }) {
                 className="inline-flex items-center gap-2.5 rounded-full px-7 py-4 text-[15px] font-bold text-[#10131A] transition-transform duration-200 hover:-translate-y-0.5"
                 style={{ ...P, background: C.amarillo, boxShadow: '0 14px 34px rgba(245,179,1,.28)' }}
               >
-                Agendar diagnóstico IA Scan <span className="text-[17px]">→</span>
+                Agendar Escaneo IA <span className="text-[17px]">→</span>
               </a>
               <a
                 href="#catalogo"
@@ -613,10 +613,10 @@ export default function PanelEduca({ open, onClose }) {
               className="m-0 mb-4 text-[clamp(30px,4vw,46px)] leading-[1.05] font-bold text-white"
               style={{ ...P, letterSpacing: '-.03em' }}
             >
-              Cuatro fases
+              Cinco fases
             </h2>
             <p className="m-0 text-[15.5px] leading-[1.7]" style={{ color: 'rgba(242,239,233,.58)' }}>
-              Nadie recorre las cuatro siempre. Cada empresa entra por la fase que corresponde a su
+              Nadie recorre las cinco siempre. Cada empresa entra por la fase que corresponde a su
               realidad.
             </p>
           </div>
@@ -625,12 +625,13 @@ export default function PanelEduca({ open, onClose }) {
             <div
               className="absolute inset-0 origin-left rounded-full"
               style={{
-                background: 'linear-gradient(90deg,#3CBFAE,#F5B301 34%,#E8762B 67%,#5B8FF9)',
+                background:
+                  'linear-gradient(90deg,#3CBFAE,#F5B301 26%,#E8762B 51%,#5B8FF9 76%,#8B5CF6)',
               }}
             />
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {FASES.map((f) => (
               <div
                 key={f.n}
@@ -999,7 +1000,7 @@ export default function PanelEduca({ open, onClose }) {
               className="m-0 mb-[18px] text-[clamp(34px,5vw,52px)] leading-none font-extrabold"
               style={{ ...P, letterSpacing: '-.035em' }}
             >
-              Empieza por el IA Scan
+              Empieza por el Escaneo IA
             </h2>
             <p className="m-0 mb-[30px] max-w-[44ch] text-[17px] leading-[1.6] font-medium">
               Una sesión de 60–90 minutos con los colaboradores clave. Salimos con hallazgos,
