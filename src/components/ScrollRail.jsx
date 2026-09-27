@@ -4,13 +4,13 @@ import { gsap, ScrollTrigger } from '../utils/gsapSetup';
 
 const P = { fontFamily: 'Poppins, sans-serif' };
 
-// Secciones que el riel refleja, en orden de aparición.
+// Secciones que el riel refleja, en orden de aparición. "Inside Your
+// Brand"/"Valor"/"Portafolio" salieron de aquí junto con sus secciones (ver
+// nota en Home.jsx) — dejarlos habría hecho que la etiqueta prometiera un
+// destino que ya no existe en la página.
 const HITOS = [
   { id: 'top', label: 'Inicio' },
   { id: 'ecosistema', label: 'Ecosistema' },
-  { id: 'inside', label: 'Inside Your Brand' },
-  { id: 'valor', label: 'Valor' },
-  { id: 'portafolio', label: 'Portafolio' },
   { id: 'familia', label: 'La familia' },
   { id: 'contacto', label: 'Hablemos' },
 ];

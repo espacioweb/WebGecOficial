@@ -1,3 +1,5 @@
+import { useLocation } from 'react-router-dom';
+
 const PILL =
   'rounded-full border border-white/10 bg-[rgba(12,12,14,0.55)] backdrop-blur-[14px]';
 
@@ -31,11 +33,16 @@ function Burger({ open, onClick }) {
 }
 
 export default function Header({ menuOpen, onToggleMenu }) {
+  // Fuera del Home, "#top" y "#contacto" son anclas de otra página — hay que
+  // llevar de vuelta a "/" en vez de un ancla rota en la ruta actual.
+  const { pathname } = useLocation();
+  const isHome = pathname === '/';
+
   return (
     // Contenedor transparente: cada elemento flota como isla, sin barra central.
     <header className="pointer-events-none fixed top-[18px] left-1/2 z-[130] flex w-[min(1560px,calc(100vw-40px))] -translate-x-1/2 items-center justify-between gap-4">
       <a
-        href="#top"
+        href={isHome ? '#top' : '/'}
         className={`${PILL} pointer-events-auto flex items-center px-6 py-3.5`}
         aria-label="Grupo Espacio Creativo — inicio"
       >
@@ -48,7 +55,7 @@ export default function Header({ menuOpen, onToggleMenu }) {
 
       <div className="pointer-events-auto flex items-center gap-2.5">
         <a
-          href="#contacto"
+          href={isHome ? '#contacto' : '/#contacto'}
           className="rounded-full px-7 py-[15px] text-[13.5px] font-semibold text-[#0B0B0C] transition-colors duration-300 hover:bg-[#FFD24A]"
           style={{ background: '#F5B301', fontFamily: 'Poppins, sans-serif' }}
         >

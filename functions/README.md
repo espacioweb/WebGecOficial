@@ -4,6 +4,33 @@ Todo lo que hay en `functions/` se publica solo con cada despliegue: no hay que
 crear ni desplegar nada aparte. `functions/api/otp/enviar.js` queda en
 `/api/otp/enviar`, y así con el resto.
 
+## Brief empresarial
+
+| Endpoint | Qué hace |
+|---|---|
+| `POST /api/brief` | Recibe las respuestas del brief (`/cuentanos-tu-reto/`) y avisa a Telegram |
+
+No pide correo verificado — a diferencia del catálogo de Educa, el brief no
+protege contenido, así que no hay OTP de por medio ni variables de entorno que
+configurar. La clasificación interna (Prioritaria / En evaluación / Para
+desarrollar) se calcula **aquí, server-side**, precisamente para que nunca
+viaje de vuelta al navegador ni se pueda ver desde las herramientas de
+desarrollador del cliente.
+
+## Comunidad de Inside Your Brand
+
+| Endpoint | Qué hace |
+|---|---|
+| `POST /api/suscribir` | Recibe el correo del botón "Suscribirme" (IYB-06, `/inside-your-brand/`) y avisa a Telegram |
+
+Mismo patrón que `/api/brief`: sin base de datos propia ni variables de
+entorno, solo valida el formato del correo y reusa el worker de Telegram
+como bandeja de entrada. Si el aviso a Telegram falla no bloquea al usuario
+(mismo criterio que el resto de estos endpoints) — pero si la petición en sí
+falla (ej. 404 en `npm run dev`, ver "Probar en local" más abajo) el
+formulario sí lo muestra como error, porque a diferencia del brief no hay un
+paso previo del que el usuario ya haya visto confirmación.
+
 ## Verificación del correo por código
 
 Impide que alguien entre al catálogo con un correo empresarial inventado. Son
@@ -54,6 +81,20 @@ abra sin verificar.
 > *«El verificador aún no está configurado»* aunque en el panel se vean puestas.
 > Basta con relanzar el despliegue (Deployments → el último → Retry deployment)
 > o empujar cualquier commit.
+
+### GA4 — distinta de las anteriores, no la mezcles en la misma lógica
+
+| Nombre | Valor | Marcar como secreto |
+|---|---|---|
+| `VITE_GA_MEASUREMENT_ID` | El Measurement ID de la propiedad GA4 (`G-XXXXXXX`) | No — es público, viaja en el HTML de cualquier página igual |
+
+Se configura en el mismo panel que `RESEND_API_KEY`/`OTP_SECRET`, pero es de un
+tipo distinto: la lee **Vite al compilar** (`import.meta.env.VITE_...`,
+`src/utils/analytics.js`), no una Function en tiempo de ejecución. Aplica el
+mismo "ojo, esto muerde" de arriba — sin relanzar el despliegue después de
+agregarla, el build ya hecho sigue sin ella. Sin configurar, el sitio no
+manda nada a GA4: `track()` no hace nada, no hay error, no hay nada que
+arreglar antes de desplegar.
 
 ## El remitente
 

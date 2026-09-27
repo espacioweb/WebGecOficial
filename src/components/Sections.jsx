@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { icons } from './SocialIcons';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
 import { loadSequence, nearestLoaded, esPantallaChica } from '../utils/frameSequence';
+import { track } from '../utils/analytics';
 import ScrollHint from './ScrollHint';
 import {
   pilares,
@@ -11,6 +13,7 @@ import {
   fuerzas,
   abanico,
   marcas,
+  sectores,
   contacto,
   redes,
   WHATSAPP,
@@ -227,6 +230,13 @@ export function Pilares({ onOpenPanel }) {
               <p className="m-0 max-w-[48ch] text-[15px] leading-[1.75] font-light" style={{ color: b.muted }}>
                 {b.blurb}
               </p>
+              <Link
+                to={b.ruta}
+                className="inline-flex w-fit items-center gap-2 rounded-full border px-5 py-2.5 text-[13px] font-semibold transition-colors hover:opacity-80"
+                style={{ ...P, borderColor: b.chipBorder, color: b.fg }}
+              >
+                Ver más <span>→</span>
+              </Link>
             </div>
 
             <div className="flex flex-col gap-[22px]">
@@ -256,6 +266,94 @@ export function Pilares({ onOpenPanel }) {
 
         </article>
       ))}
+    </section>
+  );
+}
+
+/* ─────────────────── H-04 · ¿Qué necesita tu empresa? ───────────────────
+   CTA intermedio: convierte interés en un brief corto y calificable. Vive
+   entre Pilares y Autoridad — distinto del cierre (Contacto), que es la
+   última palabra de la página, no un empujón a mitad de camino. */
+export function BriefCTA() {
+  return (
+    <section className="bg-[#060607] px-[clamp(24px,5vw,90px)] py-[clamp(50px,6vw,90px)]">
+      <div
+        className="relative mx-auto flex max-w-[1100px] flex-col items-center gap-6 overflow-hidden rounded-[clamp(24px,2.6vw,40px)] border border-white/10 px-[clamp(24px,5vw,64px)] py-[clamp(44px,6vw,72px)] text-center"
+        style={{ background: 'radial-gradient(120% 140% at 50% 0%, rgba(245,179,1,.12) 0%, rgba(6,6,7,0) 60%), #0A0A0A' }}
+      >
+        <h2
+          className="m-0 max-w-[20ch] text-[clamp(26px,3.2vw,44px)] leading-[1.1] font-bold text-white"
+          style={{ ...P, letterSpacing: '-.03em', textWrap: 'balance' }}
+        >
+          ¿Qué necesita tu empresa?
+        </h2>
+        <p className="m-0 max-w-[52ch] text-[15px] leading-[1.7] font-light" style={{ color: 'rgba(237,234,228,.62)' }}>
+          Responde unas preguntas breves — menos de 90 segundos — y te orientamos hacia la
+          solución de GEC más adecuada.
+        </p>
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-3.5">
+          <Link
+            to="/cuentanos-tu-reto/"
+            className="cursor-pointer rounded-full bg-[#F5B301] px-8 py-4 text-[15px] font-semibold text-[#0B0B0C] transition-colors hover:bg-[#FFD24A]"
+            style={P}
+          >
+            Completar brief empresarial
+          </Link>
+          <a
+            href={WHATSAPP}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="cursor-pointer rounded-full border border-white/20 px-8 py-4 text-[15px] font-medium text-[#EDEAE4] transition-colors hover:border-[#F5B301] hover:text-[#F5B301]"
+            style={P}
+          >
+            Conversar con GEC
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────── H-05 · Autoridad ───────────────────
+   Texto, sin fotos: la guía pide respaldar con experiencia verificable, no
+   con estadísticas sin verificar ni con imágenes de stock genéricas (lo que
+   tenía ValorHorizontal, el bloque que este reemplaza). */
+export function Autoridad() {
+  return (
+    <section className="bg-[#060607] px-[clamp(24px,5vw,90px)] py-[clamp(70px,8vw,130px)]">
+      <div className="mx-auto flex max-w-[1180px] flex-col gap-10">
+        <div className="flex flex-col gap-6">
+          <Eyebrow>Trayectoria</Eyebrow>
+          <h2
+            className="m-0 max-w-[22ch] text-[clamp(28px,3.4vw,50px)] leading-[1.1] font-bold text-[#EDEAE4]"
+            style={{ ...P, letterSpacing: '-.03em', textWrap: 'balance' }}
+          >
+            {/* "12 años" es texto fijo aprobado por la guía — revisar cada año si sigue vigente. */}
+            12 años convirtiendo ideas en marcas, campañas y producciones que conectan.
+          </h2>
+          <p className="m-0 max-w-[62ch] text-[15px] leading-[1.75] font-light" style={{ color: 'rgba(237,234,228,.6)' }}>
+            Empezamos en branding, diseño y producción audiovisual. Con el tiempo, esa misma
+            forma de pensar ideas y campañas se extendió hacia experiencias, soluciones y
+            formación — hoy conectamos cada una de esas piezas en un mismo ecosistema.
+          </p>
+        </div>
+        <div className="flex flex-col gap-4 border-t border-white/10 pt-8">
+          <span className="text-[11px] uppercase" style={{ ...P, letterSpacing: '.28em', color: 'rgba(237,234,228,.4)' }}>
+            Sectores en los que hemos trabajado
+          </span>
+          <div className="flex flex-wrap gap-2.5">
+            {sectores.map((s) => (
+              <span
+                key={s}
+                className="rounded-full border border-white/12 bg-white/[.04] px-4 py-2 text-[13.5px] font-medium text-[#EDEAE4]"
+                style={P}
+              >
+                {s}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
@@ -1221,6 +1319,7 @@ export function Footer() {
                 rel="noreferrer noopener"
                 aria-label={r.label}
                 title={r.label}
+                onClick={() => track('social_clicked', { red: r.id })}
                 className="grid h-10 w-10 place-items-center rounded-full border border-white/12 bg-white/[.04] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#F5B301] hover:bg-[rgba(245,179,1,.12)] hover:text-[#F5B301]"
                 style={{ color: 'rgba(237,234,228,.7)' }}
               >

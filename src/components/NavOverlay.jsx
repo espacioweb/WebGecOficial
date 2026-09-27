@@ -1,11 +1,18 @@
 import { useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import { gsap } from '../utils/gsapSetup';
-import { nav } from '../data/site';
+import { nav, pilares } from '../data/site';
 
 const P = { fontFamily: 'Poppins, sans-serif' };
 
+// Las cinco páginas de pilar ya existen como rutas reales — se insertan
+// después de "Ecosistema" (que sigue llevando a la vista de conjunto en
+// Home) para dar acceso directo a cada una, como pide la guía de Fase 1.
+const PILARES_LINKS = pilares.map((p) => ({ href: p.ruta, label: p.name }));
+
 const EXTRA = [
+  { href: '/inside-your-brand/', label: 'Inside Your Brand' },
   { href: '#familia', label: 'La familia Meraki' },
   { href: '#contacto', label: 'Hablemos' },
 ];
@@ -69,7 +76,7 @@ export default function NavOverlay({ open, onClose }) {
     }
   }, [open]);
 
-  const links = [...nav, ...EXTRA];
+  const links = [nav[0], ...PILARES_LINKS, ...nav.slice(1), ...EXTRA];
 
   const go = (e, href) => {
     e.preventDefault();
@@ -100,28 +107,51 @@ export default function NavOverlay({ open, onClose }) {
           }}
         />
 
-        <nav className="relative flex h-full flex-col justify-center gap-2 px-[clamp(28px,7vw,140px)]">
-          {links.map((l, i) => (
-            <div key={l.href} className="overflow-hidden py-[clamp(2px,.6vh,8px)]">
-              <a
-                href={l.href}
-                onClick={(e) => go(e, l.href)}
-                ref={(el) => {
-                  itemsRef.current[i] = el;
-                }}
-                className="group inline-flex items-baseline gap-5 text-[clamp(30px,6.6vw,86px)] leading-[1.05] font-bold text-[#EDEAE4] transition-colors duration-300 hover:text-[#F5B301]"
-                style={{ ...P, letterSpacing: '-.035em' }}
+        <nav className="relative flex h-full flex-col justify-center gap-0.5 overflow-y-auto px-[clamp(28px,7vw,140px)] py-[clamp(90px,10vh,140px)]">
+          {links.map((l, i) => {
+            const isRoute = !l.href.startsWith('#');
+            const num = (
+              <span
+                className="text-[clamp(9px,.9vw,12px)] font-medium text-[rgba(245,179,1,.7)]"
+                style={{ letterSpacing: '.28em' }}
               >
-                <span
-                  className="text-[clamp(10px,1vw,13px)] font-medium text-[rgba(245,179,1,.7)]"
-                  style={{ letterSpacing: '.28em' }}
-                >
-                  0{i + 1}
-                </span>
-                {l.label}
-              </a>
-            </div>
-          ))}
+                {i + 1 < 10 ? `0${i + 1}` : i + 1}
+              </span>
+            );
+            const cls =
+              'group inline-flex items-baseline gap-5 text-[clamp(22px,4.6vw,58px)] leading-[1.08] font-bold text-[#EDEAE4] transition-colors duration-300 hover:text-[#F5B301]';
+            return (
+              <div key={l.href} className="overflow-hidden py-[clamp(1px,.4vh,5px)]">
+                {isRoute ? (
+                  <Link
+                    to={l.href}
+                    onClick={onClose}
+                    ref={(el) => {
+                      itemsRef.current[i] = el;
+                    }}
+                    className={cls}
+                    style={{ ...P, letterSpacing: '-.035em' }}
+                  >
+                    {num}
+                    {l.label}
+                  </Link>
+                ) : (
+                  <a
+                    href={l.href}
+                    onClick={(e) => go(e, l.href)}
+                    ref={(el) => {
+                      itemsRef.current[i] = el;
+                    }}
+                    className={cls}
+                    style={{ ...P, letterSpacing: '-.035em' }}
+                  >
+                    {num}
+                    {l.label}
+                  </a>
+                )}
+              </div>
+            );
+          })}
         </nav>
       </div>
     </div>

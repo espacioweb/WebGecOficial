@@ -448,3 +448,252 @@ hito de sección (7) más 2 intermedias entre cada par.
 - Borrar los dos archivos huérfanos si se confirma que el audio no vuelve.
 - El giro 3/4 del Meraki Educa del panel quedó frontal-inclinado, no en perfil marcado como
   la referencia; queda pendiente si se sigue iterando.
+
+---
+
+## 📖 GUÍA DE IMPLEMENTACIÓN 2026 (`GEC_Guia_Implementacion_Web_2026.md`) — estado y pendientes
+
+> Actualizado: 2026-09-20. Este documento **no vive en el repo** — el usuario lo pega
+> completo en el chat cada cierto tiempo; es la fuente de verdad del contenido y la
+> arquitectura del sitio. Tiene 7 fases (0 Preparación · 1 Sistema compartido · 2 Home ·
+> 3 Páginas de pilares · 4 Inside Your Brand + Brief · 5 Educa privado · 6 SEO/medición ·
+> 7 QA). Cada bloque trae "CONTENIDO APROBADO" (texto literal, no reinterpretar) e
+> "IMPLEMENTACIÓN" (instrucciones — a veces piden redactar una descripción breve, ahí sí
+> se puede). **Regla del usuario: sin textos inventados que el .md no traiga** — si hace
+> falta más presencia visual en un bloque, se resuelve con jerarquía (ícono, tamaño,
+> espaciado), no con más prosa.
+>
+> **Ojo:** no confundir con el "Fase 4 del roadmap" mencionado arriba en este mismo
+> archivo (Production Build & Deployment) — es la numeración de fases de un documento
+> distinto (el manifiesto original de este CLAUDE.md), no de la guía.
+
+### Decisiones no negociables de la guía (no romper sin que el usuario lo pida)
+- Sin página ni bloque "Nosotros".
+- Sin testimonios hasta tener testimonios reales y autorizados.
+- "CompañIA" es la grafía vigente del programa de Educa — no usar nombres anteriores.
+- La oferta privada de Educa no se enlaza desde la navegación pública.
+- Cada CTA principal de un pilar abre el brief con `?pilar=<nombre>` preseleccionado.
+
+### ✅ Hecho
+- **Fase 3 — Páginas de pilares: completa.** Las 5 existen (`/marketing/`, `/studio/`,
+  `/educa/`, `/soluciona/`, `/experience/`), comparten `src/components/PilarPage.jsx`.
+  Cada una tiene su Meraki en el hero (`HeroCharacter`, componente compartido) con halo
+  del color de la división + máscara radial para fundir el render contra el `#0A0E13`
+  de la página. Valor/Alcance usan `SlotCard` (ícono + slot punteado "captura / video"
+  para media futura, sin inventar imágenes).
+- **Fase 4 — Brief (B-01 a B-05): completo.** `src/pages/BriefPage.jsx` reemplazó el
+  placeholder. Rediseñado estilo Typeform tras feedback del usuario ("se volvió plano y
+  feo"): una pregunta por pantalla de verdad (~13 pasos atómicos), avance automático al
+  tocar una opción de selección única, tarjetas con badge de letra (A, B, C…), cursor
+  parpadeante (`@keyframes blink` en `src/index.css`), barra de progreso fina fija arriba
+  del viewport, transición GSAP entre preguntas (respeta `prefers-reduced-motion`).
+  Precarga `?pilar=` y `?tema=` de los CTA de cada pilar. Progreso persistido en
+  `localStorage` (`gec-brief-progreso`, se limpia de verdad al enviar — ver bug corregido
+  abajo). Envía a `POST /api/brief` (`functions/api/brief.js`, nuevo — mismo patrón que
+  `functions/api/otp/verificar.js`, mismo worker de Telegram). La clasificación interna
+  (Prioritaria/En evaluación/Para desarrollar) se calcula **server-side**, nunca llega al
+  cliente. Resultado (B-05) con resumen enriquecido (Empresa, Contacto, Necesidad, Pilar
+  recomendado, Etapa, Tiempo) + modal "Explorar otros servicios" (`ModalServicios`, mismo
+  patrón que `VideoModal` de Inside Your Brand) con las 5 tarjetas de pilar.
+  - *Bug corregido:* el efecto que persiste `{paso, r}` en `localStorage` se disparaba
+    también al llegar a `paso: 'resultado'` y pisaba el `removeItem()` de `enviarBrief()`
+    un instante antes — el brief nunca quedaba realmente limpio tras enviarse. Fix: ese
+    efecto ahora se salta tanto en `'intro'` como en `'resultado'`.
+- **Menú y footer**: el hamburguesa (`NavOverlay.jsx`) y el footer (`footerCols` en
+  `site.js`) ahora enlazan a los 5 pilares como rutas reales, no anclas.
+- **Riesgo de contenido sin autorizar — resuelto por ahora (2026-09-20).** `<Marcas />` y
+  `<Testimonios />` se sacaron del render de `src/pages/Home.jsx` (el código y los datos
+  siguen intactos en `src/components/Sections.jsx` y `src/data/site.js` — reactivarlos es
+  solo devolver las dos líneas de import/render). Tenían testimonios inventados atribuidos
+  a clientes reales (Grupo Flores, Supermercados La Colonia, UJCV, BCIE) y marcas sin
+  autorización confirmada (Toyota, Ford, UNICEF, BCH, BCIE) — ambos prohibidos
+  explícitamente por la guía. **No reactivar hasta tener testimonios y logos reales y
+  autorizados por GEC.**
+- **H-04 y H-05 construidos (2026-09-20).** `BriefCTA` (H-04, "¿Qué necesita tu empresa?"
+  con los dos CTA aprobados hacia `/cuentanos-tu-reto/` y WhatsApp) y `Autoridad` (H-05,
+  titular "12 años..." + los 7 sectores como chips — texto, sin fotos de stock ni
+  estadísticas sin verificar) viven ahora en `Sections.jsx` y se renderizan en Home justo
+  después de Pilares. `Autoridad` **reemplazó** a `ValorHorizontal` en el render (el
+  componente viejo y sus datos `fuerzas` siguen intactos, sin usarse). El texto de
+  evolución de `Autoridad` es redacción propia siguiendo la instrucción de la guía
+  ("Añadir texto breve sobre evolución..."), no contenido literal aprobado — y el titular
+  "12 años" lleva un comentario en el código recordando revisarlo cada año.
+- **InsideYourBrand y Portafolio ocultos del Home (2026-09-21), a pedido del usuario.**
+  Ninguno calzaba con el contenido aprobado (InsideYourBrand no trae los 4 tipos
+  aprobados — usa "Tendencias", que no es uno de ellos; Portafolio usa la palabra "Blog",
+  que la guía prohíbe en IYB-02, y fotos de stock genéricas). Mismo criterio que
+  Marcas/Testimonios: componentes y datos siguen intactos en `Sections.jsx`, solo se
+  sacaron del render de `Home.jsx`. Se limpiaron también las referencias que quedaban
+  huérfanas: `nav` y `footerCols` (`site.js`) ya no tienen las entradas "Inside Your
+  Brand"/"Valor"/"Portafolio" (`#inside`/`#valor`/`#portafolio` no existen en el DOM), y
+  `HITOS` en `ScrollRail.jsx` (el riel lateral de progreso) tampoco las lista.
+- **H1 del Hero de Educa — decidido (2026-09-21).** El usuario adjuntó `Educa.pdf` (un
+  mockup de referencia) pidiendo mejorar el layout del hero según esa referencia. El PDF
+  trae un titular corto de dos líneas — "Adopción de IA empresarial" — en vez de la
+  oración larga que había ("Adopta la IA y haz crecer las habilidades que tu empresa
+  necesita."), y con eso el hero queda mejor proporcionado (4 líneas de H1 pasan a 2).
+  Se adoptó el titular del PDF tal cual. El resto de esa misma página (Valor, Capacidades,
+  CompañIA, Audiovisual, Otras formas) ya calzaba con el PDF — mismo conteo de slots (10),
+  mismo copy, mismas tarjetas "Ver más" en Marca/Programas corporativos.
+- **Páginas de pilar cruzadas contra mockups de referencia — Marketing/Studio/Soluciona/
+  Experience (2026-09-21).** El usuario adjuntó un PDF por pilar (`Marketing.pdf`,
+  `Studio.pdf`, `Soluciona.pdf`, `Experience.pdf`), mismo criterio que `Educa.pdf`. Se
+  comparó texto contra texto cada hero/valor/alcance/cierre:
+  - **Marketing y Studio calzan al 100%** — ningún cambio.
+  - **Soluciona**: el ítem de Alcance decía "Productos desarrollados por GEC"; el PDF trae
+    "Productos con IA por GEC" — corregido. Además el PDF solo trae 3 tarjetas en esa
+    sección; el código tenía una cuarta ("Soluciones con IA", sin descripción ni link, no
+    presente en el mockup) — se quitó.
+  - **Experience**: Valor tenía 4 tarjetas ("Coherencia con la marca" + las 3 del PDF); el
+    mockup solo trae 3 ("Participación y conexión", "Información útil", "Tecnología fácil
+    de utilizar") — se quitó la que sobraba.
+  - Verificado en `localhost:5173` (`/soluciona/`, `/experience/`) tras el cambio: la
+    grilla de 3 tarjetas queda 2+1, igual que en los mockups.
+- **Fase 4 — Inside Your Brand: construida como página propia (2026-09-21), reemplazando
+  por completo la versión original (scrollytelling "Tendencias/Herramientas/Ideas/Ver
+  canal" embebido en Home).** El usuario pidió explícitamente hacerlo "como está en el
+  plan y no como lo tenía yo al inicio". Nueva ruta `/inside-your-brand/`
+  (`src/pages/InsideYourBrandPage.jsx`), enlazada desde el menú hamburguesa
+  (`NavOverlay.jsx`, después de los 5 pilares) y desde el footer (columna "Contenido",
+  antes muerta sin destino). Cubre IYB-01, IYB-02, IYB-03 y IYB-06 con el texto literal
+  aprobado (Hero, los 4 "Tipos" — Ideas para crecer/Herramientas para aplicar/
+  Conversaciones/Innovaciones con nuestros clientes —, los 7 "Temas", y el bloque
+  Comunidad con sus 3 textos exactos). IYB-04 (Innovaciones) sigue con **estado vacío
+  honesto** — no hay casos reales autorizados todavía, mismo criterio que los slots
+  punteados de las páginas de pilar. No se implementaron filtros por tipo/tema (IYB-02 lo
+  pide) porque con solo episodios de YouTube como contenido real un filtro por tema no
+  tiene qué filtrar todavía — recuperarlo cuando IYB-03 tenga también artículos escritos.
+  IYB-05 (plantilla editorial) tampoco aplica todavía por la misma razón.
+- **IYB-03 (Archivo) — carrusel/grid de YouTube "sin admin" (2026-09-21).** El usuario
+  pidió que los episodios de Inside Your Brand aparecieran solos cuando se publican en
+  YouTube, sin tener que mantener un panel a mano, con vista carrusel y grid intercambiable
+  y modal premium al abrir uno. Dio 4 URLs de episodios ya publicados.
+  - **Sin API key ni panel de admin**: `functions/api/youtube.js` (`GET /api/youtube`) lee
+    el feed RSS público del canal (`youtube.com/feeds/videos.xml?channel_id=...`, sin
+    autenticación) y filtra por título que contenga "Inside Your Brand" — el canal mezcla
+    episodios con producciones de clientes (Toyota, ATASA, Ford…), así que sin el filtro
+    saldría contenido que no es de este bloque. El ID del canal (`UCjmI5Wo1_w83zw7o3Wgdyew`)
+    se resolvió una sola vez desde `/@grupoespaciocreativo` y quedó hardcodeado (comentado
+    en el archivo) — no hace falta resolverlo en cada request.
+  - **Limitación real, documentada en el propio archivo**: el feed de canal solo trae los
+    15 videos más recientes de *todo* el canal, no solo de Inside Your Brand — un episodio
+    puede salir de esa ventana cuando se publican 15 cosas después (spots, reels de
+    clientes, etc.). Se buscó una lista de reproducción pública dedicada a Inside Your
+    Brand para evitar esto de raíz y no existe todavía — **recomendado pendiente**: que
+    GEC cree una en YouTube Studio; ese día cambiar `FEED_URL` a `?playlist_id=` en
+    `functions/api/youtube.js` resuelve el límite por completo (trae todo lo que esté en
+    la lista, sin tope de 15 ni mezcla con otro contenido).
+  - **Respaldo (`iybVideosSeed` en `site.js`)**: los 4 videos que dio el usuario, títulos
+    verbatim verificados vía oEmbed de YouTube (no inventados). `useCanalVideos`
+    (`src/hooks/useCanalVideos.js`) pinta este respaldo de inmediato (sin esperar red) y lo
+    fusiona con lo que devuelva `/api/youtube` en vivo — si un episodio viejo sale de la
+    ventana de 15, sigue apareciendo porque está en el respaldo; si hay uno nuevo, aparece
+    solo. En `npm run dev` el fetch da 404 (esperado) y el componente se queda con el
+    respaldo, coherente.
+  - **UI** (`src/components/VideoCarousel.jsx`): toggle Carrusel/Grid (scroll horizontal
+    con `snap-x` + `data-lenis-prevent` para que Lenis no le robe el wheel, ver bug #5 de
+    esta bitácora) y grid responsive (`sm:grid-cols-2 lg:grid-cols-4`). Cada tarjeta usa el
+    thumbnail real (`i.ytimg.com/vi/<id>/hqdefault.jpg`, sin API key) con overlay de play.
+  - **Modal premium** (`src/components/VideoModal.jsx`, nuevo componente compartido):
+    generalización del modal de video que ya existía solo para Home (`VideoModal` local en
+    `Sections.jsx`, sin exportar) — mismo lenguaje visual (`fadeIn`/`modalIn`, ya globales
+    en `index.css`), pero recibe cualquier `{id, title}` en vez de un solo episodio fijo.
+    El viejo sigue intacto sin usarse (mismo criterio de no borrar código huérfano).
+  - Verificado en `localhost:5173`, desktop y mobile: carrusel con scroll horizontal, toggle
+    a grid, modal abre con autoplay y cierra con Escape/click fuera/botón X, sin errores de
+    consola.
+  - **"Suscribirme" (IYB-06) es funcional**, no solo un botón decorativo: nuevo endpoint
+    `POST /api/suscribir` (`functions/api/suscribir.js`), mismo patrón que `/api/brief`
+    (valida el correo, avisa a Telegram vía el worker ya existente, sin base de datos
+    propia). Documentado en `functions/README.md`. En `npm run dev` da 404 igual que los
+    demás endpoints — esperado, el formulario lo muestra como error sin romper la página.
+  - `CtaPrimary` (compartido, `PilarPage.jsx`) ahora acepta anclas (`to="#tipos"`) además
+    de rutas — antes solo envolvía `<Link>` de react-router, que interpretaría un ancla
+    como una ruta nueva.
+  - El componente viejo (`InsideYourBrand` en `Sections.jsx`, datos `proceso` en
+    `site.js`) sigue intacto sin usarse, mismo criterio que `ValorHorizontal`/
+    `Marcas`/`Testimonios` — no se borró por si hace falta revisar el enfoque anterior.
+  - Verificado en `localhost:5173` (desktop 1440px y mobile 390px): hero, tipos, temas,
+    archivo/innovaciones con estado vacío, comunidad con el formulario funcionando
+    (incluido el error 404 esperado en dev), enlaces del menú y footer, sin errores de
+    consola distintos a los ya documentados.
+- **Fase 6 — SEO básico: robots.txt, sitemap.xml y Schema Organization (2026-09-21).**
+  Parte barata de Fase 6 que no dependía de nada más pendiente:
+  - `public/robots.txt`: permite todo, `Disallow: /acceso/` adelantado (esa ruta —
+    oferta privada de Educa, Fase 5 — todavía no existe, pero la guía pide excluirla
+    y así queda listo desde ya) y apunta al sitemap.
+  - `public/sitemap.xml`: las 8 rutas públicas reales de `src/App.jsx` (Home + 5 pilares +
+    `/inside-your-brand/` + `/cuentanos-tu-reto/`). **Es manual** — el sitio sigue siendo
+    un SPA sin prerender/SSG, así que hay que agregar una línea a mano cada vez que se
+    agregue una ruta nueva (el propio archivo lo recuerda en un comentario).
+  - Schema Organization (JSON-LD) en `index.html`: `name`/`description` son el texto
+    literal aprobado por la guía ("Grupo Espacio Creativo - Agencia de Crecimiento
+    Creativo Empresarial."), el resto (teléfonos, dirección, redes) son los mismos datos
+    reales que ya usa el Footer (`src/data/site.js`) — nada inventado. Logo:
+    `/logos/gec-color.png`.
+  - Verificado: JSON bien formado (parseable), XML bien formado, ambos archivos sirven
+    200 en `localhost:5173`, sin errores de consola.
+- **Fase 6 — capa de analítica + eventos del set fijo de la guía (2026-09-21).** GA4 en sí
+  necesita un Measurement ID real que solo el usuario puede generar (crear la propiedad en
+  Google Analytics) — no se puede inventar uno. Lo que sí se dejó listo, para que activarlo
+  el día de mañana sea solo pegar el ID, sin tocar código:
+  - `src/utils/analytics.js`: `initAnalytics()` (carga `gtag.js` **solo si**
+    `VITE_GA_MEASUREMENT_ID` está configurada — variable de build de Vite, no de runtime
+    de las Functions, documentada aparte en `functions/README.md` con su propio "ojo, esto
+    muerde") y `track(evento, params)` (no hace nada si `window.gtag` no existe — sin ID
+    configurado, cero llamadas, cero errores). Se llama una vez en `App.jsx` al montar.
+  - **Eventos ya disparando en los puntos reales de interacción** (verificado con un
+    `window.gtag` de prueba en `localhost:5173`, sin necesitar un ID real):
+    `intro_completed` (Hero, una vez al llegar al final del scroll del pin, y también en
+    la rama `prefers-reduced-motion`) y `hero_cta_clicked` (los dos CTA del Hero) —
+    `intro_skipped` **no se implementó**, no hay botón "Saltar introducción" todavía
+    (sigue pendiente, ítem 3 de abajo), sin botón no hay de dónde dispararlo.
+    `brief_started`/`brief_step_completed` (un único punto de enganche en `ir()` de
+    `BriefPage.jsx`, según el `paso` de salida), `brief_submitted` (en `enviarBrief()`,
+    con las UTM adjuntas), `brief_abandoned` (`visibilitychange`, no `beforeunload` —
+    más confiable en móvil — solo si ya salió de "intro" y no llegó a "resultado").
+    `content_opened` (al abrir un video en `VideoCarousel.jsx`) — `innovation_opened`
+    tampoco se implementó, IYB-04 sigue en estado vacío, no hay casos que abrir.
+    `iyb_subscription_clicked` (submit del formulario de Suscribirme).
+    `xpevent_clicked` (specific al link de XP Event en Experience, no genérico a
+    cualquier link externo de pilar) y `social_clicked` (los 6 íconos del Footer, con
+    qué red como parámetro).
+  - Documentado en `functions/README.md` (nueva sección "GA4 — distinta de las
+    anteriores") cómo activarlo cuando exista el Measurement ID.
+
+### ❌ Pendiente
+
+1. **Home — bloque aprobado que aún falta:**
+   - H-06 "Innovaciones seleccionadas" (casos reales con `destacadas_home` — no hay casos
+     reales todavía, mismo bloqueo que IYB-04 de Inside Your Brand).
+   - *(H-04 y H-05 ya están — ver "Hecho" arriba.)*
+2. **Home — bloque sin base en la guía que sigue ahí**: `Manifiesto` (decidir si se queda,
+   se reconvierte o se borra). `ValorHorizontal`, `InsideYourBrand` y `Portafolio` ya
+   salieron del render (ver "Hecho").
+3. **Hero de Home (`src/components/Hero.jsx`)**: el copy no calza con el aprobado (H1 dice
+   "Somos una agencia de..." en vez de "Agencia de Crecimiento Creativo Empresarial.";
+   falta el "Momento 2" completo tal como lo da la guía; el CTA no dice "Encuentra la
+   solución que necesita tu empresa"). Tampoco hay botón "Saltar introducción" — por eso
+   `intro_skipped` (evento de analítica) sigue sin poder dispararse (ver "Hecho" arriba).
+4. **Menú hamburguesa fuera de Home**: solo queda el ancla "Ecosistema" (`#ecosistema`),
+   que no existe en las páginas de pilar, el brief ni Inside Your Brand — rota ahí. Es
+   trabajo de Fase 1 (Header/Footer) que el usuario dijo que podía esperar.
+5. **Fase 5 — Oferta privada de Educa**: hoy es `PanelEduca.jsx`, un modal en Home con
+   acceso por formulario de correo+WhatsApp verificado por código (OTP, `functions/api/otp/`).
+   La guía pide una página propia (`/acceso/educa/`), protegida con **contraseña** (no
+   OTP), fuera del menú y del sitemap, con meta `noindex`. Son mecanismos distintos —
+   decidir si se migra o si el OTP actual se considera una variante aceptable.
+6. **Fase 6 — lo que falta tras el SEO básico y la capa de eventos de arriba**: el propio
+   GA4 conectado de verdad (falta el Measurement ID real — pedírselo al usuario o que cree
+   la propiedad), Search Console verificado, Schema Service por pilar, BreadcrumbList en
+   páginas internas, y los dos eventos que quedaron sin punto de enganche
+   (`intro_skipped`, `innovation_opened` — ver ítems 3 y 1). El sitio sigue siendo un SPA
+   sin prerender/SSR — riesgo real de indexación, ya anotado como TODO en el propio
+   `src/hooks/useDocumentMeta.js`.
+7. **Fase 7 — QA**: depende de que lo anterior avance.
+
+### Siguiente paso sugerido
+Por orden de impacto/costo: (1) pedir al usuario el Measurement ID de GA4 (o ayudarlo a
+crear la propiedad) para activar de verdad lo que ya quedó construido; (2) H-06
+Innovaciones, IYB-03/IYB-04 con contenido real y el Hero de Home, cuando haya
+casos/publicaciones reales y se defina el copy exacto de "Momento 2".

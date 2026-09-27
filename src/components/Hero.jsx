@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
 import { loadSequence, nearestLoaded, esPantallaChica } from '../utils/frameSequence';
+import { track } from '../utils/analytics';
 import ScrollHint from './ScrollHint';
 
 // En un teléfono no se sirve la secuencia grande: son 110 fotogramas de
@@ -29,6 +30,7 @@ export default function Hero() {
   const sizeRef = useRef({ width: 0, height: 0 });
   const progressRef = useRef(0);
   const stepsRef = useRef([]);
+  const introCompletedRef = useRef(false);
   const [ready, setReady] = useState(false);
   const [missing, setMissing] = useState(false);
   // Se decide una sola vez, al montar: cambiar de secuencia a mitad de scroll
@@ -177,6 +179,10 @@ export default function Hero() {
             currentFrameRef.current = index;
             draw(index);
             applySteps(p);
+            if (p >= 0.98 && !introCompletedRef.current) {
+              introCompletedRef.current = true;
+              track('intro_completed');
+            }
           },
         });
         applySteps(0);
@@ -195,6 +201,10 @@ export default function Hero() {
         stepsRef.current.forEach((el, i) => {
           if (el) el.style.opacity = i === 4 ? '1' : '0';
         });
+        if (!introCompletedRef.current) {
+          introCompletedRef.current = true;
+          track('intro_completed');
+        }
       });
 
       return () => mm.revert();
@@ -318,6 +328,7 @@ export default function Hero() {
             <div className="flex flex-wrap gap-3">
               <a
                 href="#ecosistema"
+                onClick={() => track('hero_cta_clicked', { cta: 'ecosistema' })}
                 className="rounded-full bg-[#F5B301] px-7 py-[15px] text-sm font-semibold text-[#0B0B0C] transition-colors hover:bg-[#FFD24A]"
                 style={{ fontFamily: 'Poppins, sans-serif' }}
               >
@@ -325,6 +336,7 @@ export default function Hero() {
               </a>
               <a
                 href="#contacto"
+                onClick={() => track('hero_cta_clicked', { cta: 'contacto' })}
                 className="rounded-full border border-white/20 px-7 py-[15px] text-sm font-medium text-[#EDEAE4] transition-colors hover:border-[#F5B301] hover:text-[#F5B301]"
                 style={{ fontFamily: 'Poppins, sans-serif' }}
               >

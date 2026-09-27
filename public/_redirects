@@ -1,0 +1,4 @@
+# SPA fallback: las rutas del cliente (react-router) no existen como
+# archivos físicos — sin esto, entrar directo a /educa/ o refrescar la
+# página da 404 en Cloudflare Pages en vez de dejar que la app las resuelva.
+/*    /index.html   200

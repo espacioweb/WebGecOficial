@@ -28,6 +28,7 @@ export const heroSteps = [
 export const pilares = [
   {
     id: 'p-marketing',
+    ruta: '/marketing/',
     solid: '#1A0F06',
     num: '01',
     kicker: 'Pilar uno',
@@ -45,20 +46,14 @@ export const pilares = [
     tagline: 'Estrategia, campañas y comunicación comercial.',
     blurb:
       'Construimos dirección, posicionamiento y comunicación estratégica que impulsa el crecimiento de tu marca.',
-    items: [
-      'Estrategia de marca',
-      'Campañas publicitarias',
-      'Planificación de contenido',
-      'Marketing digital',
-      'Comunicación comercial',
-      'Lanzamientos',
-      'Análisis de resultados',
-      'Recomendaciones de mejora',
-    ],
+    // Mismas cuatro áreas de la página interna (/marketing/) — el chip es
+    // un adelanto de lo que el pilar realmente entrega, no una lista aparte.
+    items: ['Branding y posicionamiento', 'Campañas', 'Marketing digital', 'Optimización de canales'],
     ...dark('linear-gradient(140deg,#1A0F06 0%,#2A1408 45%,#0B0705 100%)'),
   },
   {
     id: 'p-studio',
+    ruta: '/studio/',
     solid: '#0C1C2E',
     num: '02',
     kicker: 'Pilar dos',
@@ -72,21 +67,13 @@ export const pilares = [
     tagline: 'Producción audiovisual, diseño y contenido visual.',
     blurb:
       'Convertimos ideas en piezas visuales y audiovisuales que elevan tu marca y comunican con impacto.',
-    items: [
-      'Producción audiovisual',
-      'Diseño gráfico',
-      'Fotografía',
-      'Animación',
-      'Motion graphics',
-      'Edición de video',
-      'Reels y contenido digital',
-      'Presentaciones',
-      'Piezas digitales e impresas',
-    ],
+    // Mismas cinco áreas de la página interna (/studio/).
+    items: ['Dirección creativa', 'Diseño gráfico', 'Fotografía', 'Animación', 'Producción audiovisual'],
     ...dark('linear-gradient(140deg,#0C1C2E 0%,#13314F 52%,#070D15 100%)'),
   },
   {
     id: 'p-educa',
+    ruta: '/educa/',
     solid: '#0C332C',
     num: '03',
     kicker: 'Pilar tres',
@@ -107,6 +94,7 @@ export const pilares = [
   },
   {
     id: 'p-soluciona',
+    ruta: '/soluciona/',
     solid: '#071A33',
     num: '04',
     kicker: 'Pilar cuatro',
@@ -120,17 +108,13 @@ export const pilares = [
     tagline: 'Sistemas, herramientas y soluciones empresariales.',
     blurb:
       'Transformamos retos en herramientas y sistemas que optimizan tu operación, mejoran tu gestión y fidelizan a tus clientes.',
-    items: [
-      'Agencia · Sistema IA de contenidos',
-      'Orienta · Leads y seguimiento',
-      'Setup Inteligente',
-      'Bolsillo Match B2C',
-      'Beneficio Match B2B',
-    ],
+    // Mismas cuatro áreas de la página interna (/soluciona/).
+    items: ['Configuración de plataformas', 'Productos desarrollados por GEC', 'Sistemas a la medida', 'Soluciones con IA'],
     ...dark('linear-gradient(140deg,#071A33 0%,#0B2545 52%,#040B16 100%)'),
   },
   {
     id: 'p-experience',
+    ruta: '/experience/',
     solid: '#1A0B2E',
     num: '05',
     kicker: 'Pilar cinco',
@@ -144,7 +128,8 @@ export const pilares = [
     tagline: 'Experiencias, eventos e interacción con clientes.',
     blurb:
       'Creamos experiencias memorables y medibles que conectan con tus audiencias.',
-    items: ['XP Event Check-in', 'XP Event Table', 'XP Play'],
+    // Mismas cinco áreas de la página interna (/experience/).
+    items: ['XP Event', 'Juegos y dinámicas', 'Encuestas y votaciones', 'Presentaciones interactivas', 'Experiencias a la medida'],
     ...dark('linear-gradient(140deg,#1A0B2E 0%,#2A1147 52%,#0B0518 100%)'),
   },
 ];
@@ -184,6 +169,28 @@ export const insideVideo = {
   channelUrl: 'https://www.youtube.com/@grupoespaciocreativo',
 };
 
+// Respaldo del carrusel de Inside Your Brand (IYB-03) — se usa en dev (donde
+// /api/youtube da 404, como el resto de estos endpoints) y como base mínima
+// si la petición en vivo falla o si algún episodio viejo sale de la ventana
+// de los 15 videos más recientes que trae el feed del canal (ver comentario
+// en functions/api/youtube.js). Títulos verbatim, verificados vía oEmbed de
+// YouTube el 2026-09-21 — no editorializar.
+export const iybVideosSeed = [
+  { id: 'sQvwFH1gfX4', title: 'Episodio 1| Canales de WhatsApp | Tutorial y Estrategia | Inside Your Brand – Grupo Espacio Creativo' },
+  {
+    id: '0Viti3t10xs',
+    title: 'Episodio 4 | 5 Claves de Producción Audiovisual | Inside Your Brand | Grupo Espacio Creativo',
+  },
+  {
+    id: 'h2tfCmXtX9Y',
+    title: 'Episodio 6 | 4 Claves para Evaluar tu Primer Semestre | Inside Your Brand | Grupo Espacio Creativo',
+  },
+  {
+    id: 'M0oM2eSGRNk',
+    title: 'Cómo Liderar Equipos con Inteligencia Artificial | Capacitación Digital | Inside Your Brand – GEC',
+  },
+].map((v) => ({ ...v, thumbnail: `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg` }));
+
 export const fuerzas = [
   { n: '01', en: 'Strategy', es: 'Estrategia que dirige y posiciona tu marca.', img: '/ref/estudio-ambiente.jpg' },
   { n: '02', en: 'Content', es: 'Contenidos que comunican y conectan.', img: '/ref/studio-color.webp' },
@@ -191,6 +198,17 @@ export const fuerzas = [
   { n: '04', en: 'Systems', es: 'Sistemas que optimizan, fidelizan y generan valor.', img: '/ref/celular.webp' },
   { n: '05', en: 'Experience', es: 'Experiencias que se viven, se recuerdan y generan resultados.', img: '/ref/escenario-real.jpg' },
   { n: '06', en: 'Learn', es: 'Contenido educativo que acompaña la evolución de tu marca.', img: '/ref/fondo-combinacion.jpg' },
+];
+
+// H-05 de la guía — "Sectores" es contenido aprobado, textual.
+export const sectores = [
+  'Automotriz',
+  'Educación',
+  'Salud',
+  'Servicios financieros',
+  'ONGs y cooperación',
+  'Retail y supermercados',
+  'Gastronomía y restaurantes',
 ];
 
 export const abanico = [
@@ -272,36 +290,34 @@ export const footerCols = [
   {
     t: 'Ecosistema',
     links: [
-      { label: 'Marketing', href: '#p-marketing' },
-      { label: 'Studio', href: '#p-studio' },
-      { label: 'Educa', href: '#p-educa' },
-      { label: 'Soluciona', href: '#p-soluciona' },
-      { label: 'Experience', href: '#p-experience' },
+      { label: 'Marketing', href: '/marketing/' },
+      { label: 'Studio', href: '/studio/' },
+      { label: 'Educa', href: '/educa/' },
+      { label: 'Soluciona', href: '/soluciona/' },
+      { label: 'Experience', href: '/experience/' },
     ],
   },
   {
+    // Portafolio sigue sin sección/ruta propia (ver nota en Home.jsx) — el
+    // enlace quedaría sin destino. Inside Your Brand sí tiene página propia
+    // ahora (`/inside-your-brand/`, IYB-01 a IYB-06 de la guía).
     t: 'Contenido',
     links: [
-      { label: 'Inside Your Brand', href: '#inside' },
-      { label: 'Portafolio', href: '#portafolio' },
+      { label: 'Inside Your Brand', href: '/inside-your-brand/' },
       { label: 'La familia Meraki', href: '#familia' },
       { label: 'YouTube GEC', href: 'https://www.youtube.com/Grupoespaciocreativo', externo: true },
     ],
   },
   {
+    // "Valor integrado" salió con ValorHorizontal (reemplazado por
+    // Autoridad, que no reusa el id `#valor` — son contenidos distintos).
     t: 'Agencia',
     links: [
       { label: 'Nosotros', href: '#ecosistema' },
-      { label: 'Valor integrado', href: '#valor' },
       { label: 'Contacto', href: '#contacto' },
       { label: 'WhatsApp', href: WHATSAPP, externo: true },
     ],
   },
 ];
 
-export const nav = [
-  { href: '#ecosistema', label: 'Ecosistema' },
-  { href: '#inside', label: 'Inside Your Brand' },
-  { href: '#valor', label: 'Valor' },
-  { href: '#portafolio', label: 'Portafolio' },
-];
+export const nav = [{ href: '#ecosistema', label: 'Ecosistema' }];

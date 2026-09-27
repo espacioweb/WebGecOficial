@@ -191,6 +191,19 @@
   }
 }
 
+/* Cursor del brief tipo Typeform — corte seco, no fade, para que se lea
+   como un cursor de texto y no como un brillo. */
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

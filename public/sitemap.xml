@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Manual: el sitio es un SPA sin prerender/SSG (ver TODO en
+  src/hooks/useDocumentMeta.js), así que este archivo no se genera solo.
+  Agregar una línea aquí cada vez que se agregue una ruta pública nueva en
+  src/App.jsx. La oferta privada de Educa (/acceso/educa/, Fase 5, todavía
+  sin construir) NO va aquí cuando exista — la guía pide excluirla del
+  sitemap y marcarla noindex.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://grupoespaciocreativo.com/</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://grupoespaciocreativo.com/marketing/</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://grupoespaciocreativo.com/studio/</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://grupoespaciocreativo.com/educa/</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://grupoespaciocreativo.com/soluciona/</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://grupoespaciocreativo.com/experience/</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://grupoespaciocreativo.com/inside-your-brand/</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://grupoespaciocreativo.com/cuentanos-tu-reto/</loc>
+    <priority>0.6</priority>
+  </url>
+</urlset>

@@ -39,6 +39,38 @@
     />
     <meta name="twitter:image" content="https://grupoespaciocreativo.com/og.png" />
 
+    <!-- Schema Organization — FASE 6 de la guía. Nombre/descripción son el
+         texto literal aprobado ("Grupo Espacio Creativo - Agencia de
+         Crecimiento Creativo Empresarial."); el resto son los datos reales
+         de contacto y redes que ya usa el Footer (src/data/site.js). -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Grupo Espacio Creativo",
+        "alternateName": "GEC",
+        "description": "Agencia de Crecimiento Creativo Empresarial.",
+        "url": "https://grupoespaciocreativo.com/",
+        "logo": "https://grupoespaciocreativo.com/logos/gec-color.png",
+        "image": "https://grupoespaciocreativo.com/og.png",
+        "telephone": ["+504 2234-8414", "+504 9828-3018"],
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Centro Comercial Plaza Roble, Local 15",
+          "addressLocality": "Comayagüela",
+          "addressRegion": "Francisco Morazán",
+          "addressCountry": "HN"
+        },
+        "sameAs": [
+          "https://www.youtube.com/Grupoespaciocreativo",
+          "https://www.facebook.com/espaciocreativo/",
+          "https://www.behance.net/GrupoEspacioCreativo",
+          "https://www.linkedin.com/company/grupo-espacio-creativo",
+          "https://open.spotify.com/show/1nZxk3zAlFguE9RJcOQu1P"
+        ]
+      }
+    </script>
+
     <!-- El hero pinta desde el primer frame de la secuencia: lo pedimos de una.
          Cada pantalla el suyo — en el teléfono se sirve la secuencia ligera y
          precargar la grande son 40 KB tirados. -->

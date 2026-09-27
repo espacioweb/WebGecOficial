@@ -1,30 +1,33 @@
 import { useEffect, useRef, useState } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Lenis from 'lenis';
 import { gsap, ScrollTrigger } from './utils/gsapSetup';
+import { LenisContext } from './context/LenisContext';
 import Header from './components/Header';
-import Hero from './components/Hero';
 import NavOverlay from './components/NavOverlay';
-import ScrollRail from './components/ScrollRail';
-import PanelEduca from './components/PanelEduca';
-import {
-  Manifiesto,
-  Pilares,
-  InsideYourBrand,
-  ValorHorizontal,
-  Portafolio,
-  Marcas,
-  Testimonios,
-  Familia,
-  Contacto,
-  Footer,
-} from './components/Sections';
+import { Footer } from './components/Sections';
+import ScrollToTop from './components/ScrollToTop';
+import Home from './pages/Home';
+import MarketingPage from './pages/MarketingPage';
+import StudioPage from './pages/StudioPage';
+import EducaPage from './pages/EducaPage';
+import SolucionaPage from './pages/SolucionaPage';
+import ExperiencePage from './pages/ExperiencePage';
+import BriefPage from './pages/BriefPage';
+import InsideYourBrandPage from './pages/InsideYourBrandPage';
+import { initAnalytics } from './utils/analytics';
 
 function App() {
   const lenisRef = useRef(null);
-  const [panel, setPanel] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Lenis + GSAP
+  // Sin Measurement ID configurado (VITE_GA_MEASUREMENT_ID) no hace nada —
+  // ver src/utils/analytics.js.
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
+  // Lenis + GSAP, una sola vez para todo el sitio.
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) return undefined;
@@ -67,34 +70,33 @@ function App() {
     };
   }, []);
 
-  // El panel y el menú bloquean el scroll de fondo
+  // El menú a pantalla completa bloquea el scroll de fondo.
   useEffect(() => {
     const lenis = lenisRef.current;
     if (!lenis) return;
-    if (panel || menuOpen) lenis.stop();
+    if (menuOpen) lenis.stop();
     else lenis.start();
-  }, [panel, menuOpen]);
+  }, [menuOpen]);
 
   return (
-    <>
-      <Header menuOpen={menuOpen} onToggleMenu={() => setMenuOpen((v) => !v)} />
-      <NavOverlay open={menuOpen} onClose={() => setMenuOpen(false)} />
-      <ScrollRail />
-      <main>
-        <Hero />
-        <Manifiesto />
-        <Pilares onOpenPanel={setPanel} />
-        <InsideYourBrand />
-        <ValorHorizontal />
-        <Portafolio />
-        <Marcas />
-        <Testimonios />
-        <Familia />
-        <Contacto />
-      </main>
-      <Footer />
-      <PanelEduca open={panel === 'educa'} onClose={() => setPanel(null)} />
-    </>
+    <BrowserRouter>
+      <LenisContext.Provider value={lenisRef}>
+        <ScrollToTop />
+        <Header menuOpen={menuOpen} onToggleMenu={() => setMenuOpen((v) => !v)} />
+        <NavOverlay open={menuOpen} onClose={() => setMenuOpen(false)} />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/marketing/" element={<MarketingPage />} />
+          <Route path="/studio/" element={<StudioPage />} />
+          <Route path="/educa/" element={<EducaPage />} />
+          <Route path="/soluciona/" element={<SolucionaPage />} />
+          <Route path="/experience/" element={<ExperiencePage />} />
+          <Route path="/cuentanos-tu-reto/" element={<BriefPage />} />
+          <Route path="/inside-your-brand/" element={<InsideYourBrandPage />} />
+        </Routes>
+        <Footer />
+      </LenisContext.Provider>
+    </BrowserRouter>
   );
 }
 
