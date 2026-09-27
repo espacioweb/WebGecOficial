@@ -88,8 +88,11 @@ export const pilares = [
     blurb:
       'Desarrollamos capacidades, inspiramos a las personas y diseñamos experiencias que transforman la forma de trabajar.',
     items: ['Formación Ejecutiva IA', 'Formación Especializada IA', 'Comunidad IA'],
-    panel: 'educa',
-    ctaLabel: 'Explorar GEC IA',
+    // Panel GEC IA desactivado a pedido del usuario (2026-09-27): no quiere
+    // catálogo detrás de un formulario de correo. Para reactivarlo, devolver
+    // estas dos líneas y el <PanelEduca /> en pages/Home.jsx.
+    // panel: 'educa',
+    // ctaLabel: 'Explorar GEC IA',
     ...dark('linear-gradient(140deg,#0C332C 0%,#0F4A3D 52%,#04120F 100%)'),
   },
   {

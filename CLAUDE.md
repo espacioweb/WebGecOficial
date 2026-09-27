@@ -678,11 +678,14 @@ hito de sección (7) más 2 intermedias entre cada par.
 4. **Menú hamburguesa fuera de Home**: solo queda el ancla "Ecosistema" (`#ecosistema`),
    que no existe en las páginas de pilar, el brief ni Inside Your Brand — rota ahí. Es
    trabajo de Fase 1 (Header/Footer) que el usuario dijo que podía esperar.
-5. **Fase 5 — Oferta privada de Educa**: hoy es `PanelEduca.jsx`, un modal en Home con
-   acceso por formulario de correo+WhatsApp verificado por código (OTP, `functions/api/otp/`).
-   La guía pide una página propia (`/acceso/educa/`), protegida con **contraseña** (no
-   OTP), fuera del menú y del sitemap, con meta `noindex`. Son mecanismos distintos —
-   decidir si se migra o si el OTP actual se considera una variante aceptable.
+5. **Fase 5 — Oferta privada de Educa**: el panel GEC IA (`PanelEduca.jsx`, catálogo detrás
+   de `GateForm.jsx` con correo+WhatsApp y OTP, `functions/api/otp/`) **está desactivado**
+   desde 2026-09-27 a pedido del usuario: no quiere que la gente entre con solo dejar un
+   correo. Se ocultó sin borrar (quitados `panel`/`ctaLabel` del pilar Educa en `site.js`
+   y el montaje en `pages/Home.jsx`; instrucciones para reactivarlo en el comentario de
+   `Home.jsx`). La guía pide una página propia (`/acceso/educa/`), protegida con
+   **contraseña** (no OTP), fuera del menú y del sitemap, con meta `noindex` — sigue sin
+   construirse; decidir si se hace.
 6. **Fase 6 — lo que falta tras el SEO básico y la capa de eventos de arriba**: el propio
    GA4 conectado de verdad (falta el Measurement ID real — pedírselo al usuario o que cree
    la propiedad), Search Console verificado, Schema Service por pilar, BreadcrumbList en
