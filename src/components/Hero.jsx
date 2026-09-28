@@ -61,10 +61,15 @@ export default function Hero() {
       // el 50% del cuadro (entre 47.8 y 51.7), nunca en el 60% que se suponía
       // antes — por eso quedaba descuadrado y se salía por un lado.
       const CHAR_X = 0.5;
-      // Y encoge con el scroll en vez de crecer: al final del recorrido el
-      // copy ocupa el tercio inferior, así que el personaje tiene que haberse
-      // recogido para no quedar debajo del texto.
-      const alto = 0.62 - 0.13 * p;
+      // Encoge con el scroll: al final del recorrido el copy ocupa el tercio
+      // inferior, así que el personaje tiene que haberse recogido para no
+      // quedar debajo del texto — el valor final (0.49) es el mismo de
+      // siempre, medido a propósito para dejar ese espacio libre. Lo que sí
+      // cambia es el arranque: a p=0 no hay nada de copy todavía (el paso 0
+      // es solo una leyenda pequeña centrada), así que ahí no hace falta
+      // dejarle tanto aire — un personaje más grande llena la franja que
+      // antes quedaba vacía durante los primeros pasos del scroll.
+      const alto = 0.78 - 0.29 * p;
       const scale = (height * alto) / img.height;
       const w = img.width * scale;
       const h = img.height * scale;
