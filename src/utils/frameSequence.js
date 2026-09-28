@@ -189,12 +189,22 @@ export function loadSequence({ total, src, images, eager = 12, onReady, onFrame 
   };
 
   (async () => {
-    // Arranque: los primeros de corrido y en paralelo, para pintar cuanto antes.
-    await Promise.all(Array.from({ length: Math.min(eager, total) }, (_, i) => load(i)));
+    // Arranque: adelanto REPARTIDO por toda la escena (mismo orden por
+    // refinamiento que usa la cola de fondo), no los primeros N de corrido.
+    // Con "de corrido" el adelanto cubría solo el primer 20% de la secuencia
+    // (0..eager-1) — en un teléfono real un solo flick recorre los 560vh del
+    // pin en pocos segundos, mucho antes de que la cola de fondo alcance más
+    // allá de ese primer tramo, así que el resto del recorrido se quedaba sin
+    // ningún fotograma cercano que pintar y el hero se veía clavado en la
+    // primera pose (la nuca) durante todo el scroll. Repartido, desde el
+    // primer pintado ya hay material cerca de cualquier punto de la escena.
+    const orden = refinementOrder(total);
+    const eagerSet = orden.slice(0, Math.min(eager, total));
+    await Promise.all(eagerSet.map((i) => load(i)));
     if (cancelado) return;
     onReady?.(Boolean(images[0]));
 
-    const cola = refinementOrder(total).filter((i) => !images[i]);
+    const cola = orden.filter((i) => !images[i]);
     let cursor = 0;
 
     const obrero = async () => {
