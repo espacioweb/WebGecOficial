@@ -7,39 +7,52 @@ import PilarFamiliaNav from './PilarFamiliaNav';
 
 const isRich = (item) => typeof item === 'object' && item !== null;
 
-// Personaje del pilar en el hero, con halo del color de la división y la
-// máscara radial que fue la que resolvió el fundido en Educa: el render
-// trae su propio fondo (sin alfa) y así se funde contra el #0A0E13 de la
-// página en vez de dejar un rectángulo visible. `video` es opcional — sin
-// él queda solo la imagen fija (poster).
+// Personaje del pilar en el hero: tarjeta cuadrada con esquinas levemente
+// biseladas (antes tenía una máscara radial que difuminaba los bordes del
+// render hasta volverlo un blob — el mockup del usuario (Educa/Soluciona
+// Landing v2, `image-slot shape="rounded"`) mostró que el patrón correcto
+// es un recorte limpio, no un fundido). El halo de color detrás sigue
+// siendo un círculo aparte, ya no necesita disimular un borde: solo da el
+// resplandor ambiental. `video` es opcional — sin él queda solo la imagen
+// fija (poster).
 // `haloBold`: el halo por defecto es el mismo en los 5 pilares (sutil, solo
 // para fundir el render contra el fondo). Un pase /impeccable bolder pidió
 // amplificar esto SOLO en el hero de Educa — mismo color, mismo dispositivo,
 // nada nuevo — así que queda detrás de un prop en vez de subir el valor por
 // defecto y afectar a Marketing/Studio/Soluciona/Experience de paso.
 // `halo`: el halo se pensó para fundir el render contra el fondo OSCURO de
-// la página — reutilizado en la tarjeta dorada del Cierre (mismo personaje,
-// sin video) se ve como una mancha turbia en vez de un resplandor, así que
-// esa instancia lo apaga por completo.
+// la página — reutilizado en la tarjeta dorada del Cierre se ve como una
+// mancha turbia en vez de un resplandor, así que esa instancia lo apaga.
 export function HeroCharacter({ img, video, focus = 50, color, alt, haloBold = false, halo = true }) {
+  const wrapRef = useRef(null);
   const videoRef = useRef(null);
   const [painted, setPainted] = useState(false);
 
+  // El Cierre reutiliza este mismo componente con video (ver más abajo) —
+  // sin este observer, el video del Hero y el del Cierre decodificarían y
+  // reproducirían a la vez aunque uno de los dos esté fuera de pantalla.
+  // Mismo patrón que `LoopMedia` en Sections.jsx.
   useEffect(() => {
     const el = videoRef.current;
-    if (!el || !video) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    el.play().catch(() => {});
+    const wrap = wrapRef.current;
+    if (!el || !wrap || !video) return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) el.play().catch(() => {});
+        else el.pause();
+      },
+      { rootMargin: '200px 0px', threshold: 0.05 },
+    );
+    io.observe(wrap);
+    return () => io.disconnect();
   }, [video]);
 
-  const fundido = {
-    maskImage: 'radial-gradient(ellipse 62% 68% at 50% 42%, black 52%, transparent 92%)',
-    WebkitMaskImage: 'radial-gradient(ellipse 62% 68% at 50% 42%, black 52%, transparent 92%)',
-    objectPosition: `${focus}% 50%`,
-  };
+  const posicion = { objectPosition: `${focus}% 50%` };
 
   return (
-    <div className="relative mx-auto aspect-[3/4] w-full max-w-[420px]">
+    <div ref={wrapRef} className="relative mx-auto aspect-[3/4] w-full max-w-[420px]">
       {halo && (
         <div
           className={
@@ -50,29 +63,31 @@ export function HeroCharacter({ img, video, focus = 50, color, alt, haloBold = f
           style={{ background: `radial-gradient(circle, ${color}${haloBold ? '66' : '3d'} 0%, transparent 70%)` }}
         />
       )}
-      <img
-        src={img}
-        alt={alt}
-        loading="eager"
-        decoding="async"
-        className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
-        style={{ ...fundido, opacity: video && painted ? 0 : 1 }}
-      />
-      {video && (
-        <video
-          ref={videoRef}
-          muted
-          loop
-          playsInline
-          preload="auto"
-          poster={img}
-          onPlaying={() => setPainted(true)}
-          className="absolute inset-0 h-full w-full object-cover"
-          style={fundido}
-        >
-          <source src={video} type="video/mp4" />
-        </video>
-      )}
+      <div className="absolute inset-0 overflow-hidden rounded-[28px]">
+        <img
+          src={img}
+          alt={alt}
+          loading="eager"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500"
+          style={{ ...posicion, opacity: video && painted ? 0 : 1 }}
+        />
+        {video && (
+          <video
+            ref={videoRef}
+            muted
+            loop
+            playsInline
+            preload="auto"
+            poster={img}
+            onPlaying={() => setPainted(true)}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={posicion}
+          >
+            <source src={video} type="video/mp4" />
+          </video>
+        )}
+      </div>
     </div>
   );
 }
@@ -353,10 +368,11 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
 
       {/* Cierre — tarjeta dorada sólida, mismo patrón repetido en dos
           mockups del usuario (Educa Landing v2 y un cierre de Soluciona).
-          Reutiliza el personaje del hero (mismo `hero.media`, sin video —
-          `cloneElement` se lo quita) en vez de una foto nueva: nada de
-          contenido inventado, y evita decodificar el mismo mp4 dos veces
-          a la vez en una sección que empieza fuera de pantalla. */}
+          Reutiliza el personaje del hero (mismo `hero.media`) en vez de una
+          foto nueva: nada de contenido inventado. Con video (no una imagen
+          fija) a pedido del usuario — el IntersectionObserver de
+          `HeroCharacter` pausa el que quede fuera de pantalla, así no
+          decodifican los dos videos (Hero + Cierre) a la vez. */}
       <section className="px-[clamp(20px,4vw,40px)] py-[clamp(48px,6vw,90px)]">
         <div
           className="mx-auto grid max-w-[1220px] items-center gap-10 overflow-hidden rounded-[32px] p-[clamp(28px,5vw,64px)] lg:grid-cols-2"
@@ -383,7 +399,7 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
           </div>
           {hero.media && (
             <div className="mx-auto w-full max-w-[340px] lg:mx-0 lg:ml-auto">
-              {cloneElement(hero.media, { video: undefined, halo: false })}
+              {cloneElement(hero.media, { halo: false })}
             </div>
           )}
         </div>

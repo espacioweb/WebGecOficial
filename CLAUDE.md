@@ -815,6 +815,30 @@ hito de sección (7) más 2 intermedias entre cada par.
     medición), confirmado con `scrollTo`.
   - Verificado en `localhost:5173` (1440px y 390px): sin errores de consola, tarjetas de
     pilar sin pastillas (captura tomada y revisada), detector de `impeccable` en 0.
+- **`HeroCharacter` deja el fundido difuminado por un recorte cuadrado con esquinas
+  levemente biseladas + video real en el Cierre (2026-09-29).** El usuario adjuntó
+  `Soluciona Landing v2.dc.html` (mismo patrón que `Educa Landing v2.dc.html` de un turno
+  anterior) señalando que el personaje del Cierre se veía "difuminado" y pidiendo el
+  tratamiento cuadrado/biselado de esos mockups (`image-slot shape="rounded"`) en las 5
+  páginas de pilar, con video en vez de imagen fija.
+  - `PilarPage.jsx` → `HeroCharacter`: se quitó `maskImage`/`WebkitMaskImage` (la máscara
+    radial que difuminaba los bordes del render hasta volverlo un blob) y la imagen/video
+    ahora vive dentro de un `<div>` con `rounded-[28px] overflow-hidden` — recorte limpio,
+    no fundido. El halo de color (círculo blur detrás, sin relación con la máscara) sigue
+    igual, solo da resplandor ambiental.
+  - El Cierre ya no apaga el video (`cloneElement(hero.media, { halo: false })`, antes
+    también pasaba `video: undefined`) — ahora se ve el loop real, no la foto fija, en las
+    5 páginas de pilar (todas ya traían `video` en su `hero.media`, cascada automática por
+    ser componente compartido).
+  - **Bug evitado antes de que ocurriera**: con video en Hero y Cierre a la vez, los dos
+    decodificarían y reproducirían aunque uno esté fuera de pantalla. Se agregó un
+    `IntersectionObserver` en `HeroCharacter` (mismo patrón que `LoopMedia` en
+    `Sections.jsx`) que pausa el que no esté visible — confirmado con
+    `document.querySelectorAll('video')`: con el Cierre en pantalla, ese `<video>` tiene
+    `paused:false` y el del Hero (fuera de vista) `paused:true`.
+  - Verificado en `/marketing/` y `/educa/` (1440px y 390px): tarjeta cuadrada sin
+    difuminado en Hero y Cierre, video reproduciendo solo el visible, sin errores de
+    consola, detector de `impeccable` en 0.
 
 ### ❌ Pendiente
 
