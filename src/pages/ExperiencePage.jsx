@@ -1,11 +1,10 @@
-import { Users, Info, Wand2, CalendarCheck, Gamepad2, Vote, MonitorPlay, Sparkles } from 'lucide-react';
+import { CalendarCheck, Gamepad2, Vote, MonitorPlay, Sparkles } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
 import PilarPage, { HeroCharacter } from '../components/PilarPage';
 
 const BRIEF_EXPERIENCE = '/cuentanos-tu-reto/?pilar=experience';
-const SLOT = 'captura / video';
 
 export default function ExperiencePage() {
   useDocumentMeta({
@@ -36,11 +35,7 @@ export default function ExperiencePage() {
       }}
       valor={{
         h2: 'Creatividad y tecnología para fortalecer cada interacción con la audiencia.',
-        items: [
-          { titulo: 'Participación y conexión', icon: Users, color: C.morado, slot: SLOT },
-          { titulo: 'Información útil', icon: Info, color: C.morado, slot: SLOT },
-          { titulo: 'Tecnología fácil de utilizar', icon: Wand2, color: C.morado, slot: SLOT },
-        ],
+        items: ['Participación y conexión', 'Información útil', 'Tecnología fácil de utilizar'],
       }}
       alcance={{
         h2: 'Soluciones para conectar con tu audiencia.',
@@ -50,7 +45,6 @@ export default function ExperiencePage() {
             texto: 'Plataforma para eventos corporativos: invitación, registro, ingreso con QR, asistencia y comunicación.',
             icon: CalendarCheck,
             color: C.morado,
-            slot: SLOT,
             href: 'https://xpevent.app',
             linkLabel: 'Conocer XP Event',
           },
@@ -59,28 +53,24 @@ export default function ExperiencePage() {
             texto: 'Trivias, ruletas, retos y acciones para eventos o puntos de venta.',
             icon: Gamepad2,
             color: C.morado,
-            slot: SLOT,
           },
           {
             titulo: 'Encuestas y votaciones',
             texto: 'Interacciones durante eventos para conocer opiniones, preferencias o satisfacción.',
             icon: Vote,
             color: C.morado,
-            slot: SLOT,
           },
           {
             titulo: 'Presentaciones interactivas',
             texto: 'Catálogos, recorridos y presentaciones controladas por el usuario.',
             icon: MonitorPlay,
             color: C.morado,
-            slot: SLOT,
           },
           {
             titulo: 'Experiencias a la medida',
             texto: 'Promociones, patrocinios y activaciones que combinan recursos según el objetivo.',
             icon: Sparkles,
             color: C.morado,
-            slot: SLOT,
           },
         ],
       }}

@@ -1,8 +1,12 @@
 import { cloneElement, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Image as ImageIcon } from 'lucide-react';
+import { useGSAP } from '@gsap/react';
+import { gsap } from '../utils/gsapSetup';
 import { P } from '../utils/textStyles';
 import { track } from '../utils/analytics';
+import { WHATSAPP } from '../data/site';
+import { icons } from './SocialIcons';
 import PilarFamiliaNav from './PilarFamiliaNav';
 
 const isRich = (item) => typeof item === 'object' && item !== null;
@@ -223,13 +227,18 @@ function CierrePrimary({ to, children }) {
   );
 }
 
+// El CTA secundario del Cierre en los 5 pilares apunta a WhatsApp — el
+// usuario pidió dejarlo explícito con el ícono de la marca (antes era solo
+// texto, "Conversar con GEC" no decía por qué canal).
 function CierreSecondary({ href, children }) {
   return (
     <a
       href={href}
+      {...(href === WHATSAPP ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
       className="inline-flex items-center gap-2.5 rounded-full border-[1.5px] border-[#0A1216] px-6 py-[15px] text-[15px] font-semibold text-[#0A1216] transition-colors hover:bg-[#0A1216]/10"
       style={P}
     >
+      {href === WHATSAPP && <span className="h-[18px] w-[18px] flex-none">{icons.whatsapp}</span>}
       {children}
     </a>
   );
@@ -239,8 +248,49 @@ function CierreSecondary({ href, children }) {
 // bloques opcionales del pilar · Cierre · Familia Meraki (el Footer ya vive
 // en App, global a todo el sitio).
 export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre }) {
+  const mainRef = useRef(null);
+
+  // Entradas animadas al hacer scroll — el usuario reportó que las páginas
+  // de pilar se sentían "cuadradas"/estáticas comparadas con el Home (que
+  // sí anima Pilares/Inside Your Brand). Mismo patrón que `data-pilar-copy`
+  // en Sections.jsx: cada contenedor marcado `data-reveal` anima la entrada
+  // de sus hijos directos con un stagger corto. Selector genérico, así que
+  // cubre también los bloques bespoke que cada página arma en `extra`
+  // (EducaPage.jsx, SolucionaPage.jsx) — son descendientes reales de este
+  // `<main>` en tiempo de ejecución, aunque estén definidos en otro archivo.
+  // `toggleActions: '...reverse'` deshace la entrada si se sube de nuevo,
+  // para no dejar texto invisible si el usuario retrocede rápido.
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        const tweens = gsap.utils.toArray('[data-reveal]').map((el) =>
+          // Si el contenedor tiene hijos (una tarjeta, un grupo de líneas
+          // del hero) anima cada uno con stagger; un `<h2>` con solo texto
+          // no tiene hijos-elemento (el texto no cuenta), así que ahí anima
+          // el propio contenedor entero como una sola unidad.
+          gsap.from(el.children.length ? el.children : el, {
+            y: 26,
+            opacity: 0,
+            duration: 0.7,
+            ease: 'power3.out',
+            stagger: 0.08,
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 85%',
+              toggleActions: 'play none none reverse',
+            },
+          }),
+        );
+        return () => tweens.forEach((t) => t.scrollTrigger?.kill());
+      });
+      return () => mm.revert();
+    },
+    { scope: mainRef, dependencies: [pilarId] },
+  );
+
   return (
-    <main className="bg-[#0A0E13]" style={{ paddingTop: '110px' }}>
+    <main ref={mainRef} className="bg-[#0A0E13]" style={{ paddingTop: '110px' }}>
       {/* Hero */}
       <section className="px-[clamp(20px,4vw,40px)] pt-[clamp(20px,4vw,40px)] pb-[clamp(56px,7vw,96px)]">
         <div
@@ -250,7 +300,7 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
               : 'mx-auto max-w-[900px] text-center'
           }
         >
-          <div>
+          <div data-reveal>
             <Eyebrow color={hero.color}>{hero.eyebrow}</Eyebrow>
             <h1
               className="m-0 mt-4 mb-6 leading-[1.08] font-extrabold text-white"
@@ -285,31 +335,56 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
         </div>
       </section>
 
-      {/* Valor — opcional: Educa reemplaza esta sección genérica por una
-          lista numerada propia (ver EducaPage.jsx), pasada dentro de `extra`. */}
+      {/* Valor — opcional. Lista numerada con divisores, sin ícono ni slot de
+          media vacío: patrón adoptado del mockup "Educa/Soluciona Landing
+          v2" del usuario (antes cada pilar mostraba tarjetas con una caja
+          punteada "captura/video" siempre vacía — se veía genérico y
+          "cuadrado"). El número usa el dorado del sitio (igual que en Educa,
+          que fue donde se probó primero este patrón), no el color propio del
+          pilar — mantiene un solo acento de "atención" consistente entre
+          páginas. `texto` es opcional: los pilares sin descripción todavía
+          para cada atributo simplemente muestran título + número. */}
       {valor && (
         <section className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
           <div className="mx-auto max-w-[1100px]">
             <h2
+              data-reveal
               className="m-0 mb-10 max-w-[26ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white"
               style={{ ...P, letterSpacing: '-.02em' }}
             >
               {valor.h2}
             </h2>
-            <div className={`grid gap-4 ${valor.items.some(isRich) ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-4'}`}>
-              {valor.items.map((v) =>
-                isRich(v) ? (
-                  <SlotCard key={v.titulo} item={v} />
-                ) : (
-                  <div
-                    key={v}
-                    className="rounded-2xl border border-white/[.08] bg-[#10161D] p-6 text-[14.5px] leading-[1.5] font-medium text-[#EDEAE4]"
-                    style={P}
-                  >
-                    {v}
+            <div
+              data-reveal
+              className={`grid gap-px overflow-hidden rounded-2xl border border-white/[.08] bg-white/[.08] sm:grid-cols-2 ${
+                // Columnas = cantidad real de items (topado a 5) — un
+                // `lg:grid-cols-4` fijo dejaba una celda vacía cuando el
+                // pilar no tenía un múltiplo exacto de 4 (Marketing: 5 caía
+                // en una segunda fila con 3 celdas vacías; Soluciona/Studio/
+                // Experience: 3 dejaban una vacía en la primera).
+                { 1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 5: 'lg:grid-cols-5' }[
+                  valor.items.length
+                ] ?? 'lg:grid-cols-4'
+              }`}
+            >
+              {valor.items.map((v, i) => {
+                const item = isRich(v) ? v : { titulo: v };
+                return (
+                  <div key={item.titulo} className="flex flex-col gap-2.5 bg-[#0A0E13] p-7">
+                    <span className="text-[13px] font-bold" style={{ ...P, color: '#F5B301' }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="m-0 text-[16.5px] font-bold text-white" style={P}>
+                      {item.titulo}
+                    </h3>
+                    {item.texto && (
+                      <p className="m-0 text-[13.5px] leading-[1.6]" style={{ ...P, color: 'rgba(242,239,233,.6)' }}>
+                        {item.texto}
+                      </p>
+                    )}
                   </div>
-                ),
-              )}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -322,6 +397,7 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
         <section id="areas" className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
           <div className="mx-auto max-w-[1100px]">
             <h2
+              data-reveal
               className="m-0 mb-10 max-w-[28ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white"
               style={{ ...P, letterSpacing: '-.02em' }}
             >
@@ -332,7 +408,7 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
                 {alcance.nota}
               </p>
             )}
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div data-reveal className="grid gap-4 sm:grid-cols-2">
               {alcance.items.map((a) =>
                 isRich(a) && a.icon ? (
                   <SlotCard key={a.titulo} item={a} />
@@ -378,7 +454,7 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
           className="mx-auto grid max-w-[1220px] items-center gap-10 overflow-hidden rounded-[32px] p-[clamp(28px,5vw,64px)] lg:grid-cols-2"
           style={{ background: '#F5B301', color: '#0A1216' }}
         >
-          <div className="flex flex-col gap-6">
+          <div data-reveal className="flex flex-col gap-6">
             <h2
               className="m-0 text-[clamp(30px,4.2vw,52px)] leading-[1.05] font-extrabold"
               style={{ ...P, letterSpacing: '-.03em' }}

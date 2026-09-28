@@ -1,11 +1,10 @@
-import { Compass, Layers, Video, PenTool, Camera, Wand2 } from 'lucide-react';
+import { Compass, PenTool, Camera, Wand2, Video } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
 import PilarPage, { HeroCharacter } from '../components/PilarPage';
 
 const BRIEF_STUDIO = '/cuentanos-tu-reto/?pilar=studio';
-const SLOT = 'captura / video';
 
 export default function StudioPage() {
   useDocumentMeta({
@@ -36,9 +35,9 @@ export default function StudioPage() {
       valor={{
         h2: 'Creatividad con criterio para producir lo que tu marca necesita.',
         items: [
-          { titulo: 'Dirección creativa alineada con la marca', icon: Compass, color: C.azul, slot: SLOT },
-          { titulo: 'Soluciones visuales coherentes y adaptables', icon: Layers, color: C.azul, slot: SLOT },
-          { titulo: 'Producción con propósito', icon: Video, color: C.azul, slot: SLOT },
+          'Dirección creativa alineada con la marca',
+          'Soluciones visuales coherentes y adaptables',
+          'Producción con propósito',
         ],
       }}
       alcance={{
@@ -49,35 +48,30 @@ export default function StudioPage() {
             titulo: 'Dirección creativa',
             icon: Compass,
             color: C.azul,
-            slot: SLOT,
           },
           {
             titulo: 'Diseño gráfico',
             texto: 'Desarrollo visual de marca, piezas, composición e imagen, con IA cuando aporta valor.',
             icon: PenTool,
             color: C.azul,
-            slot: SLOT,
           },
           {
             titulo: 'Fotografía',
             texto: 'Producto, corporativa e instalaciones, con postproducción e IA cuando aplica.',
             icon: Camera,
             color: C.azul,
-            slot: SLOT,
           },
           {
             titulo: 'Animación',
             texto: '2D, motion graphics y animación con IA.',
             icon: Wand2,
             color: C.azul,
-            slot: SLOT,
           },
           {
             titulo: 'Producción audiovisual',
             texto: 'Spots, reels, spotlights, videos educativos y cortinas para pantallas o tótems.',
             icon: Video,
             color: C.azul,
-            slot: SLOT,
           },
         ],
       }}

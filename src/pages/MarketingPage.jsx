@@ -1,11 +1,10 @@
-import { Compass, Users, MessagesSquare, BarChart3, Award, Palette, Megaphone, Globe, SlidersHorizontal } from 'lucide-react';
+import { Palette, Megaphone, Globe, SlidersHorizontal } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
 import PilarPage, { HeroCharacter } from '../components/PilarPage';
 
 const BRIEF_MARKETING = '/cuentanos-tu-reto/?pilar=marketing';
-const SLOT = 'captura / video';
 
 export default function MarketingPage() {
   useDocumentMeta({
@@ -35,11 +34,11 @@ export default function MarketingPage() {
       valor={{
         h2: 'Lo que Marketing aporta a tu empresa.',
         items: [
-          { titulo: 'Dirección estratégica', icon: Compass, color: C.amarillo, slot: SLOT },
-          { titulo: 'Mercado y audiencias', icon: Users, color: C.amarillo, slot: SLOT },
-          { titulo: 'Comunicación integrada', icon: MessagesSquare, color: C.amarillo, slot: SLOT },
-          { titulo: 'Medición e insights', icon: BarChart3, color: C.amarillo, slot: SLOT },
-          { titulo: 'Construcción de marca sólida', icon: Award, color: C.amarillo, slot: SLOT },
+          'Dirección estratégica',
+          'Mercado y audiencias',
+          'Comunicación integrada',
+          'Medición e insights',
+          'Construcción de marca sólida',
         ],
       }}
       alcance={{
@@ -51,28 +50,24 @@ export default function MarketingPage() {
             texto: 'Definimos una identidad y un lugar claro para tu marca en la mente de tu audiencia.',
             icon: Palette,
             color: C.amarillo,
-            slot: SLOT,
           },
           {
             titulo: 'Campañas',
             texto: 'Diseñamos campañas alineadas a los objetivos del negocio.',
             icon: Megaphone,
             color: C.amarillo,
-            slot: SLOT,
           },
           {
             titulo: 'Marketing digital',
             texto: 'Activamos canales digitales para generar alcance y resultados medibles.',
             icon: Globe,
             color: C.amarillo,
-            slot: SLOT,
           },
           {
             titulo: 'Optimización de canales',
             texto: 'Ajustamos cada canal según lo que el desempeño va mostrando.',
             icon: SlidersHorizontal,
             color: C.amarillo,
-            slot: SLOT,
           },
         ],
       }}

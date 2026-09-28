@@ -30,12 +30,14 @@ function BloqueValor() {
     <section className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
       <div className="mx-auto max-w-[1100px]">
         <h2
+          data-reveal
           className="m-0 mb-10 max-w-[26ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white"
           style={{ ...P, letterSpacing: '-.02em' }}
         >
           Formación que se convierte en valor para la empresa.
         </h2>
         <div
+          data-reveal
           className="grid gap-px overflow-hidden rounded-2xl border border-white/[.08] bg-white/[.08] sm:grid-cols-2 lg:grid-cols-4"
         >
           {valorItems.map((v) => (
@@ -66,12 +68,13 @@ function BloqueProgramas() {
     <section id="areas" className="border-t border-white/[.07] bg-[#0A0E13]/60 px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
       <div className="mx-auto max-w-[1100px]">
         <h2
+          data-reveal
           className="m-0 mb-10 max-w-[24ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white"
           style={{ ...P, letterSpacing: '-.02em' }}
         >
           Capacidades para los nuevos retos de la empresa.
         </h2>
-        <div className="mb-5 grid gap-4 sm:grid-cols-2">
+        <div data-reveal className="mb-5 grid gap-4 sm:grid-cols-2">
           <a
             href="#compania"
             className="group flex min-h-[240px] flex-col justify-between gap-10 rounded-2xl border p-8 transition-colors"
@@ -109,7 +112,7 @@ function BloqueProgramas() {
             </div>
           </a>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div data-reveal className="grid gap-3 sm:grid-cols-2">
           {[
             {
               t: 'Marca',
@@ -157,7 +160,7 @@ function BloqueCompañIA() {
   return (
     <section id="compania" className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
       <div className="mx-auto grid max-w-[1220px] items-start gap-10 lg:grid-cols-[1fr_1.1fr]">
-        <div className="flex flex-col gap-5 lg:sticky lg:top-[110px]">
+        <div data-reveal className="flex flex-col gap-5 lg:sticky lg:top-[110px]">
           <Eyebrow color={C.turquesa} uppercase={false}>Programa Corporativo para la Adopción y Aplicación de IA</Eyebrow>
           <h2
             className="m-0 text-[clamp(36px,4.6vw,56px)] leading-[1] font-extrabold text-white"
@@ -175,7 +178,7 @@ function BloqueCompañIA() {
             </CtaPrimary>
           </div>
         </div>
-        <ol className="m-0 flex list-none flex-col p-0">
+        <ol data-reveal className="m-0 flex list-none flex-col p-0">
           {companiaSteps.map((s) => (
             <li key={s.n} className="grid grid-cols-[44px_1fr] gap-5 border-b border-white/[.08] py-5 first:pt-0 last:border-b-0">
               <span
@@ -211,7 +214,7 @@ function BloqueAudiovisual() {
   return (
     <section id="audiovisual" className="border-t border-white/[.07] bg-[#0A0E13]/60 px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
       <div className="mx-auto flex max-w-[1100px] flex-col gap-10">
-        <div className="flex max-w-[62ch] flex-col gap-4">
+        <div data-reveal className="flex max-w-[62ch] flex-col gap-4">
           <Eyebrow color={C.naranja} uppercase={false}>Formación Especializada IA: Audiovisual</Eyebrow>
           <h2
             className="m-0 text-[clamp(24px,3vw,36px)] leading-[1.2] font-bold text-white"
@@ -232,7 +235,7 @@ function BloqueAudiovisual() {
             </span>
           </div>
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div data-reveal className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {avFeatures.map((f) => (
             <div key={f.t} className="flex flex-col gap-2 border-t-2 pt-4" style={{ borderColor: C.naranja }}>
               <h3 className="m-0 text-[15px] font-bold text-white" style={P}>

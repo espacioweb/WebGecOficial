@@ -839,6 +839,76 @@ hito de sección (7) más 2 intermedias entre cada par.
   - Verificado en `/marketing/` y `/educa/` (1440px y 390px): tarjeta cuadrada sin
     difuminado en Hero y Cierre, video reproduciendo solo el visible, sin errores de
     consola, detector de `impeccable` en 0.
+- **Soluciona reconstruida a la par de Educa + Valor numerado, ícono de WhatsApp y
+  entradas animadas en scroll para los 5 pilares (2026-09-29).** El usuario señaló que su
+  pedido anterior (video + recorte cuadrado) no cubría el punto real: adjuntó "Soluciona
+  Landing v2.dc.html" (mismo patrón que el mockup de Educa) mostrando que Soluciona/
+  Studio/los demás debían verse con el mismo lenguaje visual de Educa, no con las
+  tarjetas "captura/video" vacías que traía el `PilarPage.jsx` genérico. Pidió también el
+  ícono de WhatsApp en el CTA del Cierre y entradas animadas al hacer scroll en los
+  textos de las páginas internas ("se ve cuadrado todo... que se vea premium").
+  - **`PilarPage.jsx` — sección Valor reescrita** (afecta a los 5 pilares, era la sección
+    compartida): pasa de tarjetas con ícono + caja punteada "captura/video" siempre vacía
+    a una lista numerada con divisores (mismo patrón que `BloqueValor` de Educa, que fue
+    donde se probó primero). Número en dorado (`#F5B301`, no el color del pilar) para un
+    solo acento de "atención" consistente entre páginas. `texto` es opcional — los
+    pilares sin descripción para cada atributo (Marketing, Studio, Experience: nunca la
+    tuvieron) muestran solo número + título.
+    - *Bug propio encontrado y corregido antes de dar el cambio por bueno*: con
+      `lg:grid-cols-4` fijo, un pilar con 3 o 5 items (todos menos Educa) dejaba una
+      celda vacía grande a la derecha o en la fila final — justo el "hueco" que el mockup
+      de Soluciona señalaba como error a corregir en la sección de Alcance. Se cambió a
+      columnas por cantidad real de items (`{1,2,3,5}` mapeados a su propio
+      `lg:grid-cols-N`, con 4 como default) — verificado visualmente en Marketing (5),
+      Soluciona/Studio/Experience (3): sin huecos en ningún caso.
+  - **Alcance**: se quitó `slot: SLOT` (la caja punteada vacía) de los items de Marketing/
+    Studio/Experience — quedan ícono + título + descripción, sin miniatura vacía
+    permanente. `SlotCard` no cambió (ya manejaba `item.slot` como opcional); solo se
+    dejó de pasar ese campo en los datos de esos 3 pilares.
+  - **Soluciona (`SolucionaPage.jsx`) reconstruida por completo** siguiendo su mockup,
+    mismo criterio que la reconstrucción de Educa de un turno anterior:
+    - Hero: "Soluciona" pasa de H1 a etiqueta ("Soluciona · Plataformas y sistemas"), el
+      titular ahora es el beneficio ("Herramientas digitales que ordenan tu operación",
+      con "ordenan tu operación" en azul), un solo párrafo (se retira `explicacion`), CTA
+      más corto ("Optimiza tus procesos"). El CTA secundario cambia de "#areas" a
+      "#productos" — ya no hay Alcance genérico al que apuntar.
+    - Valor: usa la sección compartida numerada de arriba, con las 3 descripciones que
+      trae el mockup (antes solo tenían título).
+    - **`BloqueFormas` (nuevo, `id="formas"`)** reemplaza el Alcance genérico: 3 tarjetas
+      en escala de esfuerzo (Configurar → Adoptar → Desarrollar), cada una con su nivel,
+      un indicador de 3 puntos (1/2/3 activos según el nivel) y "cuándo conviene" al pie
+      — texto literal del mockup.
+    - **`BloqueProductosGEC` restyled**: pasa de `SlotCard` (ícono + caja lateral
+      pequeña) a tarjeta con imagen grande 16:9 arriba (sigue siendo un slot honesto —
+      no hay capturas reales todavía — pero a todo el ancho, como pide el mockup: "aquí
+      sí hacen falta imágenes, no un ícono con miniatura vacía") + info abajo. Mismos 4
+      productos y descripciones, sin contenido nuevo.
+    - Cierre: gana `texto` (subtítulo, no lo tenía) y el CTA secundario pasa de
+      "Conversar con GEC" a "WhatsApp" — coincide con el mockup Y con Educa (que ya
+      decía "WhatsApp" ahí desde su propia reconstrucción); Marketing/Studio/Experience
+      quedan con "Conversar con GEC" — no se tocaron, ningún mockup pidió cambiarlos, y
+      unificar el texto en los 5 no se pidió (solo el ícono, ver abajo).
+  - **Ícono de WhatsApp en el Cierre de los 5 pilares**: `CierreSecondary` en
+    `PilarPage.jsx` ahora muestra `icons.whatsapp` (de `SocialIcons.jsx`) cuando
+    `href === WHATSAPP` — los 5 pilares ya apuntaban ahí, así que aplica a todos sin
+    tocar cada página. De paso se agregó `target="_blank"` (antes abría WhatsApp Web en
+    la misma pestaña), mismo criterio que el link de WhatsApp del footer.
+  - **Entradas animadas al hacer scroll, compartidas**: nuevo `useGSAP` en `PilarPage.jsx`
+    (con su propio `mainRef`, selector `[data-reveal]`, `gsap.matchMedia()` para respetar
+    `prefers-reduced-motion`) — mismo patrón que `data-pilar-copy` en `Sections.jsx`. Cada
+    contenedor marcado anima la entrada de sus hijos con `stagger: 0.08`; si el contenedor
+    no tiene hijos-elemento (un `<h2>` de puro texto) anima el contenedor mismo. Como el
+    selector corre sobre todo el `<main>`, cubre también los bloques bespoke que arma
+    cada página en `extra` (los de Educa y los nuevos de Soluciona), aunque estén
+    definidos en otro archivo — son descendientes reales en tiempo de ejecución. Se
+    etiquetaron los encabezados y grillas de Hero/Valor/Alcance/Cierre (compartidos) y de
+    cada bloque bespoke de Educa y Soluciona.
+    - Verificado con Playwright: opacity de un elemento pasó de `0.04` (recién entra al
+      viewport) a `1` (900ms después) — la animación corre de verdad, no es solo CSS
+      estático. Con `prefers-reduced-motion: reduce` emulado, el mismo elemento midió
+      `opacity: 1` de inmediato — no anima, contenido visible sin esperar el scroll.
+  - Verificado en las 5 páginas de pilar (1440px y 390px): sin errores de consola,
+    detector de `impeccable` en 0, sin celdas vacías en ninguna grilla de Valor.
 
 ### ❌ Pendiente
 
