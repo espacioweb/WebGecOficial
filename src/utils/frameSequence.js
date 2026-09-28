@@ -35,6 +35,11 @@
 
 const CONCURRENCIA = 6;
 const PLAZO_MS = 15000;
+// Sin esto, un corte de red puntual dejaba el fotograma perdido para
+// siempre (la cola nunca reintentaba) — en celular con cobertura
+// intermitente eso se traduce en huecos permanentes y la escena se ve
+// clavada en una pose de mitad de la animación durante varios segundos.
+const REINTENTOS = 2;
 
 /**
  * Orden de carga: barridos cada vez más finos sobre toda la secuencia.
@@ -162,15 +167,25 @@ export function loadSequence({ total, src, images, eager = 12, onReady, onFrame 
       );
     });
 
+  // Reintenta cada fotograma hasta REINTENTOS veces y, dentro del mismo
+  // intento, cae de bitmap a <img> — pero ya NO apaga bitmap para el resto
+  // de la secuencia: `createImageBitmap(blob)` sin opciones funciona en
+  // todas las versiones de Safari (ver cabecera del archivo), así que un
+  // fallo puntual es casi siempre de red, no de compatibilidad, y no debe
+  // pagarlo toda la escena bajando el resto de los fotogramas a la vía más
+  // pesada.
   const load = async (i) => {
-    if (usarBitmap) {
-      const r = await conPlazo(desdeBitmap(i));
-      if (r) return r;
+    for (let intento = 0; intento <= REINTENTOS; intento += 1) {
       if (cancelado) return null;
-      // Si el bitmap no sale, se abandona ese camino para toda la secuencia.
-      usarBitmap = false;
+      if (usarBitmap) {
+        const r = await conPlazo(desdeBitmap(i));
+        if (r) return r;
+        if (cancelado) return null;
+      }
+      const r2 = await conPlazo(desdeImg(i));
+      if (r2 || cancelado) return r2;
     }
-    return conPlazo(desdeImg(i));
+    return null;
   };
 
   (async () => {

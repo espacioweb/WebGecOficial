@@ -12,7 +12,12 @@ const isRich = (item) => typeof item === 'object' && item !== null;
 // trae su propio fondo (sin alfa) y así se funde contra el #0A0E13 de la
 // página en vez de dejar un rectángulo visible. `video` es opcional — sin
 // él queda solo la imagen fija (poster).
-export function HeroCharacter({ img, video, focus = 50, color, alt }) {
+// `haloBold`: el halo por defecto es el mismo en los 5 pilares (sutil, solo
+// para fundir el render contra el fondo). Un pase /impeccable bolder pidió
+// amplificar esto SOLO en el hero de Educa — mismo color, mismo dispositivo,
+// nada nuevo — así que queda detrás de un prop en vez de subir el valor por
+// defecto y afectar a Marketing/Studio/Soluciona/Experience de paso.
+export function HeroCharacter({ img, video, focus = 50, color, alt, haloBold = false }) {
   const videoRef = useRef(null);
   const [painted, setPainted] = useState(false);
 
@@ -32,8 +37,12 @@ export function HeroCharacter({ img, video, focus = 50, color, alt }) {
   return (
     <div className="relative mx-auto aspect-[3/4] w-full max-w-[420px]">
       <div
-        className="pointer-events-none absolute inset-0 -z-10 rounded-full blur-[70px]"
-        style={{ background: `radial-gradient(circle, ${color}3d 0%, transparent 68%)` }}
+        className={
+          haloBold
+            ? 'pointer-events-none absolute -inset-8 -z-10 rounded-full blur-[110px]'
+            : 'pointer-events-none absolute inset-0 -z-10 rounded-full blur-[70px]'
+        }
+        style={{ background: `radial-gradient(circle, ${color}${haloBold ? '66' : '3d'} 0%, transparent 70%)` }}
       />
       <img
         src={img}

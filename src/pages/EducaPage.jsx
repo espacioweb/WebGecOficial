@@ -187,7 +187,11 @@ export default function EducaPage() {
       hero={{
         eyebrow: 'Educa',
         color: C.turquesa,
-        h1: 'Adopción de IA empresarial',
+        h1: (
+          <>
+            Adopción de <span style={{ color: C.turquesa }}>IA</span> empresarial
+          </>
+        ),
         descriptor:
           'Formación para adoptar la IA y desarrollar habilidades estratégicas, creativas y tecnológicas que impulsen el crecimiento creativo empresarial.',
         explicacion:
@@ -202,6 +206,7 @@ export default function EducaPage() {
             video="/assets/videos/educa-hero.mp4"
             color={C.turquesa}
             alt="Meraki Educa con una tablet"
+            haloBold
           />
         ),
       }}
