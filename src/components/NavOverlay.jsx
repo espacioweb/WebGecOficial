@@ -6,9 +6,8 @@ import { nav, pilares } from '../data/site';
 
 const P = { fontFamily: 'Poppins, sans-serif' };
 
-// Las cinco páginas de pilar ya existen como rutas reales — se insertan
-// después de "Ecosistema" (que sigue llevando a la vista de conjunto en
-// Home) para dar acceso directo a cada una, como pide la guía de Fase 1.
+// Las cinco páginas de pilar ya existen como rutas reales, con acceso
+// directo desde el menú, como pide la guía de Fase 1.
 const PILARES_LINKS = pilares.map((p) => ({ href: p.ruta, label: p.name }));
 
 const EXTRA = [
@@ -76,7 +75,10 @@ export default function NavOverlay({ open, onClose }) {
     }
   }, [open]);
 
-  const links = [nav[0], ...PILARES_LINKS, ...nav.slice(1), ...EXTRA];
+  // `...nav` en vez de un índice fijo (`nav[0]`): `nav` puede quedar vacío
+  // (hoy lo está, ver site.js) sin que esto rompa con un `undefined` a mitad
+  // de la lista.
+  const links = [...nav, ...PILARES_LINKS, ...EXTRA];
 
   const go = (e, href) => {
     e.preventDefault();

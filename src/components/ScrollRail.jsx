@@ -4,13 +4,11 @@ import { gsap, ScrollTrigger } from '../utils/gsapSetup';
 
 const P = { fontFamily: 'Poppins, sans-serif' };
 
-// Secciones que el riel refleja, en orden de aparición. "Inside Your
-// Brand"/"Valor"/"Portafolio" salieron de aquí junto con sus secciones (ver
-// nota en Home.jsx) — dejarlos habría hecho que la etiqueta prometiera un
-// destino que ya no existe en la página.
+// Secciones que el riel refleja, en orden de aparición. "Ecosistema" salió
+// de aquí junto con Pilares (ver nota en Home.jsx) — dejarlo habría hecho
+// que la etiqueta prometiera un destino que ya no existe en la página.
 const HITOS = [
   { id: 'top', label: 'Inicio' },
-  { id: 'ecosistema', label: 'Ecosistema' },
   { id: 'familia', label: 'La familia' },
   { id: 'contacto', label: 'Hablemos' },
 ];
@@ -23,6 +21,15 @@ export default function ScrollRail() {
   const dotsRef = useRef([]);
   const labelRef = useRef(null);
   const activoRef = useRef(-1);
+  // Posición real (en px de documento) de cada hito — se mide del DOM, no
+  // se asume. El tramo "Inicio→La familia" y "La familia→Hablemos" NO miden
+  // lo mismo (Manifiesto/BriefCTA/Autoridad van en medio del primero, nada
+  // en medio del segundo), y esa diferencia cambia cada vez que se agrega o
+  // se quita una sección — como pasó al sacar Pilares: antes de este cambio
+  // el riel repartía los puntos por fracción pareja de la altura total de
+  // la página, así que la etiqueta activa se adelantaba o atrasaba respecto
+  // a la sección que de verdad se veía en pantalla.
+  const offsetsRef = useRef([]);
 
   // Un punto por paso, más el hito final
   const total = (HITOS.length - 1) * PASOS + 1;
@@ -36,15 +43,44 @@ export default function ScrollRail() {
       mm.add('(min-width: 1024px) and (prefers-reduced-motion: no-preference)', () => {
         const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
-        // Posición del scroll expresada en "puntos" del riel
-        const posicion = () => {
+        const medirOffsets = () => {
+          offsetsRef.current = HITOS.map((h) => document.getElementById(h.id)?.offsetTop ?? null);
+        };
+
+        // Traduce scrollY a "posición en puntos" del riel interpolando entre
+        // los offsets reales medidos arriba, tramo por tramo — no por
+        // fracción pareja de la altura total. Devuelve también `i`, el
+        // índice del hito YA CRUZADO (no el más cercano): el tramo
+        // Inicio→La familia mide 7952px pero el Hero pineado por sí solo
+        // ocupa 5940 de esos — si la etiqueta cambiara a mitad de tramo
+        // (como hacía antes) diría "La familia" con el usuario todavía
+        // dentro del Hero. `i` en cambio solo avanza cuando el scroll
+        // alcanza de verdad el offset del siguiente hito.
+        const segmento = () => {
           const doc = document.documentElement;
-          const max = doc.scrollHeight - window.innerHeight;
-          return clamp(window.scrollY / (max || 1), 0, 1) * (total - 1);
+          const maxScroll = doc.scrollHeight - window.innerHeight || 1;
+          const offs = offsetsRef.current.map((o, i) => o ?? (i === 0 ? 0 : maxScroll));
+          const y = clamp(window.scrollY, 0, maxScroll);
+
+          // `i` para interpolar los puntos: se detiene en el penúltimo hito
+          // porque necesita un offs[i+1] con el que trazar el tramo final.
+          let i = 0;
+          while (i < offs.length - 2 && y >= offs[i + 1]) i += 1;
+          const a = offs[i];
+          const b = offs[i + 1] ?? maxScroll;
+          const frac = b > a ? clamp((y - a) / (b - a), 0, 1) : 0;
+
+          // `idx` para la etiqueta: sí debe llegar hasta el último hito
+          // (Hablemos) una vez que el scroll cruza su offset real — con el
+          // `i` de arriba nunca pasaba de "La familia".
+          let idx = 0;
+          while (idx < offs.length - 1 && y >= offs[idx + 1]) idx += 1;
+
+          return { idx, pos: clamp((i + frac) * PASOS, 0, total - 1) };
         };
 
         const pintar = () => {
-          const pos = posicion();
+          const { idx, pos } = segmento();
 
           dotsRef.current.forEach((el, i) => {
             if (!el) return;
@@ -76,7 +112,6 @@ export default function ScrollRail() {
             });
           }
 
-          const idx = clamp(Math.round(pos / PASOS), 0, HITOS.length - 1);
           if (idx !== activoRef.current && labelRef.current) {
             activoRef.current = idx;
             const el = labelRef.current;
@@ -92,11 +127,20 @@ export default function ScrollRail() {
           }
         };
 
+        medirOffsets();
         const st = ScrollTrigger.create({
           start: 0,
           end: 'max',
           onUpdate: pintar,
-          onRefresh: pintar,
+          // Las imágenes/videos que van cargando después del primer render
+          // desplazan las secciones de abajo — sin re-medir aquí, los
+          // offsets quedan calculados sobre una página más corta de lo que
+          // termina siendo (mismo motivo que el `refreshPriority` del pin
+          // del Hero, ver bitácora del proyecto).
+          onRefresh: () => {
+            medirOffsets();
+            pintar();
+          },
         });
         pintar();
         return () => st.kill();

@@ -660,6 +660,139 @@ hito de sección (7) más 2 intermedias entre cada par.
     qué red como parámetro).
   - Documentado en `functions/README.md` (nueva sección "GA4 — distinta de las
     anteriores") cómo activarlo cuando exista el Measurement ID.
+- **Hero de Home — se quedaba clavado en la nuca en celular real (2026-09-27/28),
+  reportado con capturas y grabación reales del usuario.** Dos causas distintas en
+  `src/utils/frameSequence.js`, las dos reales, no simuladas:
+  1. Ningún fotograma que fallara por un corte de red se reintentaba, y un solo fallo de
+     `createImageBitmap` apagaba esa vía para el resto de la secuencia aunque el fallo
+     fuera de red, no de compatibilidad (`createImageBitmap(blob)` sin opciones funciona
+     en todo Safari desde hace tiempo). Fix: hasta 2 reintentos por fotograma, ya no se
+     apaga bitmap de forma permanente.
+  2. **La causa real, la que explicaba la captura del usuario**: el adelanto inicial
+     (`eager`) cargaba los primeros N fotogramas **de corrido** (~20% de la secuencia). En
+     un teléfono real, un solo flick recorre los 560vh del pin en pocos segundos — más
+     rápido que la carga de fondo — así que el 80% restante del recorrido no tenía ningún
+     fotograma cercano que pintar. Fix: el adelanto ahora usa el mismo orden por
+     refinamiento que la cola de fondo (0%, 100%, 29%, 57%, 86%, 14%...), repartido por
+     toda la línea de tiempo desde el primer pintado.
+  - **Falso positivo descartado en el camino**: en un momento pareció que Modo de Bajo
+    Consumo de iOS era la causa (ambas capturas del usuario lo mostraban activo, ese modo
+    sí frena red/decodificación en segundo plano) — confirmado luego que no era la causa
+    principal: en otro celular sin ese modo activo, con el fix de arriba, sí funcionó.
+  - **Adicional, mismo reporte**: en móvil el personaje ocupaba muy poco alto (62%→49% con
+    el scroll) dejando una franja vacía notable en los pasos intermedios ("se ve partida la
+    pantalla"). Fix en `src/components/Hero.jsx`: el arranque sube a 78% (el paso 0 no
+    tiene copy todavía, no hace falta dejarle tanto aire), pero el valor final se dejó
+    exactamente en 49% — es el que evita que el personaje quede debajo del CTA de cierre,
+    medido a propósito en un fix anterior (ver bug #13 de la bitácora original más arriba).
+  - Los tres fixes verificados en `localhost:5173` y confirmados por el usuario en su
+    celular real tras desplegar a producción.
+- **Skill `impeccable` instalado (2026-09-27) y usado para una crítica formal de
+  `/educa/`.** `.claude/skills/impeccable/` — el instalador oficial (`npx impeccable
+  install`) está roto río arriba (su redirector apunta a una release `skill-v4.4.0` que no
+  existe en GitHub, confirmado con `gh release list`); se instaló bajando la última
+  release real (`skill-v4.3.1`) y pasándosela al mismo instalador por su variable de
+  bypass (`IMPECCABLE_BUNDLE_PATH`) — mismo resultado, un patch atrás, se actualiza solo
+  cuando el bug de ellos se resuelva. `/impeccable critique /educa/` corrió en modo
+  dual-agent (Assessment A diseño + Assessment B detector/navegador) y dio 21/32
+  (Aceptable) — snapshot en `.impeccable/critique/` (carpeta ahora en `.gitignore`, junto
+  con `.codex/`). De ahí salieron y se aplicaron: color de CTA unificado, fix de los
+  avatares del family-nav que cargaban en blanco, y reducción de 12 a 6 del placeholder
+  "captura/video" repetido — más `/impeccable bolder` sobre el Hero (halo amplificado vía
+  el prop `haloBold` de `HeroCharacter`, ver arriba).
+- **`/educa/` reconstruida siguiendo un mockup nuevo del usuario ("Educa Landing v2",
+  hecho en Claude Design) (2026-09-28).** El mockup traía notas explícitas de "Mejora"
+  comparando contra la página vigente — se implementaron todas:
+  - Un solo color de CTA en **toda** la página: dorado plano (`#F5B301`), no el turquesa
+    de identidad de Educa. Corrige mi propia decisión anterior (el pase `/impeccable
+    colorize` había unificado a turquesa) — el mockup mostró que el patrón correcto del
+    sitio es "el color del pilar es para acentos/identidad, el dorado es el único color de
+    acción", igual que Header/Home/Contacto.
+  - Hero: H1 más grande (nuevo prop opcional `hero.h1Size` en `PilarPage.jsx`, sin tocar
+    el tamaño de los otros 4 pilares), un solo párrafo en vez de dos (`hero.explicacion`
+    ahora es opcional en el template compartido), CTA primario más corto.
+  - Valor: de tarjetas con caja de media vacía a una lista numerada con divisores —
+    mismos 4 atributos, sin placeholders.
+  - Alcance + "Otras formas" **fusionados** en un solo bloque (`BloqueProgramas`): tenían
+    Marca y Programas corporativos duplicados entre las dos secciones. Dos programas
+    insignia (CompañIA, Audiovisual) + dos complementarios.
+  - CompañIA: los 6 pasos pasan de una grilla 2 columnas dentro del texto a una línea de
+    tiempo vertical en su propia columna (con descripción por paso, contenido nuevo del
+    mockup) — reemplaza el panel de diagrama vacío que había ahí.
+  - Audiovisual: los 4 rasgos ahora traen descripción (antes solo el título) — contenido
+    nuevo del mockup, adoptado tal cual.
+  - `PilarPage.jsx` ganó tres opciones retrocompatibles para esto: `hero.h1Size`,
+    `hero.explicacion` opcional, y las secciones Valor/Alcance genéricas ahora solo se
+    renderizan si se les pasa el prop — Educa ya no las usa (construye las suyas dentro de
+    `extra`), los otros 4 pilares siguen exactamente igual.
+  - **Una desviación deliberada del mockup, explicada**: el mockup dice "Ver formaciones"
+    para el CTA secundario del hero, pero esta página no lista cursos — lleva a
+    "Capacidades". Se dejó "Ver capacidades" en su lugar para no reintroducir el mismo
+    desajuste CTA↔destino que ya se había corregido antes.
+  - El header/nav/footer del mockup (genéricos, de la herramienta de diseño) y el bloque
+    de Familia Meraki (el mockup usaba círculos placeholder; el real usa las fotos de los
+    5 personajes) **no se tocaron** — se mantuvo el `PilarFamiliaNav.jsx` compartido real.
+  - Verificado en `localhost:5173`, desktop y mobile, y confirmado que Marketing (que
+    comparte `PilarPage.jsx`) sigue idéntico — sin errores de consola, detector en 0.
+- **Cierre extendido a los 5 pilares: tarjeta dorada sólida (2026-09-28).** El usuario
+  mostró una segunda captura (Soluciona) con el mismo patrón "CTA FINAL" del mockup de
+  Educa — tarjeta dorada, texto oscuro, botones invertidos — y pidió extenderlo a los 5
+  pilares, no solo Educa (confirmado explícitamente antes de tocar el componente
+  compartido). Cambios en `PilarPage.jsx`:
+  - Nuevas `CierrePrimary`/`CierreSecondary` (variantes oscuro-sobre-dorado de los CTA
+    compartidos, mismo manejo de anclas vs. rutas que `CtaPrimary`).
+  - El Cierre **reutiliza el personaje del hero** (`cloneElement(hero.media, {video:
+    undefined, halo: false})`) en vez de pedir una foto nueva por pilar: nada de contenido
+    inventado. Sin video (evita decodificar el mismo mp4 dos veces en una sección que
+    arranca fuera de pantalla) y sin el halo de brillo (pensado para fondo oscuro; sobre
+    dorado se veía como una mancha). El anillo oscuro que sigue notándose alrededor del
+    personaje es el propio degradado de fondo de la foto (política del proyecto: fondo
+    oscuro en los bordes), no algo que se pueda apagar por CSS.
+  - `HeroCharacter` ganó el prop `halo` (booleano, default `true`) para este caso puntual.
+  - **Dos bugs reales encontrados y corregidos en el camino**: (1) los textos de CTA en
+    `EducaPage.jsx` traían su propia "→" y el componente ya agrega la suya — flecha
+    duplicada visible ("Diseñemos tu formación → →"), corregido quitando la flecha del
+    texto. (2) el personaje clonado se renderizaba a 0×0 — la celda del grid con
+    `justify-self-end` se encoge a su contenido, y el `w-full` interno de `HeroCharacter`
+    no tenía contra qué resolverse (problema circular); se arregló dándole a la celda un
+    ancho explícito (`max-w-[340px]`) en vez de dejarla encogerse.
+  - `CierreSilhouette` (el fantasma de Meraki detrás del cierre oscuro de Educa) quedó
+    obsoleto con el fondo dorado — se borró del todo (no solo se ocultó): no tenía otros
+    usos y el patrón nuevo ya no lo necesita.
+  - Verificado en Educa y Marketing (desktop + mobile), detector en 0, sin errores de
+    consola.
+- **Pilares (personajes con loop) fuera del Home + ScrollRail corregido (2026-09-28).**
+  El usuario mostró 6 capturas (chips desalineados, tarjeta de Educa, y una etiqueta
+  "LA FAMILIA" del riel lateral superpuesta sobre la tarjeta de BriefCTA) y pidió (1)
+  quitar el bloque de las 5 tarjetas con personaje del Home y (2) corregir el riel.
+  - `Home.jsx`: se quitó `<Pilares />` del render (con `id="ecosistema"`, era el ancla al
+    que apuntaban `nav` y el footer). Mismo criterio "ocultar, no borrar" del resto del
+    proyecto: el componente y sus datos siguen intactos en `Sections.jsx`/`site.js`.
+  - Limpieza de huérfanos en cascada: `nav` en `site.js` quedó `[]` (ya no tenía más
+    entradas que "Ecosistema"); el link "Nosotros" del footer (mismo destino) se quitó;
+    `NavOverlay.jsx` componía `links` con `nav[0]` fijo — con `nav` vacío eso metía
+    `undefined` como primer ítem del menú y rompía `.map()`; se cambió a `[...nav, ...]`,
+    que tolera un array vacío.
+  - **La causa real del desajuste del riel no era solo el bug reportado en la captura —
+    era el método de cálculo.** `ScrollRail.jsx` repartía sus puntos por fracción pareja
+    de la altura total de la página, asumiendo que el tramo entre cada hito medía lo
+    mismo. Nunca fue cierto (el Hero pineado por sí solo mide 5940px; Manifiesto+BriefCTA+
+    Autoridad juntos apenas 1300 más), y empeoró al sacar Pilares porque cambió la altura
+    total sin que el cálculo lo supiera. Reescrito para medir `offsetTop` real de cada
+    hito (`document.getElementById(h.id)?.offsetTop`, re-medido en el `onRefresh` de
+    ScrollTrigger porque las imágenes/videos que cargan después desplazan las secciones).
+  - **Bug encontrado en la propia reescritura, verificado con Playwright antes de darlo
+    por bueno**: al usar el offset real, la etiqueta cambiaba a mitad de camino entre dos
+    hitos (p. ej. a los 4000px de 7952 entre "Inicio" y "La familia") — como ese tramo
+    incluye el Hero completo (5940px), la etiqueta decía "La familia" con el usuario
+    todavía dentro del Hero. Se separó el índice usado para interpolar el tamaño de los
+    puntos (sigue necesitando redondeo/fracción) del índice usado para el TEXTO de la
+    etiqueta, que ahora solo avanza cuando el scroll cruza de verdad el offset real del
+    siguiente hito — confirmado con `scrollTo` en 11 puntos de prueba: la etiqueta cambia
+    exactamente en 0, 7952 y 11552 (los tres offsets reales), ya no antes.
+  - Verificado en `localhost:5173` (1440px y 390px): sin errores de consola, menú sin
+    "Ecosistema"/"Nosotros", flujo Manifiesto→BriefCTA sin hueco, detector de `impeccable`
+    en 0 sobre los 4 archivos tocados.
 
 ### ❌ Pendiente
 

@@ -314,13 +314,17 @@ export const footerCols = [
   {
     // "Valor integrado" salió con ValorHorizontal (reemplazado por
     // Autoridad, que no reusa el id `#valor` — son contenidos distintos).
+    // "Nosotros" salió con Pilares (llevaba a `#ecosistema`, el id vivía en
+    // esa sección — ver nota en Home.jsx).
     t: 'Agencia',
     links: [
-      { label: 'Nosotros', href: '#ecosistema' },
       { label: 'Contacto', href: '#contacto' },
       { label: 'WhatsApp', href: WHATSAPP, externo: true },
     ],
   },
 ];
 
-export const nav = [{ href: '#ecosistema', label: 'Ecosistema' }];
+// Vacío desde que Pilares (única entrada, "Ecosistema" → `#ecosistema`)
+// salió del Home — ver nota ahí. NavOverlay.jsx ya maneja un `nav` vacío sin
+// romperse (usa `...nav`, no un índice fijo).
+export const nav = [];

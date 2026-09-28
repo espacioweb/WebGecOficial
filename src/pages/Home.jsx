@@ -2,7 +2,6 @@ import Hero from '../components/Hero';
 import ScrollRail from '../components/ScrollRail';
 import {
   Manifiesto,
-  Pilares,
   BriefCTA,
   Autoridad,
   Familia,
@@ -33,6 +32,15 @@ import {
 // `panel`/`ctaLabel` al pilar Educa en site.js, montar <PanelEduca open
 // onClose /> aquí con un `useState`, pasar `onOpenPanel` a <Pilares /> y
 // parar Lenis mientras esté abierto (`lenis.stop()`/`start()`).
+//
+// Pilares (las 5 tarjetas con los personajes en loop, chips e "id=ecosistema")
+// salió del Home a pedido del usuario (2026-09-28) — código y datos siguen
+// intactos en Sections.jsx/site.js, es solo esta línea la que se quitó. Con
+// `#ecosistema` fuera del DOM se limpiaron también las referencias que
+// quedaban huérfanas: `nav` (site.js, quedó vacío), el enlace "Nosotros" del
+// footer, y el hito "Ecosistema" de ScrollRail.jsx (que además se reescribió
+// para medir la posición real de cada sección en vez de asumir que están
+// repartidas parejo en la página — ver comentario ahí).
 
 export default function Home() {
   return (
@@ -41,7 +49,6 @@ export default function Home() {
       <main>
         <Hero />
         <Manifiesto />
-        <Pilares />
         <BriefCTA />
         <Autoridad />
         <Familia />
