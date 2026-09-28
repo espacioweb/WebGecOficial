@@ -240,17 +240,12 @@ export function Pilares({ onOpenPanel }) {
             </div>
 
             <div className="flex flex-col gap-[22px]">
-              <div className="flex max-w-[640px] flex-wrap gap-2">
-                {b.items.map((it) => (
-                  <span
-                    key={it}
-                    className="rounded-full px-[15px] py-[9px] text-[12.5px] font-medium"
-                    style={{ border: `1px solid ${b.chipBorder}`, background: b.chipBg, color: b.fg }}
-                  >
-                    {it}
-                  </span>
-                ))}
-              </div>
+              {/* Las pastillas con `b.items` (chips de texto: "Branding y
+                  posicionamiento", "Campañas"...) salieron a pedido del
+                  usuario (2026-09-29) — se veían desalineadas y redundantes
+                  con el blurb de arriba. `items` sigue en site.js sin
+                  usarse en ningún otro lado; no se borró el dato, solo este
+                  render, por si se retoma en otro formato. */}
               {b.panel && (
                 <button
                   type="button"

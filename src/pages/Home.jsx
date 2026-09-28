@@ -2,6 +2,7 @@ import Hero from '../components/Hero';
 import ScrollRail from '../components/ScrollRail';
 import {
   Manifiesto,
+  Pilares,
   BriefCTA,
   Autoridad,
   Familia,
@@ -33,14 +34,13 @@ import {
 // onClose /> aquí con un `useState`, pasar `onOpenPanel` a <Pilares /> y
 // parar Lenis mientras esté abierto (`lenis.stop()`/`start()`).
 //
-// Pilares (las 5 tarjetas con los personajes en loop, chips e "id=ecosistema")
-// salió del Home a pedido del usuario (2026-09-28) — código y datos siguen
-// intactos en Sections.jsx/site.js, es solo esta línea la que se quitó. Con
-// `#ecosistema` fuera del DOM se limpiaron también las referencias que
-// quedaban huérfanas: `nav` (site.js, quedó vacío), el enlace "Nosotros" del
-// footer, y el hito "Ecosistema" de ScrollRail.jsx (que además se reescribió
-// para medir la posición real de cada sección en vez de asumir que están
-// repartidas parejo en la página — ver comentario ahí).
+// Pilares (2026-09-28): el usuario pidió quitar "los bloques con personajes"
+// y se entendió como la sección entera — se sacó del Home. Corregido el
+// mismo día: el pedido real era solo quitar las pastillas con texto (los
+// chips `b.items`) dentro de cada tarjeta, no la sección. Pilares vuelve al
+// render; las pastillas se quitaron dentro de `Sections.jsx` (ver ahí). El
+// hito "Ecosistema" del riel y los enlaces "Nosotros"/"Ecosistema" de
+// footer/nav vuelven también (ver site.js/ScrollRail.jsx).
 
 export default function Home() {
   return (
@@ -49,6 +49,7 @@ export default function Home() {
       <main>
         <Hero />
         <Manifiesto />
+        <Pilares />
         <BriefCTA />
         <Autoridad />
         <Familia />

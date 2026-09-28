@@ -4,11 +4,10 @@ import { gsap, ScrollTrigger } from '../utils/gsapSetup';
 
 const P = { fontFamily: 'Poppins, sans-serif' };
 
-// Secciones que el riel refleja, en orden de aparición. "Ecosistema" salió
-// de aquí junto con Pilares (ver nota en Home.jsx) — dejarlo habría hecho
-// que la etiqueta prometiera un destino que ya no existe en la página.
+// Secciones que el riel refleja, en orden de aparición.
 const HITOS = [
   { id: 'top', label: 'Inicio' },
+  { id: 'ecosistema', label: 'Ecosistema' },
   { id: 'familia', label: 'La familia' },
   { id: 'contacto', label: 'Hablemos' },
 ];
@@ -22,13 +21,13 @@ export default function ScrollRail() {
   const labelRef = useRef(null);
   const activoRef = useRef(-1);
   // Posición real (en px de documento) de cada hito — se mide del DOM, no
-  // se asume. El tramo "Inicio→La familia" y "La familia→Hablemos" NO miden
-  // lo mismo (Manifiesto/BriefCTA/Autoridad van en medio del primero, nada
-  // en medio del segundo), y esa diferencia cambia cada vez que se agrega o
-  // se quita una sección — como pasó al sacar Pilares: antes de este cambio
-  // el riel repartía los puntos por fracción pareja de la altura total de
-  // la página, así que la etiqueta activa se adelantaba o atrasaba respecto
-  // a la sección que de verdad se veía en pantalla.
+  // se asume. Los tramos entre un hito y el siguiente NO miden lo mismo (el
+  // Hero pineado por sí solo son ~5940px; Manifiesto apenas ~730 más) y esa
+  // diferencia cambia cada vez que se agrega o se quita una sección. Antes
+  // de este cambio el riel repartía los puntos por fracción pareja de la
+  // altura total de la página, así que la etiqueta activa se adelantaba o
+  // atrasaba respecto a la sección que de verdad se veía en pantalla — se
+  // reprodujo con Playwright (`scrollTo` a offsets reales) antes de corregir.
   const offsetsRef = useRef([]);
 
   // Un punto por paso, más el hito final
@@ -51,11 +50,11 @@ export default function ScrollRail() {
         // los offsets reales medidos arriba, tramo por tramo — no por
         // fracción pareja de la altura total. Devuelve también `i`, el
         // índice del hito YA CRUZADO (no el más cercano): el tramo
-        // Inicio→La familia mide 7952px pero el Hero pineado por sí solo
-        // ocupa 5940 de esos — si la etiqueta cambiara a mitad de tramo
-        // (como hacía antes) diría "La familia" con el usuario todavía
-        // dentro del Hero. `i` en cambio solo avanza cuando el scroll
-        // alcanza de verdad el offset del siguiente hito.
+        // Inicio→Ecosistema incluye el Hero pineado (~5940px de los suyos) —
+        // si la etiqueta cambiara a mitad de tramo (como hacía antes) diría
+        // "Ecosistema" con el usuario todavía dentro del Hero. `i` en cambio
+        // solo avanza cuando el scroll alcanza de verdad el offset del
+        // siguiente hito.
         const segmento = () => {
           const doc = document.documentElement;
           const maxScroll = doc.scrollHeight - window.innerHeight || 1;

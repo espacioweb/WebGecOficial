@@ -793,6 +793,28 @@ hito de sección (7) más 2 intermedias entre cada par.
   - Verificado en `localhost:5173` (1440px y 390px): sin errores de consola, menú sin
     "Ecosistema"/"Nosotros", flujo Manifiesto→BriefCTA sin hueco, detector de `impeccable`
     en 0 sobre los 4 archivos tocados.
+- **Corrección del punto anterior: Pilares vuelve al Home, solo se quitaron las pastillas
+  (2026-09-29).** El pedido original ("quitemos todos estos bloques de la home princpoial
+  donde aparecen los personajes") se interpretó como sacar la sección `<Pilares />`
+  completa — el usuario aclaró después que solo pedía quitar las pastillas de texto (los
+  chips `b.items`: "Branding y posicionamiento", "Campañas"...) dentro de cada tarjeta, no
+  la sección entera.
+  - `Home.jsx`: `<Pilares />` vuelve al render, en su posición original (después de
+    Manifiesto, antes de BriefCTA).
+  - `Sections.jsx`: se quitó solo el `<div>` que pintaba `b.items` como pastillas
+    redondeadas. El dato `items` sigue en `site.js` sin usarse en ningún lado — no se
+    borró, solo este render.
+  - Deshecha la limpieza de huérfanos del punto anterior, ahora innecesaria: `nav` vuelve
+    a traer `{ href: '#ecosistema', label: 'Ecosistema' }`, el footer recupera el link
+    "Nosotros", y `ScrollRail.jsx` recupera el hito `ecosistema` en `HITOS` (con offset
+    real ~6668px, entre Inicio y La familia).
+  - El fix del riel (offsets reales del DOM en vez de fracción pareja, índice de
+    etiqueta separado del de interpolación) **sigue vigente y correcto** — es un bug real
+    independiente de si Pilares existe o no. Reverificado con 4 hitos (antes 3): la
+    etiqueta cambia exactamente en los 4 offsets reales (0, 6668, 12693, 16293 en esta
+    medición), confirmado con `scrollTo`.
+  - Verificado en `localhost:5173` (1440px y 390px): sin errores de consola, tarjetas de
+    pilar sin pastillas (captura tomada y revisada), detector de `impeccable` en 0.
 
 ### ❌ Pendiente
 
