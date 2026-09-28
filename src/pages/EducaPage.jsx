@@ -36,7 +36,7 @@ function BloqueCompañIA() {
     <section className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
       <div className="mx-auto grid max-w-[1220px] gap-10 lg:grid-cols-[1.35fr_1fr] lg:items-stretch">
         <div>
-          <Eyebrow color={C.turquesa}>Programa Corporativo para la Adopción y Aplicación de IA</Eyebrow>
+          <Eyebrow color={C.turquesa} uppercase={false}>Programa Corporativo para la Adopción y Aplicación de IA</Eyebrow>
           <h2
             className="m-0 mt-4 mb-5 max-w-[24ch] text-[clamp(28px,3.6vw,44px)] leading-[1.1] font-extrabold text-white"
             style={{ ...P, letterSpacing: '-.03em' }}
@@ -71,7 +71,7 @@ function BloqueCompañIA() {
               </li>
             ))}
           </ul>
-          <CtaPrimary to={`${BRIEF_EDUCA}&tema=companiia`} color={DORADO}>
+          <CtaPrimary to={`${BRIEF_EDUCA}&tema=companiia`} color={C.turquesa}>
             Conversemos sobre CompañIA
           </CtaPrimary>
         </div>
@@ -86,7 +86,7 @@ function BloqueAudiovisual() {
     <section className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
       <div className="mx-auto grid max-w-[1220px] gap-10 lg:grid-cols-[1.35fr_1fr] lg:items-stretch">
         <div>
-          <Eyebrow color={C.naranja}>Formación Especializada IA: Audiovisual</Eyebrow>
+          <Eyebrow color={C.naranja} uppercase={false}>Formación Especializada IA: Audiovisual</Eyebrow>
           <p
             className="m-0 mt-4 mb-8 max-w-[56ch] text-[clamp(20px,2.4vw,26px)] leading-[1.4] font-semibold text-white"
             style={{ ...P, letterSpacing: '-.01em' }}
@@ -105,7 +105,7 @@ function BloqueAudiovisual() {
               </div>
             ))}
           </div>
-          <CtaPrimary to={`${BRIEF_EDUCA}&tema=audiovisual`} color={C.naranja}>
+          <CtaPrimary to={`${BRIEF_EDUCA}&tema=audiovisual`} color={C.turquesa}>
             Conversemos sobre la formación audiovisual
           </CtaPrimary>
         </div>
@@ -132,7 +132,6 @@ function BloqueMarcaYProgramas() {
               texto: 'Programas y talleres sobre branding, marketing, posicionamiento y comunicación.',
               icon: Palette,
               color: C.amarillo,
-              slot: 'captura / video',
             }}
           />
           <SlotCard
@@ -141,7 +140,6 @@ function BloqueMarcaYProgramas() {
               texto: 'Creatividad, innovación, bienestar, comunicación, habilidades técnicas y desarrollo humano.',
               icon: Users2,
               color: C.turquesa,
-              slot: 'captura / video',
             }}
           />
         </div>
@@ -196,8 +194,7 @@ export default function EducaPage() {
           'Preparamos a líderes y equipos para incorporar nuevas tecnologías como la inteligencia artificial, fortalecer la marca, ampliar su capacidad creativa y desarrollar habilidades técnicas y humanas que les permitan innovar, resolver retos y aportar mayor valor a la empresa.',
         ctaPrimary: 'Forma a tu equipo para crecer',
         ctaPrimaryTo: BRIEF_EDUCA,
-        ctaPrimaryColor: DORADO,
-        ctaSecondary: 'Explora nuestras formaciones',
+        ctaSecondary: 'Explora nuestras capacidades',
         ctaSecondaryHref: '#areas',
         media: (
           <HeroCharacter
@@ -223,7 +220,6 @@ export default function EducaPage() {
             texto: 'Ejercicios y herramientas que el equipo usa desde el primer día.',
             icon: Briefcase,
             color: C.naranja,
-            slot: 'captura / video',
           },
           {
             titulo: 'Adaptada a las personas',
@@ -237,7 +233,6 @@ export default function EducaPage() {
             texto: 'Hábitos y criterio para seguir aprendiendo después del programa.',
             icon: RefreshCw,
             color: C.turquesa,
-            slot: 'captura / video',
           },
         ],
       }}
@@ -262,7 +257,6 @@ export default function EducaPage() {
             titulo: 'Marca',
             icon: Palette,
             color: C.amarillo,
-            slot: 'captura / video',
             href: '#otras-formas',
             linkLabel: 'Ver más',
           },
@@ -270,7 +264,6 @@ export default function EducaPage() {
             titulo: 'Programas corporativos de crecimiento creativo',
             icon: BarChart3,
             color: C.turquesa,
-            slot: 'captura / video',
             href: '#otras-formas',
             linkLabel: 'Ver más',
           },
@@ -287,7 +280,6 @@ export default function EducaPage() {
         h2: 'Lo que tu empresa quiere lograr también depende de lo que su equipo está preparado para hacer.',
         ctaPrimary: 'Forma a tu equipo para crecer',
         ctaPrimaryTo: BRIEF_EDUCA,
-        ctaPrimaryColor: DORADO,
         ctaSecondary: 'Conversar con GEC',
         ctaSecondaryHref: WHATSAPP,
         silhouette: <CierreSilhouette />,

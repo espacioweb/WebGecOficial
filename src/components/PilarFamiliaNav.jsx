@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { pilares } from '../data/site';
 import { C } from '../data/gecIA';
@@ -14,6 +15,32 @@ const ACENTO_ACTIVO = {
   'p-soluciona': C.azul,
   'p-experience': C.morado,
 };
+
+// Avatar con fundido de entrada: sin esto el `<img>` aparece en blanco
+// mientras carga (confirmado con naturalWidth 0 en la primera pintura, en
+// desktop y mobile) — es el último bloque antes del footer, así que un
+// parpadeo ahí se lee como un bug, no como estilo. El fondo tintado cubre el
+// hueco mientras tanto, en vez de dejarlo negro.
+function Avatar({ p, active, acento }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div className="h-16 w-16 overflow-hidden rounded-full" style={{ background: `${acento}1f` }}>
+      <img
+        src={p.img}
+        alt={p.name}
+        className="h-full w-full object-cover transition-opacity duration-500"
+        style={{
+          opacity: loaded ? (active ? 1 : 0.75) : 0,
+          objectPosition: `${p.focus ?? 50}% 50%`,
+          boxShadow: active ? `0 0 0 3px ${acento}, 0 0 22px ${acento}80` : 'none',
+        }}
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+      />
+    </div>
+  );
+}
 
 // Versión ligera y estática de la Familia Meraki para páginas de pilar: no
 // repite la animación cinemática de 400vh del Home (sería pesado repetirla
@@ -49,17 +76,7 @@ export default function PilarFamiliaNav({ current }) {
                   background: active ? `${acento}14` : 'transparent',
                 }}
               >
-                <img
-                  src={p.img}
-                  alt={p.name}
-                  className="h-16 w-16 rounded-full object-cover"
-                  style={{
-                    opacity: active ? 1 : 0.75,
-                    objectPosition: `${p.focus ?? 50}% 50%`,
-                    boxShadow: active ? `0 0 0 3px ${acento}, 0 0 22px ${acento}80` : 'none',
-                  }}
-                  loading="lazy"
-                />
+                <Avatar p={p} active={active} acento={acento} />
                 <span className="text-[13.5px] font-semibold" style={{ ...P, color: active ? acento : '#EDEAE4' }}>
                   {p.name}
                 </span>

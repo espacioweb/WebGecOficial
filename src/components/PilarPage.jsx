@@ -70,7 +70,7 @@ export function SlotCard({ item }) {
   const Icon = item.icon;
   const SlotIcon = item.slotIcon ?? ImageIcon;
   return (
-    <div className="flex items-stretch gap-4 rounded-2xl border border-white/[.08] bg-[#10161D] p-6">
+    <div className="flex flex-col gap-4 rounded-2xl border border-white/[.08] bg-[#10161D] p-6 sm:flex-row sm:items-stretch">
       <div className="flex min-w-0 flex-1 flex-col">
         {Icon && (
           <div
@@ -102,7 +102,7 @@ export function SlotCard({ item }) {
       </div>
       {item.slot && (
         <div
-          className="grid w-[104px] flex-none place-items-center rounded-xl border border-dashed sm:w-[128px]"
+          className="grid h-[110px] w-full flex-none place-items-center rounded-xl border border-dashed sm:h-auto sm:w-[104px] lg:w-[128px]"
           style={{
             borderColor: `${item.color}55`,
             background: `linear-gradient(160deg, ${item.color}14, transparent 75%)`,
@@ -110,7 +110,7 @@ export function SlotCard({ item }) {
         >
           <div className="flex flex-col items-center gap-2 px-2 text-center">
             <SlotIcon size={20} style={{ color: `${item.color}99` }} />
-            <span className="text-[10.5px] leading-tight" style={{ ...P, color: 'rgba(242,239,233,.4)' }}>
+            <span className="text-[11.5px] leading-tight" style={{ ...P, color: 'rgba(242,239,233,.4)' }}>
               {item.slot}
             </span>
           </div>
@@ -120,7 +120,18 @@ export function SlotCard({ item }) {
   );
 }
 
-export function Eyebrow({ children, color = 'rgba(237,234,228,.55)' }) {
+// `uppercase = false` es para eyebrows que son oraciones largas, no tags
+// cortos ("Educa", "Archivo") — el tracking de mayúsculas (.18em) vuelve
+// ilegible un texto de 40-60 caracteres, así que esa variante usa tamaño
+// normal sin transformar el caso.
+export function Eyebrow({ children, color = 'rgba(237,234,228,.55)', uppercase = true }) {
+  if (!uppercase) {
+    return (
+      <div className="text-[13px] font-semibold" style={{ ...P, color }}>
+        {children}
+      </div>
+    );
+  }
   return (
     <div className="text-[11px] font-semibold uppercase" style={{ ...P, letterSpacing: '.18em', color }}>
       {children}
