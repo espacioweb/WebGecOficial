@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { cloneElement, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Image as ImageIcon } from 'lucide-react';
 import { P } from '../utils/textStyles';
@@ -17,7 +17,11 @@ const isRich = (item) => typeof item === 'object' && item !== null;
 // amplificar esto SOLO en el hero de Educa — mismo color, mismo dispositivo,
 // nada nuevo — así que queda detrás de un prop en vez de subir el valor por
 // defecto y afectar a Marketing/Studio/Soluciona/Experience de paso.
-export function HeroCharacter({ img, video, focus = 50, color, alt, haloBold = false }) {
+// `halo`: el halo se pensó para fundir el render contra el fondo OSCURO de
+// la página — reutilizado en la tarjeta dorada del Cierre (mismo personaje,
+// sin video) se ve como una mancha turbia en vez de un resplandor, así que
+// esa instancia lo apaga por completo.
+export function HeroCharacter({ img, video, focus = 50, color, alt, haloBold = false, halo = true }) {
   const videoRef = useRef(null);
   const [painted, setPainted] = useState(false);
 
@@ -36,14 +40,16 @@ export function HeroCharacter({ img, video, focus = 50, color, alt, haloBold = f
 
   return (
     <div className="relative mx-auto aspect-[3/4] w-full max-w-[420px]">
-      <div
-        className={
-          haloBold
-            ? 'pointer-events-none absolute -inset-8 -z-10 rounded-full blur-[110px]'
-            : 'pointer-events-none absolute inset-0 -z-10 rounded-full blur-[70px]'
-        }
-        style={{ background: `radial-gradient(circle, ${color}${haloBold ? '66' : '3d'} 0%, transparent 70%)` }}
-      />
+      {halo && (
+        <div
+          className={
+            haloBold
+              ? 'pointer-events-none absolute -inset-8 -z-10 rounded-full blur-[110px]'
+              : 'pointer-events-none absolute inset-0 -z-10 rounded-full blur-[70px]'
+          }
+          style={{ background: `radial-gradient(circle, ${color}${haloBold ? '66' : '3d'} 0%, transparent 70%)` }}
+        />
+      )}
       <img
         src={img}
         alt={alt}
@@ -182,6 +188,38 @@ export function CtaSecondary({ href, children, onClick }) {
   );
 }
 
+// Variantes oscuras de los CTA compartidos — el Cierre es una tarjeta
+// dorada sólida, así que necesita texto/relleno oscuro en vez del dorado
+// sobre fondo oscuro que usa el resto de la página.
+function CierrePrimary({ to, children }) {
+  const cls =
+    'inline-flex items-center gap-2.5 rounded-full bg-[#0A1216] px-7 py-4 text-[15px] font-bold text-[#F5B301] transition-transform duration-200 hover:-translate-y-0.5';
+  if (to?.startsWith('#')) {
+    return (
+      <a href={to} className={cls} style={P}>
+        {children} <span className="text-[17px]">→</span>
+      </a>
+    );
+  }
+  return (
+    <Link to={to} className={cls} style={P}>
+      {children} <span className="text-[17px]">→</span>
+    </Link>
+  );
+}
+
+function CierreSecondary({ href, children }) {
+  return (
+    <a
+      href={href}
+      className="inline-flex items-center gap-2.5 rounded-full border-[1.5px] border-[#0A1216] px-6 py-[15px] text-[15px] font-semibold text-[#0A1216] transition-colors hover:bg-[#0A1216]/10"
+      style={P}
+    >
+      {children}
+    </a>
+  );
+}
+
 // Patrón compartido de las páginas de pilar: Hero · Valor · Alcance ·
 // bloques opcionales del pilar · Cierre · Familia Meraki (el Footer ya vive
 // en App, global a todo el sitio).
@@ -200,23 +238,25 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
           <div>
             <Eyebrow color={hero.color}>{hero.eyebrow}</Eyebrow>
             <h1
-              className="m-0 mt-4 mb-6 text-[clamp(34px,5.4vw,60px)] leading-[1.08] font-extrabold text-white"
-              style={{ ...P, letterSpacing: '-.03em' }}
+              className="m-0 mt-4 mb-6 leading-[1.08] font-extrabold text-white"
+              style={{ ...P, letterSpacing: '-.03em', fontSize: hero.h1Size ?? 'clamp(34px,5.4vw,60px)' }}
             >
               {hero.h1}
             </h1>
             <p
-              className="m-0 mb-3 text-[clamp(17px,2vw,21px)] leading-[1.5] font-semibold"
+              className={`m-0 text-[clamp(17px,2vw,21px)] leading-[1.5] font-semibold ${hero.explicacion ? 'mb-3' : 'mb-10'}`}
               style={{ ...P, color: hero.color }}
             >
               {hero.descriptor}
             </p>
-            <p
-              className="m-0 mb-10 text-[15.5px] leading-[1.75]"
-              style={{ ...P, color: 'rgba(242,239,233,.65)' }}
-            >
-              {hero.explicacion}
-            </p>
+            {hero.explicacion && (
+              <p
+                className="m-0 mb-10 text-[15.5px] leading-[1.75]"
+                style={{ ...P, color: 'rgba(242,239,233,.65)' }}
+              >
+                {hero.explicacion}
+              </p>
+            )}
             <div className={`flex flex-wrap items-center gap-3.5 ${hero.media ? 'justify-start' : 'justify-center'}`}>
               <CtaPrimary to={hero.ctaPrimaryTo} color={hero.ctaPrimaryColor ?? hero.color}>
                 {hero.ctaPrimary}
@@ -230,103 +270,122 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
         </div>
       </section>
 
-      {/* Valor */}
-      <section className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
-        <div className="mx-auto max-w-[1100px]">
-          <h2
-            className="m-0 mb-10 max-w-[26ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white"
-            style={{ ...P, letterSpacing: '-.02em' }}
-          >
-            {valor.h2}
-          </h2>
-          <div className={`grid gap-4 ${valor.items.some(isRich) ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-4'}`}>
-            {valor.items.map((v) =>
-              isRich(v) ? (
-                <SlotCard key={v.titulo} item={v} />
-              ) : (
-                <div
-                  key={v}
-                  className="rounded-2xl border border-white/[.08] bg-[#10161D] p-6 text-[14.5px] leading-[1.5] font-medium text-[#EDEAE4]"
-                  style={P}
-                >
-                  {v}
-                </div>
-              ),
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Alcance / soluciones */}
-      <section id="areas" className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
-        <div className="mx-auto max-w-[1100px]">
-          <h2
-            className="m-0 mb-10 max-w-[28ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white"
-            style={{ ...P, letterSpacing: '-.02em' }}
-          >
-            {alcance.h2}
-          </h2>
-          {alcance.nota && (
-            <p className="m-0 mb-8 max-w-[64ch] text-[13.5px] leading-[1.7]" style={{ ...P, color: 'rgba(242,239,233,.5)' }}>
-              {alcance.nota}
-            </p>
-          )}
-          <div className="grid gap-4 sm:grid-cols-2">
-            {alcance.items.map((a) =>
-              isRich(a) && a.icon ? (
-                <SlotCard key={a.titulo} item={a} />
-              ) : (
-                <div key={a.titulo} className="rounded-2xl border border-white/[.08] bg-[#10161D] p-6">
-                  <div className="mb-1.5 text-[15px] font-bold text-white" style={P}>
-                    {a.titulo}
+      {/* Valor — opcional: Educa reemplaza esta sección genérica por una
+          lista numerada propia (ver EducaPage.jsx), pasada dentro de `extra`. */}
+      {valor && (
+        <section className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
+          <div className="mx-auto max-w-[1100px]">
+            <h2
+              className="m-0 mb-10 max-w-[26ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white"
+              style={{ ...P, letterSpacing: '-.02em' }}
+            >
+              {valor.h2}
+            </h2>
+            <div className={`grid gap-4 ${valor.items.some(isRich) ? 'sm:grid-cols-2' : 'sm:grid-cols-2 lg:grid-cols-4'}`}>
+              {valor.items.map((v) =>
+                isRich(v) ? (
+                  <SlotCard key={v.titulo} item={v} />
+                ) : (
+                  <div
+                    key={v}
+                    className="rounded-2xl border border-white/[.08] bg-[#10161D] p-6 text-[14.5px] leading-[1.5] font-medium text-[#EDEAE4]"
+                    style={P}
+                  >
+                    {v}
                   </div>
-                  {a.texto && (
-                    <p className="m-0 text-[13.5px] leading-[1.6]" style={{ ...P, color: 'rgba(242,239,233,.6)' }}>
-                      {a.texto}
-                    </p>
-                  )}
-                  {a.href && (
-                    <a
-                      href={a.href}
-                      {...(a.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
-                      className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-semibold transition-colors hover:text-white"
-                      style={{ ...P, color: a.color ?? hero?.color ?? '#F5B301' }}
-                    >
-                      {a.linkLabel ?? 'Conocer más'} <span>→</span>
-                    </a>
-                  )}
-                </div>
-              ),
-            )}
+                ),
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* Alcance / soluciones — opcional, mismo criterio que Valor. Cuando se
+          omite, la página debe declarar su propio `id="areas"` en el bloque
+          que lo reemplaza: el CTA secundario del hero apunta ahí. */}
+      {alcance && (
+        <section id="areas" className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
+          <div className="mx-auto max-w-[1100px]">
+            <h2
+              className="m-0 mb-10 max-w-[28ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white"
+              style={{ ...P, letterSpacing: '-.02em' }}
+            >
+              {alcance.h2}
+            </h2>
+            {alcance.nota && (
+              <p className="m-0 mb-8 max-w-[64ch] text-[13.5px] leading-[1.7]" style={{ ...P, color: 'rgba(242,239,233,.5)' }}>
+                {alcance.nota}
+              </p>
+            )}
+            <div className="grid gap-4 sm:grid-cols-2">
+              {alcance.items.map((a) =>
+                isRich(a) && a.icon ? (
+                  <SlotCard key={a.titulo} item={a} />
+                ) : (
+                  <div key={a.titulo} className="rounded-2xl border border-white/[.08] bg-[#10161D] p-6">
+                    <div className="mb-1.5 text-[15px] font-bold text-white" style={P}>
+                      {a.titulo}
+                    </div>
+                    {a.texto && (
+                      <p className="m-0 text-[13.5px] leading-[1.6]" style={{ ...P, color: 'rgba(242,239,233,.6)' }}>
+                        {a.texto}
+                      </p>
+                    )}
+                    {a.href && (
+                      <a
+                        href={a.href}
+                        {...(a.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
+                        className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-semibold transition-colors hover:text-white"
+                        style={{ ...P, color: a.color ?? hero?.color ?? '#F5B301' }}
+                      >
+                        {a.linkLabel ?? 'Conocer más'} <span>→</span>
+                      </a>
+                    )}
+                  </div>
+                ),
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {extra}
 
-      {/* Cierre */}
-      <section className="relative overflow-hidden border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(64px,8vw,110px)]">
-        {cierre.silhouette}
-        <div className="relative mx-auto max-w-[760px] text-center">
-          <h2
-            className="m-0 mb-8 text-[clamp(28px,3.6vw,44px)] leading-[1.1] font-extrabold text-white"
-            style={{ ...P, letterSpacing: '-.03em' }}
-          >
-            {cierre.h2}
-          </h2>
-          {cierre.texto && (
-            <p className="m-0 mb-8 text-[15.5px] leading-[1.7]" style={{ ...P, color: 'rgba(242,239,233,.65)' }}>
-              {cierre.texto}
-            </p>
-          )}
-          <div className="flex flex-wrap items-center justify-center gap-3.5">
-            <CtaPrimary to={cierre.ctaPrimaryTo} color={cierre.ctaPrimaryColor ?? hero.color}>
-              {cierre.ctaPrimary}
-            </CtaPrimary>
-            {cierre.ctaSecondaryHref && (
-              <CtaSecondary href={cierre.ctaSecondaryHref}>{cierre.ctaSecondary}</CtaSecondary>
+      {/* Cierre — tarjeta dorada sólida, mismo patrón repetido en dos
+          mockups del usuario (Educa Landing v2 y un cierre de Soluciona).
+          Reutiliza el personaje del hero (mismo `hero.media`, sin video —
+          `cloneElement` se lo quita) en vez de una foto nueva: nada de
+          contenido inventado, y evita decodificar el mismo mp4 dos veces
+          a la vez en una sección que empieza fuera de pantalla. */}
+      <section className="px-[clamp(20px,4vw,40px)] py-[clamp(48px,6vw,90px)]">
+        <div
+          className="mx-auto grid max-w-[1220px] items-center gap-10 overflow-hidden rounded-[32px] p-[clamp(28px,5vw,64px)] lg:grid-cols-2"
+          style={{ background: '#F5B301', color: '#0A1216' }}
+        >
+          <div className="flex flex-col gap-6">
+            <h2
+              className="m-0 text-[clamp(30px,4.2vw,52px)] leading-[1.05] font-extrabold"
+              style={{ ...P, letterSpacing: '-.03em' }}
+            >
+              {cierre.h2}
+            </h2>
+            {cierre.texto && (
+              <p className="m-0 max-w-[48ch] text-[15px] leading-[1.65]" style={{ ...P, color: 'rgba(10,18,22,.75)' }}>
+                {cierre.texto}
+              </p>
             )}
+            <div className="flex flex-wrap items-center gap-3.5">
+              <CierrePrimary to={cierre.ctaPrimaryTo}>{cierre.ctaPrimary}</CierrePrimary>
+              {cierre.ctaSecondaryHref && (
+                <CierreSecondary href={cierre.ctaSecondaryHref}>{cierre.ctaSecondary}</CierreSecondary>
+              )}
+            </div>
           </div>
+          {hero.media && (
+            <div className="mx-auto w-full max-w-[340px] lg:mx-0 lg:ml-auto">
+              {cloneElement(hero.media, { video: undefined, halo: false })}
+            </div>
+          )}
         </div>
       </section>
 
