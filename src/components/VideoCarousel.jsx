@@ -4,7 +4,9 @@ import { P } from '../utils/textStyles';
 import { track } from '../utils/analytics';
 import VideoModal from './VideoModal';
 
-function VideoCard({ video, color, onOpen, className = '' }) {
+// Exportado: StudioPage.jsx lo reutiliza para el botón del reel, en vez de
+// duplicar el mismo patrón miniatura+ícono de play.
+export function VideoCard({ video, color, onOpen, className = '' }) {
   return (
     <button
       type="button"

@@ -924,6 +924,19 @@ hito de sección (7) más 2 intermedias entre cada par.
   - Verificado en `localhost:5173` (1440px y 390px): las 4 capturas en su tarjeta
     correcta por contenido (Orienta→Orienta, Contenidos→Agencia, Operaciones→Gestor
     Operativo, Bolsillo→Bolsillo), sin errores de consola, detector de `impeccable` en 0.
+- **Botón de reel en modal premium para `/studio/` (2026-09-29).** El usuario dio el link
+  de su showreel de YouTube (`tc6r7P4PyUo`) y pidió un botón que lo abra en un modal
+  premium — mismo lenguaje visual que ya existe para Inside Your Brand.
+  - `VideoCarousel.jsx`: `VideoCard` (miniatura + ícono de play) pasa a exportado, para
+    que `StudioPage.jsx` lo reutilice en vez de duplicar el mismo patrón.
+  - `StudioPage.jsx`: nuevo `BloqueReel` (vía `extra`, entre Alcance y Cierre) — eyebrow +
+    H2 corto + `VideoCard` que abre `VideoModal` (el mismo componente que ya usa Inside
+    Your Brand) con el video embebido. Título del video verbatim vía oEmbed de YouTube
+    ("Showreel 2026 | Portafolio de Producción Audiovisual | Grupo Espacio Creativo –
+    Honduras") — no inventado, mismo criterio que `iybVideosSeed` en `site.js`.
+  - Verificado en `localhost:5173` (1440px y 390px): el botón abre el modal, el iframe
+    carga `youtube-nocookie.com/embed/tc6r7P4PyUo` y reproduce, cierra con la X, sin
+    errores de consola, detector de `impeccable` en 0.
 
 ### ❌ Pendiente
 

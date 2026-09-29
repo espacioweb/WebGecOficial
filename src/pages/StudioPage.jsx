@@ -1,10 +1,44 @@
+import { useState } from 'react';
 import { Compass, PenTool, Camera, Wand2, Video } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
-import PilarPage, { HeroCharacter } from '../components/PilarPage';
+import { P } from '../utils/textStyles';
+import PilarPage, { Eyebrow, HeroCharacter } from '../components/PilarPage';
+import { VideoCard } from '../components/VideoCarousel';
+import VideoModal from '../components/VideoModal';
 
 const BRIEF_STUDIO = '/cuentanos-tu-reto/?pilar=studio';
+
+// Reel real de producción, dado por el usuario (2026-09-29). Título verbatim
+// vía oEmbed de YouTube (no inventado), mismo criterio que iybVideosSeed en
+// site.js.
+const REEL = {
+  id: 'tc6r7P4PyUo',
+  title: 'Showreel 2026 | Portafolio de Producción Audiovisual | Grupo Espacio Creativo – Honduras',
+  thumbnail: 'https://i.ytimg.com/vi/tc6r7P4PyUo/hqdefault.jpg',
+};
+
+// Botón del reel en modal premium — reutiliza VideoCard/VideoModal (mismo
+// componente que Inside Your Brand) en vez de un botón de texto plano.
+function BloqueReel() {
+  const [abierto, setAbierto] = useState(null);
+  return (
+    <section className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(48px,6vw,80px)]">
+      <div data-reveal className="mx-auto flex max-w-[1100px] flex-col items-start gap-6">
+        <Eyebrow color={C.azul}>Nuestro trabajo</Eyebrow>
+        <h2
+          className="m-0 text-[clamp(22px,2.6vw,30px)] leading-[1.2] font-bold text-white"
+          style={{ ...P, letterSpacing: '-.02em' }}
+        >
+          Mira nuestro reel de producción.
+        </h2>
+        <VideoCard video={REEL} color={C.azul} onOpen={() => setAbierto(REEL)} className="w-full max-w-[420px]" />
+      </div>
+      <VideoModal video={abierto} onClose={() => setAbierto(null)} />
+    </section>
+  );
+}
 
 export default function StudioPage() {
   useDocumentMeta({
@@ -75,6 +109,7 @@ export default function StudioPage() {
           },
         ],
       }}
+      extra={<BloqueReel />}
       cierre={{
         h2: 'Tu próxima gran idea merece cobrar vida.',
         texto: 'Cuéntanos qué necesitas comunicar y construiremos la dirección creativa, el formato y la producción que mejor le den vida a tu idea.',
