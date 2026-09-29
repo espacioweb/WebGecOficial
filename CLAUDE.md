@@ -909,6 +909,21 @@ hito de sección (7) más 2 intermedias entre cada par.
       `opacity: 1` de inmediato — no anima, contenido visible sin esperar el scroll.
   - Verificado en las 5 páginas de pilar (1440px y 390px): sin errores de consola,
     detector de `impeccable` en 0, sin celdas vacías en ninguna grilla de Valor.
+- **Capturas reales en Productos GEC / Soluciona (2026-09-29).** El usuario dio 4
+  capturas reales de los productos GEC (Orienta, Agencia, Gestor Operativo, Bolsillo).
+  - Convertidas a webp (`cwebp -q 82`, ~55-70KB cada una, 1280×720 → coinciden exacto con
+    el `aspect-video` de la tarjeta, sin recorte) en `public/assets/pilares/productos/`.
+  - `BloqueProductosGEC` (`SolucionaPage.jsx`) ahora pinta la imagen real cuando
+    `p.img` existe y cae al slot punteado honesto si no — los 4 productos ya lo tienen,
+    así que el slot vacío queda de reserva para un producto futuro sin captura.
+  - **Ojo, decisión explícita del usuario**: las capturas de "Gestor Operativo" y
+    "Agencia" muestran la interfaz con otro nombre en pantalla ("Operaciones GEC",
+    "Contenidos GEC") — se preguntó si actualizar el nombre público a juego con la
+    captura y el usuario dijo que no: los nombres de producto en la página
+    (Agencia/Gestor Operativo) **se quedan como están**, solo cambió la imagen.
+  - Verificado en `localhost:5173` (1440px y 390px): las 4 capturas en su tarjeta
+    correcta por contenido (Orienta→Orienta, Contenidos→Agencia, Operaciones→Gestor
+    Operativo, Bolsillo→Bolsillo), sin errores de consola, detector de `impeccable` en 0.
 
 ### ❌ Pendiente
 

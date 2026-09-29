@@ -93,20 +93,45 @@ function BloqueFormas() {
 // SO-04 · Productos GEC: cuatro productos propios, con Agencia siempre con
 // su descriptor completo (no usar "Meraki" como nombre del producto). El
 // mockup pide media grande y real aquí ("aquí sí hacen falta imágenes, no un
-// ícono con miniatura vacía") — sigue siendo un slot honesto (no hay
-// capturas reales todavía), pero a todo el ancho de la tarjeta en vez de una
-// caja lateral pequeña, listo para recibir las capturas cuando existan.
+// ícono con miniatura vacía"). Capturas reales de cada producto (2026-09-29,
+// dadas por el usuario) en `/assets/pilares/productos/`, a todo el ancho de
+// la tarjeta en vez de una caja lateral pequeña. La interfaz de "Gestor
+// Operativo" y "Agencia" se ve por dentro como "Operaciones" y "Contenidos"
+// (así dicen sus propias capturas) — se deja el nombre público tal cual
+// pide el usuario, solo cambia la imagen.
 const productos = [
-  { id: 'prod-orienta', titulo: 'Orienta', categoria: 'Comercial', texto: 'Guía comercial para avanzar cada oportunidad.', icon: Compass },
-  { id: 'prod-agencia', titulo: 'Agencia', categoria: 'Marketing', texto: 'Sistema para la gestión del marketing digital.', icon: Megaphone },
+  {
+    id: 'prod-orienta',
+    titulo: 'Orienta',
+    categoria: 'Comercial',
+    texto: 'Guía comercial para avanzar cada oportunidad.',
+    icon: Compass,
+    img: '/assets/pilares/productos/orienta.webp',
+  },
+  {
+    id: 'prod-agencia',
+    titulo: 'Agencia',
+    categoria: 'Marketing',
+    texto: 'Sistema para la gestión del marketing digital.',
+    icon: Megaphone,
+    img: '/assets/pilares/productos/agencia.webp',
+  },
   {
     id: 'prod-gestor',
     titulo: 'Gestor Operativo',
     categoria: 'Administración',
     texto: 'Control administrativo desde la cotización hasta el cobro.',
     icon: ClipboardList,
+    img: '/assets/pilares/productos/gestor.webp',
   },
-  { id: 'prod-bolsillo', titulo: 'Bolsillo', categoria: 'Fidelización', texto: 'Fidelización para mantener activa la relación con el cliente.', icon: Wallet },
+  {
+    id: 'prod-bolsillo',
+    titulo: 'Bolsillo',
+    categoria: 'Fidelización',
+    texto: 'Fidelización para mantener activa la relación con el cliente.',
+    icon: Wallet,
+    img: '/assets/pilares/productos/bolsillo.webp',
+  },
 ];
 
 function BloqueProductosGEC() {
@@ -123,17 +148,27 @@ function BloqueProductosGEC() {
         <div data-reveal className="grid gap-5 sm:grid-cols-2">
           {productos.map((p) => (
             <div key={p.titulo} className="flex flex-col overflow-hidden rounded-2xl border border-white/[.08] bg-[#10161D]">
-              <div
-                className="grid aspect-video place-items-center border-b border-dashed"
-                style={{ borderColor: `${C.azul}55`, background: `linear-gradient(160deg, ${C.azul}14, transparent 75%)` }}
-              >
-                <div className="flex flex-col items-center gap-2 px-4 text-center">
-                  <ImageIcon size={22} style={{ color: `${C.azul}99` }} />
-                  <span className="text-[11.5px] leading-tight" style={{ ...P, color: 'rgba(242,239,233,.4)' }}>
-                    captura de {p.titulo}
-                  </span>
+              {p.img ? (
+                <img
+                  src={p.img}
+                  alt={`Captura de la interfaz de ${p.titulo}`}
+                  loading="lazy"
+                  decoding="async"
+                  className="aspect-video w-full border-b border-white/[.08] object-cover"
+                />
+              ) : (
+                <div
+                  className="grid aspect-video place-items-center border-b border-dashed"
+                  style={{ borderColor: `${C.azul}55`, background: `linear-gradient(160deg, ${C.azul}14, transparent 75%)` }}
+                >
+                  <div className="flex flex-col items-center gap-2 px-4 text-center">
+                    <ImageIcon size={22} style={{ color: `${C.azul}99` }} />
+                    <span className="text-[11.5px] leading-tight" style={{ ...P, color: 'rgba(242,239,233,.4)' }}>
+                      captura de {p.titulo}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
               <div className="flex items-start gap-4 p-6">
                 <div className="flex-1">
                   <div className="mb-1 flex flex-wrap items-baseline gap-2.5">
