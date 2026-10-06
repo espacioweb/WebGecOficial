@@ -14,7 +14,7 @@ import {
   fuerzas,
   abanico,
   marcas,
-  sectores,
+  clientes,
   contacto,
   redes,
   WHATSAPP,
@@ -478,6 +478,69 @@ export function BriefCTA() {
   );
 }
 
+/* ─────────────────── Cinta de clientes ───────────────────
+   Reemplaza la fila de "Sectores" (oct. 2026): los logos los entregó GEC
+   (ver `clientes` en site.js). Dos filas en sentidos opuestos para que no se
+   lea como un ticker plano; cada fila va duplicada y anima -50% (gecMarquee),
+   así el bucle no tiene costura. Los bordes se funden con una máscara, los
+   logos van atenuados y se encienden al pasar el cursor, y la fila se pausa
+   en hover para poder mirarlos. Con reduced-motion no hay cinta: los logos
+   quedan quietos en una grilla. */
+function FilaLogos({ logos, segundos, reversa }) {
+  const items = (oculto) =>
+    logos.map((c) => (
+      <li key={c.src} className="flex flex-none items-center px-[clamp(26px,3.4vw,52px)]">
+        <img
+          src={c.src}
+          alt={oculto ? '' : c.nombre}
+          loading="lazy"
+          decoding="async"
+          draggable="false"
+          className="w-auto max-w-none opacity-55 transition-[opacity,transform] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:scale-110 hover:opacity-100"
+          style={{ height: c.alto * 0.8 }}
+        />
+      </li>
+    ));
+  return (
+    <div className="group/fila overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_12%,#000_88%,transparent)]">
+      <div
+        className="flex w-max animate-[gecMarquee_linear_infinite] group-hover/fila:[animation-play-state:paused]"
+        style={{ animationDuration: `${segundos}s`, animationDirection: reversa ? 'reverse' : 'normal' }}
+      >
+        <ul className="m-0 flex list-none items-center p-0">{items(false)}</ul>
+        <ul aria-hidden="true" className="m-0 flex list-none items-center p-0">
+          {items(true)}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+function CintaClientes() {
+  const mitad = Math.ceil(clientes.length / 2);
+  return (
+    <div className="-mx-[clamp(24px,5vw,90px)] mt-[clamp(56px,6vw,88px)]">
+      <div className="mx-auto mb-10 flex max-w-[calc(1180px+2*clamp(24px,5vw,90px))] items-center gap-5 px-[clamp(24px,5vw,90px)]">
+        <span className="text-[11px] uppercase whitespace-nowrap" style={{ ...P, letterSpacing: '.28em', color: 'rgba(237,234,228,.5)' }}>
+          Marcas que han confiado en nosotros
+        </span>
+        <span className="h-px flex-1 bg-gradient-to-r from-white/15 to-transparent" />
+      </div>
+      <div className="flex flex-col gap-[clamp(28px,3vw,44px)] motion-reduce:hidden">
+        <FilaLogos logos={clientes.slice(0, mitad)} segundos={46} />
+        <FilaLogos logos={clientes.slice(mitad)} segundos={52} reversa />
+      </div>
+      <ul className="m-0 hidden list-none flex-wrap items-center justify-center gap-x-12 gap-y-8 px-6 motion-reduce:flex">
+        {clientes.map((c) => (
+          <li key={c.src}>
+            <img src={c.src} alt={c.nombre} loading="lazy" className="w-auto opacity-70" style={{ height: c.alto * 0.7 }} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /* ─────────────────── H-05 · Autoridad ───────────────────
    Texto, sin fotos: la guía pide respaldar con experiencia verificable, no
    con estadísticas sin verificar ni con imágenes de stock genéricas (lo que
@@ -507,23 +570,8 @@ export function Autoridad() {
             </p>
           </div>
         </div>
-        <div className="flex flex-col gap-4 border-t border-white/10 pt-8">
-          <span className="text-[11px] uppercase" style={{ ...P, letterSpacing: '.28em', color: 'rgba(237,234,228,.4)' }}>
-            Sectores en los que hemos trabajado
-          </span>
-          <div className="flex flex-wrap gap-2.5">
-            {sectores.map((s) => (
-              <span
-                key={s}
-                className="rounded-full border border-white/12 bg-white/[.04] px-4 py-2 text-[13.5px] font-medium text-[#EDEAE4]"
-                style={P}
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        </div>
       </div>
+      <CintaClientes />
     </section>
   );
 }

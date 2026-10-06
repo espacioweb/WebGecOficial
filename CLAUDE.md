@@ -1030,6 +1030,30 @@ hito de sección (7) más 2 intermedias entre cada par.
     - `eslint` limpio en los archivos tocados, salvo los 5 errores preexistentes de
       `Hero.jsx` L222 (`setStep`, ya estaban).
 
+- **Lote posterior a octubre 2026 (2026-10-05/06), todo en producción salvo lo último.**
+  - Íconos lucide de trazo fino en Valor (5 pilares), Manifiesto, Programas de Educa,
+    Formas de Soluciona y canales de IYB. `HOVER_CUADRO`/`ICONO_CUADRO` (exportados de
+    `PilarPage.jsx`) dan el hover de color + escala a todos los cuadros vía `--c`: el
+    color va como variable, **nunca** como `borderColor`/`background` inline (anularía el
+    hover).
+  - Video explicativo en el Home antes del Manifiesto (`VideoExplicativo`), monta el
+    `<video>` solo al hacer clic. Original pesado fuera del repo.
+  - Manifiesto con tarjetas interactivas (spotlight `--mx/--my`) y texto acortado.
+  - "Volver al punto" (`src/utils/retorno.js`): espera a que el pin del Hero tenga su
+    alto final y la tarjeta deje de moverse antes de desplazarse — medir antes caía a
+    mitad del Hero.
+  - XP Event (Experience): "Ver video" en `VideoLocalModal` (portal a `<body>`: un
+    `fixed` dentro de una tarjeta con `transform` queda atrapado), versión vertical en
+    móvil, y botón "Ir al sistema" (`xpevent.app/auth`). Los `.mov` originales no van al
+    repo.
+  - **Cinta de clientes** (`CintaClientes` en `Sections.jsx`) reemplaza la fila de
+    "Sectores" de Autoridad. **GEC entregó la lámina de logos para publicarla: esa es la
+    autorización** que la guía pedía (ya no aplica el bloqueo de marcas para estos 24).
+    Los logos se recortaron de esa lámina a webp blanco con alfa
+    (`public/assets/marcas/`); `alto` en `clientes` (`site.js`) es tamaño óptico. Dos
+    filas en sentidos opuestos, pausa en hover, grilla quieta con reduced-motion. El
+    dato `sectores` sigue en `site.js` sin usarse.
+
 ### ❌ Pendiente
 
 1. **Home — bloque aprobado que aún falta:**

@@ -217,6 +217,39 @@ export const sectores = [
   'Gastronomía y restaurantes',
 ];
 
+// Marcas cliente para la cinta de Autoridad (oct. 2026). La lámina de logos
+// la entregó GEC misma para publicarla: es la autorización que la guía pide
+// antes de mostrar marcas de clientes. Cada logo se recortó de esa lámina a
+// un webp blanco con transparencia. `alto` (px) es el tamaño óptico: área
+// visual pareja entre logos anchos y emblemas cuadrados, para que ninguno
+// grite ni desaparezca en la cinta.
+export const clientes = [
+  { nombre: 'Toyota', src: '/assets/marcas/toyota.webp', alto: 31 },
+  { nombre: 'DIMASA Ford', src: '/assets/marcas/dimasa-ford.webp', alto: 48 },
+  { nombre: 'UNICEF', src: '/assets/marcas/unicef.webp', alto: 36 },
+  { nombre: 'Banco Central de Honduras', src: '/assets/marcas/banco-central-de-honduras.webp', alto: 64 },
+  { nombre: 'CABEI', src: '/assets/marcas/cabei.webp', alto: 35 },
+  { nombre: 'PNUD', src: '/assets/marcas/pnud.webp', alto: 72 },
+  { nombre: 'Grupo Flores', src: '/assets/marcas/grupo-flores.webp', alto: 34 },
+  { nombre: 'Corporación Flores', src: '/assets/marcas/corporacion-flores.webp', alto: 29 },
+  { nombre: 'La Colonia', src: '/assets/marcas/la-colonia.webp', alto: 58 },
+  { nombre: 'Universidad José Cecilio del Valle', src: '/assets/marcas/ujcv.webp', alto: 44 },
+  { nombre: 'Yamaha', src: '/assets/marcas/yamaha.webp', alto: 36 },
+  { nombre: "Dunkin'", src: '/assets/marcas/dunkin.webp', alto: 36 },
+  { nombre: 'Jetstereo', src: '/assets/marcas/jetstereo.webp', alto: 26 },
+  { nombre: 'Indufesa Do it Center', src: '/assets/marcas/indufesa-do-it-center.webp', alto: 49 },
+  { nombre: 'TVS', src: '/assets/marcas/tvs.webp', alto: 41 },
+  { nombre: 'MotoMundo', src: '/assets/marcas/motomundo.webp', alto: 29 },
+  { nombre: 'atasa', src: '/assets/marcas/atasa.webp', alto: 41 },
+  { nombre: 'Cooperativa Sagrada Familia', src: '/assets/marcas/cooperativa-sagrada-familia.webp', alto: 42 },
+  { nombre: 'Nido de Águilas', src: '/assets/marcas/nido-de-aguilas.webp', alto: 31 },
+  { nombre: 'Eagles Nest School', src: '/assets/marcas/eagles-nest.webp', alto: 32 },
+  { nombre: 'LCM', src: '/assets/marcas/lcm.webp', alto: 46 },
+  { nombre: 'La Cacerola', src: '/assets/marcas/la-cacerola.webp', alto: 35 },
+  { nombre: 'Orujos', src: '/assets/marcas/orujos.webp', alto: 33 },
+  { nombre: 'Fitamin', src: '/assets/marcas/fitamin.webp', alto: 41 },
+];
+
 export const abanico = [
   { i: 0, kicker: 'Casos', t: 'Portafolio', img: '/ref/fondo-combinacion.jpg', desc: 'Proyectos, campañas y producciones que muestran el ecosistema GEC en acción.' },
   { i: 1, kicker: 'Ideas', t: 'Blog', img: '/ref/pose-celular.webp', desc: 'Artículos sobre creatividad, IA aplicada y crecimiento empresarial.' },
