@@ -74,6 +74,23 @@ export default function ExperiencePage() {
             color: C.morado,
             href: 'https://xpevent.app',
             linkLabel: 'Conocer XP Event',
+            // Login de la plataforma (ruta /auth de xpevent.app).
+            sistema: { label: 'Ir al sistema', href: 'https://xpevent.app/auth' },
+            // Promo de XP Event (dado por el usuario, oct. 2026), en dos
+            // cortes: horizontal para escritorio y vertical para celular.
+            // Codificados para web desde los .mov originales de ~139 MB
+            // (que no entran al repo): 12.3 MB y 7.9 MB.
+            video: {
+              titulo: 'XP Event — Una experiencia de principio a fin',
+              desktop: {
+                src: '/assets/videos/xpevent-desktop.mp4',
+                poster: '/assets/videos/xpevent-desktop-poster.webp',
+              },
+              celular: {
+                src: '/assets/videos/xpevent-celular.mp4',
+                poster: '/assets/videos/xpevent-celular-poster.webp',
+              },
+            },
           },
           {
             titulo: 'Juegos y dinámicas',

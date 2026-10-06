@@ -1,6 +1,6 @@
 import { cloneElement, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Image as ImageIcon, Play } from 'lucide-react';
 import { useGSAP } from '@gsap/react';
 import { gsap } from '../utils/gsapSetup';
 import { P } from '../utils/textStyles';
@@ -8,6 +8,7 @@ import { track } from '../utils/analytics';
 import { WHATSAPP } from '../data/site';
 import { icons } from './SocialIcons';
 import PilarFamiliaNav from './PilarFamiliaNav';
+import VideoLocalModal from './VideoLocalModal';
 import { leerRetorno } from '../utils/retorno';
 
 const isRich = (item) => typeof item === 'object' && item !== null;
@@ -113,6 +114,7 @@ export const ICONO_CUADRO =
 // pilares que aún no tienen este nivel de detalle siguen pasando strings
 // planos y caen en el render simple de cada sección.
 export function SlotCard({ item }) {
+  const [videoAbierto, setVideoAbierto] = useState(null);
   const Icon = item.icon;
   const SlotIcon = item.slotIcon ?? ImageIcon;
   return (
@@ -142,16 +144,55 @@ export function SlotCard({ item }) {
             {item.texto}
           </p>
         )}
-        {item.href && (
-          <a
-            href={item.href}
-            {...(item.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
-            onClick={() => item.href.includes('xpevent') && track('xpevent_clicked')}
-            className="mt-3 inline-flex items-center gap-1.5 text-[12.5px] font-semibold transition-colors hover:text-white"
-            style={{ ...P, color: item.color }}
-          >
-            {item.linkLabel ?? 'Conocer más'} <span>→</span>
-          </a>
+        {(item.href || item.video || item.sistema) && (
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
+            {/* `video`: botón "Ver video" que abre el promo en un modal
+                propio. Se elige la versión al hacer clic, no al cargar: en
+                pantallas angostas (celular) la vertical, en el resto la
+                horizontal — y nada se descarga hasta ese clic. */}
+            {item.video && (
+              <button
+                type="button"
+                onClick={() => {
+                  const celular = window.matchMedia('(max-width: 767px)').matches;
+                  const v = celular ? item.video.celular : item.video.desktop;
+                  setVideoAbierto({ titulo: item.video.titulo, ...v, vertical: celular });
+                  track('content_opened', { tipo: 'video', id: item.video.titulo });
+                }}
+                className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-(--c) py-2 pr-4 pl-2 text-[12.5px] font-bold text-[#0B0B0C] transition-transform duration-300 hover:-translate-y-0.5"
+                style={P}
+              >
+                <span className="grid h-6 w-6 place-items-center rounded-full bg-[#0B0B0C]/15">
+                  <Play size={12} strokeWidth={2.4} fill="currentColor" className="translate-x-[1px]" aria-hidden="true" />
+                </span>
+                Ver video
+              </button>
+            )}
+            {/* `sistema`: acceso directo a la plataforma (login), para quien
+                ya es cliente — botón de contorno, secundario a "Ver video". */}
+            {item.sistema && (
+              <a
+                href={item.sistema.href}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex items-center gap-1.5 rounded-full border border-(--c) px-4 py-[7px] text-[12.5px] font-semibold text-(--c) transition-colors duration-300 hover:bg-(--c) hover:text-[#0B0B0C]"
+                style={P}
+              >
+                {item.sistema.label} <span aria-hidden="true">↗</span>
+              </a>
+            )}
+            {item.href && (
+              <a
+                href={item.href}
+                {...(item.href.startsWith('http') ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
+                onClick={() => item.href.includes('xpevent') && track('xpevent_clicked')}
+                className="inline-flex items-center gap-1.5 text-[12.5px] font-semibold transition-colors hover:text-white"
+                style={{ ...P, color: item.color }}
+              >
+                {item.linkLabel ?? 'Conocer más'} <span>→</span>
+              </a>
+            )}
+          </div>
         )}
       </div>
       {item.slot && (
@@ -170,6 +211,7 @@ export function SlotCard({ item }) {
           </div>
         </div>
       )}
+      <VideoLocalModal video={videoAbierto} onClose={() => setVideoAbierto(null)} />
     </div>
   );
 }
