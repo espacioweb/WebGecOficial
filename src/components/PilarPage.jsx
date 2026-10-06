@@ -342,12 +342,16 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
             >
               {hero.h1}
             </h1>
-            <p
-              className={`m-0 text-[clamp(17px,2vw,21px)] leading-[1.5] font-semibold ${hero.explicacion ? 'mb-3' : 'mb-10'}`}
-              style={{ ...P, color: hero.color }}
-            >
-              {hero.descriptor}
-            </p>
+            {/* `descriptor` es opcional: Educa (oct. 2026) pone la frase fuerte
+                directamente como H1 y solo lleva el párrafo de `explicacion`. */}
+            {hero.descriptor && (
+              <p
+                className={`m-0 text-[clamp(17px,2vw,21px)] leading-[1.5] font-semibold ${hero.explicacion ? 'mb-3' : 'mb-10'}`}
+                style={{ ...P, color: hero.color }}
+              >
+                {hero.descriptor}
+              </p>
+            )}
             {hero.explicacion && (
               <p
                 className="m-0 mb-10 text-[15.5px] leading-[1.75]"

@@ -134,14 +134,16 @@ export default function EducaPage() {
       hero={{
         eyebrow: 'Educa · Formación empresarial',
         color: C.turquesa,
-        h1Size: 'clamp(40px,6.2vw,76px)',
+        // Copy octubre 2026 (lámina 15) — literal. El usuario pidió que el
+        // titular deje de ser "Adopción de IA empresarial": Educa ya no es
+        // solo IA (Wellness, Cultura…), así que la frase fuerte pasa a ser el
+        // H1 y el párrafo va debajo, sin descriptor de color.
         h1: (
           <>
-            Adopción de <span style={{ color: C.turquesa }}>IA</span> empresarial
+            Capacitar no basta si lo aprendido no{' '}
+            <span style={{ color: C.turquesa }}>cambia la forma de trabajar.</span>
           </>
         ),
-        // Copy octubre 2026 (lámina 15) — literal.
-        descriptor: 'Capacitar no basta si lo aprendido no cambia la forma de trabajar.',
         explicacion:
           'Las empresas necesitan equipos capaces de responder a nuevos retos, adoptar cambios y aplicar lo aprendido en situaciones reales. En Educa diseñamos programas a partir de necesidades concretas del negocio para convertir conocimiento en acción.',
         ctaPrimary: 'Forma a tu equipo',
