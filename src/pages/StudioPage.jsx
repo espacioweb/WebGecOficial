@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Compass, PenTool, Camera, Wand2, Video } from 'lucide-react';
+import { Building2, Clapperboard, GraduationCap, Megaphone, Radio, Mic } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
 import { P } from '../utils/textStyles';
-import PilarPage, { Eyebrow, HeroCharacter } from '../components/PilarPage';
+import PilarPage, { B, Eyebrow, HeroCharacter } from '../components/PilarPage';
 import { VideoCard } from '../components/VideoCarousel';
 import VideoModal from '../components/VideoModal';
 
@@ -54,10 +54,11 @@ export default function StudioPage() {
         eyebrow: 'Studio',
         color: C.azul,
         h1: 'Studio',
+        // Copy "CAMBIOS WEBSITE GEC · octubre 2026" (lámina 8) — literal.
         descriptor:
-          'Producimos ideas con criterio y las convertimos en soluciones visuales y audiovisuales que agregan valor a la marca.',
+          'Hay ideas que necesitan verse. Otras necesitan explicarse, venderse o lograr que todos las entiendan.',
         explicacion:
-          'Cada marca necesita una respuesta creativa propia. Partimos de lo que necesita comunicar y elegimos la dirección, los formatos y los recursos de producción adecuados para desarrollar piezas coherentes, originales y adaptables que fortalezcan su presencia.',
+          'Studio convierte necesidades de comunicación en soluciones visuales y audiovisuales pensadas para cumplir una función dentro de la empresa y fortalecer la marca.',
         ctaPrimary: 'Cuéntanos tu idea',
         ctaPrimaryTo: BRIEF_STUDIO,
         ctaSecondary: 'Descubre cómo podemos producirla',
@@ -66,45 +67,86 @@ export default function StudioPage() {
           <HeroCharacter img="/assets/pilares/studio.webp" video="/assets/videos/scene_3.mp4" focus={84} color={C.azul} alt="Meraki Studio" />
         ),
       }}
+      // Lámina 9 — las frases en negrita del PDF van como <B> dentro del texto.
       valor={{
-        h2: 'Creatividad con criterio para producir lo que tu marca necesita.',
+        h2: 'No producimos por producir. Cada pieza debe cumplir un propósito.',
         items: [
-          'Dirección creativa alineada con la marca',
-          'Soluciones visuales coherentes y adaptables',
-          'Producción con propósito',
+          {
+            titulo: 'La necesidad',
+            texto: (
+              <>
+                Una empresa puede necesitar <B>presentar, explicar, vender, formar o fortalecer su marca</B>. Todo
+                comienza entendiendo qué necesita lograr.
+              </>
+            ),
+          },
+          {
+            titulo: 'La dirección',
+            texto: (
+              <>
+                Definimos <B>qué contar, cómo contarlo y qué formato funciona mejor</B>, manteniendo coherencia con
+                la marca y su audiencia.
+              </>
+            ),
+          },
+          {
+            titulo: 'La producción',
+            texto: (
+              <>
+                Convertimos esa dirección en <B>soluciones visuales y audiovisuales</B> pensadas para comunicar mejor
+                y aportar valor al negocio.
+              </>
+            ),
+          },
         ],
       }}
+      // Lámina 10 — reemplaza las 5 tarjetas por disciplina (Dirección creativa,
+      // Diseño, Fotografía, Animación, Producción) y la nota Live/Fusion/Cinema
+      // por 6 tipos de contenido según lo que la empresa necesita comunicar.
       alcance={{
-        h2: 'Soluciones creativas para dar forma y movimiento a tus ideas.',
-        nota: 'En spots y reels: Live es filmación real, Fusion combina filmación con IA y Cinema es totalmente IA.',
+        eyebrow: 'Soluciones audiovisuales',
+        h2: 'Contenidos pensados para lo que tu empresa necesita comunicar.',
+        intro: (
+          <>
+            Desde contar la historia de una marca hasta explicar un servicio, apoyar una venta, formar equipos o
+            conectar con una audiencia. <B>Definimos el formato y la producción según el objetivo.</B>
+          </>
+        ),
         items: [
           {
-            titulo: 'Dirección creativa',
-            icon: Compass,
+            titulo: 'Producciones Institucionales',
+            texto: 'Historias de marca, documentales y contenidos que comunican trayectoria, propósito, cultura y valor empresarial.',
+            icon: Building2,
             color: C.azul,
           },
           {
-            titulo: 'Diseño gráfico',
-            texto: 'Desarrollo visual de marca, piezas, composición e imagen, con IA cuando aporta valor.',
-            icon: PenTool,
+            titulo: 'Serie Spotlight',
+            texto: 'Contenidos por capítulos que profundizan en productos, servicios o soluciones para facilitar su comprensión y apoyar la venta.',
+            icon: Clapperboard,
             color: C.azul,
           },
           {
-            titulo: 'Fotografía',
-            texto: 'Producto, corporativa e instalaciones, con postproducción e IA cuando aplica.',
-            icon: Camera,
+            titulo: 'Contenidos Educativos',
+            texto: 'Piezas para formar, explicar procesos, fortalecer cultura organizacional o compartir conocimiento con equipos y clientes.',
+            icon: GraduationCap,
             color: C.azul,
           },
           {
-            titulo: 'Animación',
-            texto: '2D, motion graphics y animación con IA.',
-            icon: Wand2,
+            titulo: 'Contenidos Comerciales',
+            texto: 'Spots, reels y piezas audiovisuales pensadas para presentar productos, servicios, campañas y promociones con mayor impacto.',
+            icon: Megaphone,
             color: C.azul,
           },
           {
-            titulo: 'Producción audiovisual',
-            texto: 'Spots, reels, spotlights, videos educativos y cortinas para pantallas o tótems.',
-            icon: Video,
+            titulo: 'Eventos & Streaming',
+            texto: 'Programas en vivo o pregrabados para eventos, transmisiones, entrevistas y contenidos diseñados para extender la experiencia a otros canales.',
+            icon: Radio,
+            color: C.azul,
+          },
+          {
+            titulo: 'Podcast',
+            texto: 'Formatos de conversación, entrevistas o contenidos especializados que ayudan a construir conocimiento, cercanía y presencia de marca.',
+            icon: Mic,
             color: C.azul,
           },
         ],

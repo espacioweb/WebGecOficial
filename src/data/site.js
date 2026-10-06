@@ -43,9 +43,12 @@ export const pilares = [
     // el brazo extendido, centrado; al revés se cortaba y dejaba hueco.
     focus: 58,
     img: '/assets/pilares/marketing.webp',
-    tagline: 'Estrategia, campañas y comunicación comercial.',
+    // tagline/blurb: copy "CAMBIOS WEBSITE GEC · octubre 2026" (láminas 5, 7,
+    // 14, 20, 26) — abren con el problema de la empresa, no con el servicio.
+    tagline:
+      'Tu empresa hace marketing, pero no siempre está claro qué priorizar, qué canales activar o hacia dónde dirigir los esfuerzos.',
     blurb:
-      'Construimos dirección, posicionamiento y comunicación estratégica que impulsa el crecimiento de tu marca.',
+      'Revisamos la estrategia, definimos prioridades y conectamos los canales para que marca, comunicación y objetivos comerciales avancen en una misma dirección.',
     // Mismas cuatro áreas de la página interna (/marketing/) — el chip es
     // un adelanto de lo que el pilar realmente entrega, no una lista aparte.
     items: ['Branding y posicionamiento', 'Campañas', 'Marketing digital', 'Optimización de canales'],
@@ -64,9 +67,9 @@ export const pilares = [
     // este encuadre el personaje queda fuera de cámara.
     focus: 84,
     img: '/assets/pilares/studio.webp',
-    tagline: 'Producción audiovisual, diseño y contenido visual.',
+    tagline: 'Tu empresa tiene mucho que contar, pero no siempre logra comunicarlo de forma clara, atractiva y coherente.',
     blurb:
-      'Convertimos ideas en piezas visuales y audiovisuales que elevan tu marca y comunican con impacto.',
+      'Creamos contenido audiovisual que ayuda a presentar mejor la empresa, explicar ideas, apoyar la venta y fortalecer la cultura de marca.',
     // Mismas cinco áreas de la página interna (/studio/).
     items: ['Dirección creativa', 'Diseño gráfico', 'Fotografía', 'Animación', 'Producción audiovisual'],
     ...dark('linear-gradient(140deg,#0C1C2E 0%,#13314F 52%,#070D15 100%)'),
@@ -84,9 +87,9 @@ export const pilares = [
     // este encuadre el personaje queda fuera de cámara.
     focus: 71,
     img: '/assets/pilares/educa.webp',
-    tagline: 'Formación, inspiración y desarrollo de equipos.',
+    tagline: 'Cuando el negocio evoluciona, las capacidades del equipo también necesitan hacerlo.',
     blurb:
-      'Desarrollamos capacidades, inspiramos a las personas y diseñamos experiencias que transforman la forma de trabajar.',
+      'Fortalecemos conocimientos en IA, marketing, marca, cultura, bienestar y adopción de procesos para aplicarlos mejor en el trabajo.',
     items: ['Formación Ejecutiva IA', 'Formación Especializada IA', 'Comunidad IA'],
     // Panel GEC IA desactivado a pedido del usuario (2026-09-27): no quiere
     // catálogo detrás de un formulario de correo. Para reactivarlo, devolver
@@ -108,9 +111,9 @@ export const pilares = [
     // este encuadre el personaje queda fuera de cámara.
     focus: 96,
     img: '/assets/pilares/soluciona.webp',
-    tagline: 'Sistemas, herramientas y soluciones empresariales.',
-    blurb:
-      'Transformamos retos en herramientas y sistemas que optimizan tu operación, mejoran tu gestión y fidelizan a tus clientes.',
+    tagline:
+      'Cuando la operación depende demasiado de tareas manuales, seguimientos o pocas personas, crecer se complica.',
+    blurb: 'Creamos soluciones que ordenan procesos, facilitan el seguimiento y hacen el trabajo más ágil.',
     // Mismas cuatro áreas de la página interna (/soluciona/).
     items: ['Configuración de plataformas', 'Productos desarrollados por GEC', 'Sistemas a la medida', 'Soluciones con IA'],
     ...dark('linear-gradient(140deg,#071A33 0%,#0B2545 52%,#040B16 100%)'),
@@ -128,9 +131,9 @@ export const pilares = [
     // este encuadre el personaje queda fuera de cámara.
     focus: 80,
     img: '/assets/pilares/experience.webp',
-    tagline: 'Experiencias, eventos e interacción con clientes.',
+    tagline: 'Cada interacción es una oportunidad para conectar mejor con tus clientes y aprender de ellos.',
     blurb:
-      'Creamos experiencias memorables y medibles que conectan con tus audiencias.',
+      'Diseñamos experiencias modernas e interactivas que fortalecen la relación con la marca y generan información útil para seguir mejorando.',
     // Mismas cinco áreas de la página interna (/experience/).
     items: ['XP Event', 'Juegos y dinámicas', 'Encuestas y votaciones', 'Presentaciones interactivas', 'Experiencias a la medida'],
     ...dark('linear-gradient(140deg,#1A0B2E 0%,#2A1147 52%,#0B0518 100%)'),

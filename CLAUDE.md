@@ -937,6 +937,98 @@ hito de sección (7) más 2 intermedias entre cada par.
   - Verificado en `localhost:5173` (1440px y 390px): el botón abre el modal, el iframe
     carga `youtube-nocookie.com/embed/tc6r7P4PyUo` y reproduce, cierra con la X, sin
     errores de consola, detector de `impeccable` en 0.
+- **"CAMBIOS WEBSITE GEC · octubre 2026" aplicado (2026-10-05).** El usuario mandó
+  `~/Downloads/CAMBIOS WEB.pdf` (35 láminas Keynote: captura del sitio + texto nuevo
+  aprobado). El sitio pasa de describir servicios a abrir cada sección con el problema de la
+  empresa. **Ese PDF es ahora la fuente de verdad del copy de estas secciones**; se aplicó
+  literal. Mapa de láminas: 2 hero Home · 3 Manifiesto · 4 encabezado Pilares · 5/7/14/20/26
+  tarjetas de pilar del Home · 6/8/15/21/27 heros de pilar · 9–13, 16–19, 22–25, 28–30
+  secciones de cada pilar · 31 Autoridad · 32 BriefCTA · 33 brief · 34 IYB · 35 footer.
+  - **Compartido (`PilarPage.jsx`)**, todo opcional y retrocompatible:
+    - `valor.intro` / `alcance.intro`, que usan el componente nuevo `Intro`.
+    - `alcance.eyebrow`.
+    - `item.lead` en `SlotCard`: la frase en negrita "Cuando…/Para…" antes del texto.
+    - Helper `B` para las negritas del PDF dentro de un párrafo. Sube el contraste, no solo
+      el peso.
+  - **Home**:
+    - Hero paso 4: H1 "Detectamos qué está frenando el crecimiento de tu empresa…" y CTA
+      "Encuentra la solución que necesita tu empresa →", que ahora lleva a
+      `/cuentanos-tu-reto/` (antes iba a `#ecosistema`). El H1 baja de tope de 56 a 46 px
+      porque es más largo.
+    - Manifiesto: las 3 columnas ahora tienen título.
+    - Encabezado de Pilares con el párrafo nuevo.
+    - `tagline`/`blurb` de los 5 pilares en `site.js`. Ojo: `BriefPage` también muestra
+      `tagline` en el modal de servicios.
+    - Autoridad: "20 años… 12 años…".
+    - BriefCTA: "Descubrir qué necesito".
+  - **Studio**: Alcance pasa de 5 disciplinas a 6 tipos de contenido (Institucionales,
+    Spotlight, Educativos, Comerciales, Eventos & Streaming, Podcast). Sale la nota
+    Live/Fusion/Cinema.
+  - **Educa**:
+    - Se borraron `BloqueCompañIA` (6 pasos) y `BloqueAudiovisual` (lámina 18: "Eliminamos
+      esta información").
+    - Valor usa ahora la sección compartida.
+    - `BloqueProgramas` tiene 4 tarjetas:
+      - CompañIA lleva al sitio externo `compania.grupoespaciocreativo.com`.
+      - Audiovisual, Wellness y Cultura llevan a "Ver programa" →
+        `/cuentanos-tu-reto/?pilar=educa&tema=audiovisual|wellness|cultura`.
+    - Salen las filas Marca / Programas corporativos.
+    - **Se escribe "CompañIA" y no "CompañÍA"** como trae el PDF: es la grafía de la guía y
+      la del propio sitio del programa.
+    - El CTA secundario del hero pasa a "Ver programas", para que el botón diga lo que hay
+      del otro lado.
+  - **Soluciona**:
+    - Formas pasa a CONFIGURAR / **ADAPTAR** / DESARROLLAR, literal del PDF; antes era
+      ADOPTAR. Cada forma lleva "Conviene cuando:".
+    - **Productos GEC: los 4 productos (Orienta, Agencia, Gestor, Bolsillo) se reemplazaron
+      por 3, decisión del usuario:**
+      - Sistema de Gestión Creativa de Marketing y Producción Audiovisual, que reusa la
+        captura `agencia.webp`.
+      - XP Event, con link a xpevent.app.
+      - VecinoHub.
+    - XP Event y VecinoHub tienen el slot honesto porque faltan sus capturas. Los webp viejos
+      quedan sin usar en `public/`.
+  - **Experience**: Alcance con `lead` en sus 5 ítems; XP Event conserva su link.
+  - **Brief** (`BriefPage.jsx` + `functions/api/brief.js`):
+    - Intro nueva.
+    - Las etiquetas de `AREAS` cambian. **Los ids no**, porque son las claves de todo el
+      brief y del servidor.
+    - **Paso nuevo `logro`**: "¿Qué te gustaría lograr?", 5 opciones + Otro, con línea
+      libre. Va como `logro` en el payload y en Telegram. Ojo: `resultado` ya es el nombre de
+      la pantalla final; no confundir.
+    - Las etiquetas de etapa son 3 nuevas.
+    - **`clasificar()` se reescribió con los textos nuevos.** Compara literales: si se cambia
+      `ETAPAS` hay que cambiarlo también en el servidor. Probado con un script de node sobre
+      `onRequestPost` (5/5 casos):
+
+      | Etapa | Tiempo | Clasificación |
+      |---|---|---|
+      | Necesito comenzar pronto | 30 días o 1 a 3 meses | Prioritaria |
+      | Quiero evaluar una solución | cualquiera | En evaluación |
+      | Cualquier otro caso | | Para desarrollar |
+
+    - Un progreso guardado con una etapa vieja se descarta al cargar.
+    - `TEMA_A_DETALLE` precarga "Programa Wellness" / "Mejora de Cultura Organizacional" en
+      el detalle de "Otras habilidades".
+    - Botón final: "Quiero recibir orientación".
+    - "¿Dónde podemos contactarte…?" es la pregunta del paso de correo.
+  - **Inside Your Brand**:
+    - Los 4 tipos llevan descripción y "Ideas para crecer" pasa a "Ideas para entender".
+    - Temas: sale Liderazgo, entran Personas y cultura y Experiencia del cliente.
+    - Comunidad tiene 2 tarjetas, WhatsApp y YouTube, con su descripción.
+  - **Footer sin cambio**: el usuario mantiene YouTube. Instagram y TikTok se suman cuando
+    pase los links.
+  - **Pendientes que salieron de este lote**:
+    - URL real del **canal** de WhatsApp. Hoy "Unirme al canal" abre un chat.
+    - Links de Instagram y TikTok.
+    - Capturas de XP Event y VecinoHub.
+  - Verificado en `localhost:5173`:
+    - Todos los textos de cada página presentes y los viejos ausentes, comprobado por
+      página con `textContent`.
+    - Brief recorrido de punta a punta desde `?tema=wellness`.
+    - 0 errores de consola, sin overflow horizontal a 390px y `impeccable detect` en 0.
+    - `eslint` limpio en los archivos tocados, salvo los 5 errores preexistentes de
+      `Hero.jsx` L222 (`setStep`, ya estaban).
 
 ### ❌ Pendiente
 
@@ -947,11 +1039,10 @@ hito de sección (7) más 2 intermedias entre cada par.
 2. **Home — bloque sin base en la guía que sigue ahí**: `Manifiesto` (decidir si se queda,
    se reconvierte o se borra). `ValorHorizontal`, `InsideYourBrand` y `Portafolio` ya
    salieron del render (ver "Hecho").
-3. **Hero de Home (`src/components/Hero.jsx`)**: el copy no calza con el aprobado (H1 dice
-   "Somos una agencia de..." en vez de "Agencia de Crecimiento Creativo Empresarial.";
-   falta el "Momento 2" completo tal como lo da la guía; el CTA no dice "Encuentra la
-   solución que necesita tu empresa"). Tampoco hay botón "Saltar introducción" — por eso
-   `intro_skipped` (evento de analítica) sigue sin poder dispararse (ver "Hecho" arriba).
+3. **Hero de Home (`src/components/Hero.jsx`)**: el paso final ya lleva el copy de octubre
+   2026 y el CTA "Encuentra la solución que necesita tu empresa" (ver "Hecho"). Sigue
+   faltando el botón "Saltar introducción", así que `intro_skipped` (evento de analítica)
+   todavía no se puede disparar.
 4. **Menú hamburguesa fuera de Home**: solo queda el ancla "Ecosistema" (`#ecosistema`),
    que no existe en las páginas de pilar, el brief ni Inside Your Brand — rota ahí. Es
    trabajo de Fase 1 (Header/Footer) que el usuario dijo que podía esperar.

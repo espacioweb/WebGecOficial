@@ -45,19 +45,33 @@ export function Manifiesto() {
           className="m-0 text-[clamp(24px,2.9vw,46px)] leading-[1.24] font-medium text-[#EDEAE4]"
           style={{ ...P, letterSpacing: '-.02em', textWrap: 'pretty' }}
         >
-          Ayudamos a las empresas a convertir ideas en crecimiento: fortaleciendo su marca,
-          desarrollando su gente, creando mejores sistemas y diseñando experiencias que conectan
-          con sus clientes.
+          {/* Copy "CAMBIOS WEBSITE GEC · octubre 2026" (lámina 3) — literal. */}
+          Ayudamos a las empresas a detectar dónde se frena su crecimiento y dónde se rompe la
+          experiencia del cliente, fortaleciendo desde adentro lo que necesita funcionar mejor afuera.
         </p>
         <div className="grid gap-7 border-t border-white/10 pt-5 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
           {[
-            'Somos un ecosistema creativo diseñado para empresas que necesitan pensar mejor, comunicar mejor y producir mejor.',
-            'Nuestro trabajo no se limita a campañas o piezas visuales: fortalecemos lo que la marca comunica hacia afuera y lo que construye desde adentro.',
-            'Ideas, equipos, procesos, herramientas y la forma en que cada empresa se relaciona con sus clientes.',
-          ].map((t) => (
-            <p key={t} className="m-0 text-[15px] leading-[1.75] font-light" style={{ color: 'rgba(237,234,228,.6)' }}>
-              {t}
-            </p>
+            {
+              t: 'Lo que se ve afuera',
+              d: 'Hay oportunidades que no se convierten, clientes que se pierden, ventas sin seguimiento y esfuerzos de marketing donde no siempre está claro qué está funcionando.',
+            },
+            {
+              t: 'Lo que puede estar pasando adentro',
+              d: 'Equipos saturados, procesos que dependen de pocas personas, tareas que se repiten, tecnología que no se aprovecha o IA sin una aplicación clara para el negocio.',
+            },
+            {
+              t: 'Lo que hace GEC',
+              d: 'Conectamos comunicación, procesos, equipos, sistemas, servicio y experiencias de marca para que la empresa funcione mejor y sus clientes también lo sientan.',
+            },
+          ].map((b) => (
+            <div key={b.t} className="flex flex-col gap-2.5">
+              <h3 className="m-0 text-[15px] font-semibold text-[#EDEAE4]" style={P}>
+                {b.t}
+              </h3>
+              <p className="m-0 text-[15px] leading-[1.75] font-light" style={{ color: 'rgba(237,234,228,.6)' }}>
+                {b.d}
+              </p>
+            </div>
           ))}
         </div>
       </div>
@@ -166,9 +180,16 @@ export function Pilares({ onOpenPanel }) {
             className="m-0 max-w-[22ch] text-[clamp(28px,3.2vw,52px)] leading-[1.06] font-bold text-[#EDEAE4]"
             style={{ ...P, letterSpacing: '-.03em', textWrap: 'balance' }}
           >
-            Cinco pilares que activarán todo lo que necesitas para el crecimiento creativo de tu
-            empresa.
+            {/* Copy octubre 2026 (lámina 4) — literal. */}
+            Los problemas de crecimiento no tienen una sola causa.
           </h2>
+          <p
+            className="m-0 max-w-[56ch] text-[clamp(15px,1.3vw,18px)] leading-[1.65]"
+            style={{ ...P, color: 'rgba(237,234,228,.68)' }}
+          >
+            Por eso en GEC conectamos estrategia, producción, formación, soluciones y experiencias para
+            fortalecer lo que está frenando a tu empresa.
+          </p>
         </div>
       </div>
 
@@ -280,11 +301,12 @@ export function BriefCTA() {
           className="m-0 max-w-[20ch] text-[clamp(26px,3.2vw,44px)] leading-[1.1] font-bold text-white"
           style={{ ...P, letterSpacing: '-.03em', textWrap: 'balance' }}
         >
-          ¿Qué necesita tu empresa?
+          {/* Copy octubre 2026 (lámina 32) — literal. */}
+          ¿Qué necesita fortalecer tu empresa?
         </h2>
         <p className="m-0 max-w-[52ch] text-[15px] leading-[1.7] font-light" style={{ color: 'rgba(237,234,228,.62)' }}>
-          Responde unas preguntas breves — menos de 90 segundos — y te orientamos hacia la
-          solución de GEC más adecuada.
+          Cada negocio enfrenta retos distintos. Identifiquemos dónde está la mayor oportunidad de mejora y
+          qué capacidades de GEC pueden ayudarte.
         </p>
         <div className="mt-2 flex flex-wrap items-center justify-center gap-3.5">
           <Link
@@ -292,7 +314,7 @@ export function BriefCTA() {
             className="cursor-pointer rounded-full bg-[#F5B301] px-8 py-4 text-[15px] font-semibold text-[#0B0B0C] transition-colors hover:bg-[#FFD24A]"
             style={P}
           >
-            Completar brief empresarial
+            Descubrir qué necesito
           </Link>
           <a
             href={WHATSAPP}
@@ -323,14 +345,20 @@ export function Autoridad() {
             className="m-0 max-w-[22ch] text-[clamp(28px,3.4vw,50px)] leading-[1.1] font-bold text-[#EDEAE4]"
             style={{ ...P, letterSpacing: '-.03em', textWrap: 'balance' }}
           >
-            {/* "12 años" es texto fijo aprobado por la guía — revisar cada año si sigue vigente. */}
-            12 años convirtiendo ideas en marcas, campañas y producciones que conectan.
+            {/* Copy octubre 2026 (lámina 31) — literal. "20 años" y "12 años"
+                son cifras fijas: revisar cada año si siguen vigentes. */}
+            20 años de experiencia creativa. 12 años ayudando a las empresas a crecer de nuevas formas.
           </h2>
-          <p className="m-0 max-w-[62ch] text-[15px] leading-[1.75] font-light" style={{ color: 'rgba(237,234,228,.6)' }}>
-            Empezamos en branding, diseño y producción audiovisual. Con el tiempo, esa misma
-            forma de pensar ideas y campañas se extendió hacia experiencias, soluciones y
-            formación — hoy conectamos cada una de esas piezas en un mismo ecosistema.
-          </p>
+          <div className="flex max-w-[62ch] flex-col gap-4">
+            <p className="m-0 text-[15px] leading-[1.75] font-light" style={{ color: 'rgba(237,234,228,.6)' }}>
+              Comenzamos en branding, diseño y producción audiovisual. Con los años, esa experiencia nos llevó a
+              entender que crecer también implica fortalecer equipos, procesos, tecnología y la forma en que una
+              empresa se relaciona con sus clientes.
+            </p>
+            <p className="m-0 text-[15px] leading-[1.75] font-light" style={{ color: 'rgba(237,234,228,.6)' }}>
+              Hoy conectamos esas capacidades para responder mejor a los retos de cada negocio.
+            </p>
+          </div>
         </div>
         <div className="flex flex-col gap-4 border-t border-white/10 pt-8">
           <span className="text-[11px] uppercase" style={{ ...P, letterSpacing: '.28em', color: 'rgba(237,234,228,.4)' }}>

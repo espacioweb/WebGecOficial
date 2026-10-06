@@ -117,6 +117,14 @@ export function SlotCard({ item }) {
         <div className="mb-1.5 text-[15px] font-bold text-white" style={P}>
           {item.titulo}
         </div>
+        {/* `lead`: la frase de situación ("Cuando…" / "Para…") que trae el copy
+            de octubre 2026 antes de la explicación — va en blanco para que se lea
+            primero, el `texto` queda en gris debajo. */}
+        {item.lead && (
+          <p className="m-0 mb-1.5 text-[13.5px] leading-[1.55] font-semibold" style={{ ...P, color: 'rgba(242,239,233,.88)' }}>
+            {item.lead}
+          </p>
+        )}
         {item.texto && (
           <p className="m-0 text-[13.5px] leading-[1.6]" style={{ ...P, color: 'rgba(242,239,233,.6)' }}>
             {item.texto}
@@ -170,6 +178,32 @@ export function Eyebrow({ children, color = 'rgba(237,234,228,.55)', uppercase =
     <div className="text-[11px] font-semibold uppercase" style={{ ...P, letterSpacing: '.18em', color }}>
       {children}
     </div>
+  );
+}
+
+// Las frases que el PDF de octubre 2026 marca en negrita dentro de un
+// párrafo — se resaltan subiendo el contraste, no solo el peso, porque el
+// texto que las rodea va en gris.
+export function B({ children }) {
+  return (
+    <strong className="font-semibold" style={{ color: 'rgba(242,239,233,.92)' }}>
+      {children}
+    </strong>
+  );
+}
+
+// Párrafo de entrada bajo un H2 de sección — el copy de octubre 2026 abre
+// casi cada bloque con una frase que plantea el problema antes de las
+// tarjetas. Más presente que la `nota` (que es aclaración al margen).
+export function Intro({ children }) {
+  return (
+    <p
+      data-reveal
+      className="m-0 mb-10 max-w-[64ch] text-[clamp(15px,1.3vw,17px)] leading-[1.65]"
+      style={{ ...P, color: 'rgba(242,239,233,.68)' }}
+    >
+      {children}
+    </p>
   );
 }
 
@@ -349,11 +383,12 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
           <div className="mx-auto max-w-[1100px]">
             <h2
               data-reveal
-              className="m-0 mb-10 max-w-[26ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white"
+              className={`m-0 max-w-[26ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white ${valor.intro ? 'mb-5' : 'mb-10'}`}
               style={{ ...P, letterSpacing: '-.02em' }}
             >
               {valor.h2}
             </h2>
+            {valor.intro && <Intro>{valor.intro}</Intro>}
             <div
               data-reveal
               className={`grid gap-px overflow-hidden rounded-2xl border border-white/[.08] bg-white/[.08] sm:grid-cols-2 ${
@@ -396,13 +431,19 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
       {alcance && (
         <section id="areas" className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
           <div className="mx-auto max-w-[1100px]">
+            {alcance.eyebrow && (
+              <div className="mb-4">
+                <Eyebrow color={hero.color}>{alcance.eyebrow}</Eyebrow>
+              </div>
+            )}
             <h2
               data-reveal
-              className="m-0 mb-10 max-w-[28ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white"
+              className={`m-0 max-w-[28ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white ${alcance.intro ? 'mb-5' : 'mb-10'}`}
               style={{ ...P, letterSpacing: '-.02em' }}
             >
               {alcance.h2}
             </h2>
+            {alcance.intro && <Intro>{alcance.intro}</Intro>}
             {alcance.nota && (
               <p className="m-0 mb-8 max-w-[64ch] text-[13.5px] leading-[1.7]" style={{ ...P, color: 'rgba(242,239,233,.5)' }}>
                 {alcance.nota}

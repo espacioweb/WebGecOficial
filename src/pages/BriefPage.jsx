@@ -26,15 +26,18 @@ const RUTA_PILAR = {
   experience: '/experience/',
 };
 
-// B-02 · Filtro — las cinco áreas mapean 1:1 a los cinco pilares; "Necesito
-// orientación" es exclusiva (deselecciona el resto) y no lleva a B-03.
+// B-02 · Filtro — las cinco áreas mapean 1:1 a los cinco pilares; "No estoy
+// seguro" es exclusiva (deselecciona el resto) y no lleva a B-03. Los textos
+// (octubre 2026) hablan de la situación de la empresa, no del servicio; los
+// `id` NO cambian — son las claves que usan el resto del brief, el `?pilar=`
+// de la URL y functions/api/brief.js.
 const AREAS = [
-  { id: 'marketing', label: 'Marca, marketing o comunicación' },
-  { id: 'studio', label: 'Diseño, foto, animación o audiovisual' },
-  { id: 'educa', label: 'Formación en IA, marca, audiovisual o habilidades' },
-  { id: 'soluciona', label: 'Plataformas o soluciones a la medida' },
-  { id: 'experience', label: 'Experiencias para eventos, punto de venta, promociones o patrocinios' },
-  { id: 'orientacion', label: 'Necesito orientación', exclusiva: true },
+  { id: 'marketing', label: 'Dar más dirección a nuestra marca y comunicación' },
+  { id: 'studio', label: 'Comunicar mejor lo que hacemos' },
+  { id: 'educa', label: 'Preparar mejor a nuestro equipo' },
+  { id: 'soluciona', label: 'Ordenar procesos y contar con soluciones desarrolladas o configuradas según nuestra necesidad' },
+  { id: 'experience', label: 'Crear mejores experiencias para nuestros clientes' },
+  { id: 'orientacion', label: 'No estoy seguro; necesito orientación', exclusiva: true },
 ];
 
 // B-03 · Pregunta por pilar — solo se profundiza en el pilar prioritario.
@@ -58,11 +61,34 @@ const OTRA_OPCION = {
   experience: 'Otra experiencia',
 };
 
-// tema= en la URL viene de los CTA de CompañIA/Audiovisual en /educa/ — precarga
-// la respuesta de B-03 en vez de dejar a la persona elegirla otra vez.
-const TEMA_A_NECESIDAD = { companiia: 'Adopción o aplicación de IA', audiovisual: 'Aprender audiovisual con IA' };
+// tema= en la URL viene de los "Ver programa" de /educa/ — precarga la
+// respuesta de B-03 en vez de dejar a la persona elegirla otra vez. Wellness y
+// Cultura no tienen opción propia en Educa: caen en "Otras habilidades" con
+// el nombre del programa ya escrito en el detalle (TEMA_A_DETALLE), así el
+// paso no queda pidiendo texto que la persona ya eligió al hacer clic.
+const TEMA_A_NECESIDAD = {
+  companiia: 'Adopción o aplicación de IA',
+  audiovisual: 'Aprender audiovisual con IA',
+  wellness: 'Otras habilidades',
+  cultura: 'Otras habilidades',
+};
+const TEMA_A_DETALLE = { wellness: 'Programa Wellness', cultura: 'Mejora de Cultura Organizacional' };
 
-const ETAPAS = ['Exploración', 'Necesidad clara', 'Evaluación', 'Listo para iniciar', 'Mejora de una iniciativa existente'];
+// Copy "CAMBIOS WEBSITE GEC · octubre 2026" (lámina 33): la etapa deja de
+// sonar a calificación comercial. OJO — functions/api/brief.js clasifica
+// comparando estos textos literales (`clasificar()`); si cambian aquí hay que
+// cambiarlos allá o todos los briefs caen en "Para desarrollar".
+const ETAPAS = ['Estoy explorando opciones', 'Quiero evaluar una solución', 'Necesito comenzar pronto'];
+// Paso nuevo de la misma lámina — "¿Qué te gustaría lograr?". Las cinco
+// opciones son las del PDF; "Otro" cubre el "entre otros" que trae el texto.
+const LOGROS = [
+  'Aumentar ventas',
+  'Fortalecer la marca',
+  'Mejorar la eficiencia',
+  'Preparar al equipo',
+  'Mejorar la experiencia del cliente',
+  'Otro',
+];
 const TIEMPOS = ['30 días', '1 a 3 meses', '3 a 6 meses', 'Sin fecha definida'];
 const INVERSIONES = ['Ya está definida', 'Necesito una estimación', 'Estoy evaluando', 'Aún no está asignada'];
 const ROLES = ['Decisor final', 'Influye en la decisión', 'Recopila información'];
@@ -338,6 +364,8 @@ const RESPUESTAS_INICIALES = {
   prioridad: null,
   necesidad: null,
   necesidadOtra: '',
+  logro: null,
+  logroOtro: '',
   etapa: null,
   tiempo: null,
   inversion: null,
@@ -371,9 +399,22 @@ export default function BriefPage() {
   });
   const [r, setR] = useState(() => {
     const g = leerGuardado();
-    if (g?.r) return { ...RESPUESTAS_INICIALES, ...g.r };
+    if (g?.r) {
+      // Un progreso guardado antes del cambio de octubre 2026 puede traer una
+      // etapa con el texto viejo ("Listo para iniciar"…) que ya no es opción:
+      // se descarta para que la vuelva a elegir, si no, el servidor la
+      // clasificaría mal.
+      const etapa = ETAPAS.includes(g.r.etapa) ? g.r.etapa : null;
+      return { ...RESPUESTAS_INICIALES, ...g.r, etapa };
+    }
     if (pilarParam && NOMBRE_PILAR[pilarParam]) {
-      return { ...RESPUESTAS_INICIALES, areas: [pilarParam], prioridad: pilarParam, necesidad: TEMA_A_NECESIDAD[temaParam] ?? null };
+      return {
+        ...RESPUESTAS_INICIALES,
+        areas: [pilarParam],
+        prioridad: pilarParam,
+        necesidad: TEMA_A_NECESIDAD[temaParam] ?? null,
+        necesidadOtra: TEMA_A_DETALLE[temaParam] ?? '',
+      };
     }
     return RESPUESTAS_INICIALES;
   });
@@ -443,6 +484,7 @@ export default function BriefPage() {
     if (necesitaPrioridad) s.push('prioridad');
     if (!esOrientacion) s.push('pilar');
     s.push(
+      'logro',
       'etapa',
       'tiempo',
       'inversion',
@@ -523,6 +565,7 @@ export default function BriefPage() {
       areas: r.areas,
       prioridad: r.prioridad,
       necesidad: necesidadFinal,
+      logro: r.logro === 'Otro' ? r.logroOtro || 'Otro' : r.logro,
       etapa: r.etapa,
       tiempo: r.tiempo,
       inversion: r.inversion,
@@ -569,16 +612,16 @@ export default function BriefPage() {
         <div ref={contentRef} className="w-full max-w-[600px]">
           {paso === 'intro' && (
             <div className="text-center">
-              <Eyebrow color="#F5B301">Cuéntanos qué necesita tu empresa</Eyebrow>
+              {/* Copy octubre 2026 (lámina 33): que se sienta como orientación,
+                  no como un formulario que GEC necesita llenar. */}
               <h1
-                className="m-0 mt-4 mb-6 text-[clamp(30px,4vw,46px)] leading-[1.1] font-extrabold text-white"
+                className="m-0 mb-6 text-[clamp(30px,4vw,46px)] leading-[1.1] font-extrabold text-white"
                 style={{ ...P, letterSpacing: '-.03em' }}
               >
-                Cuéntanos qué necesita tu empresa
+                Cuéntanos qué está pasando en tu empresa.
               </h1>
               <p className="m-0 mb-3 text-[15.5px] leading-[1.7]" style={{ ...P, color: 'rgba(242,239,233,.65)' }}>
-                Responde unas preguntas breves para ayudarnos a comprender tu necesidad y orientarte hacia la
-                solución de GEC más adecuada.
+                Te ayudaremos a identificar por dónde empezar.
               </p>
               <p className="m-0 mb-10 text-[13px] font-semibold uppercase" style={{ ...P, letterSpacing: '.14em', color: '#F5B301' }}>
                 Menos de 90 segundos
@@ -591,7 +634,7 @@ export default function BriefPage() {
 
           {paso === 'filtro' && (
             <div>
-              <Pregunta>¿En cuáles de estas áreas necesita apoyo tu empresa?</Pregunta>
+              <Pregunta>¿Qué necesitas mejorar en tu empresa?</Pregunta>
               <div className="mb-3 flex flex-col gap-3">
                 {AREAS.map((a, i) => (
                   <Opcion key={a.id} letra={LETRAS[i]} active={r.areas.includes(a.id)} onClick={() => toggleArea(a.id)}>
@@ -707,10 +750,63 @@ export default function BriefPage() {
             </div>
           )}
 
+          {/* Resultado esperado (lámina 33) — más cercano y menos técnico que
+              preguntar por el servicio. "Otro" pide una línea, mismo patrón
+              que la opción abierta del paso anterior. */}
+          {paso === 'logro' && (
+            <div>
+              <Pregunta contexto="Contexto">¿Qué te gustaría lograr?</Pregunta>
+              <div className="flex flex-col gap-3">
+                {LOGROS.map((op, i) => (
+                  <Opcion
+                    key={op}
+                    letra={LETRAS[i]}
+                    active={r.logro === op}
+                    onClick={() => {
+                      if (op === 'Otro') setR((s) => ({ ...s, logro: op }));
+                      else elegirYAvanzar(() => setR((s) => ({ ...s, logro: op })));
+                    }}
+                  >
+                    {op}
+                  </Opcion>
+                ))}
+              </div>
+              {r.logro === 'Otro' && (
+                <div className="mt-5">
+                  <input
+                    type="text"
+                    autoFocus
+                    value={r.logroOtro}
+                    onChange={(e) => setR((s) => ({ ...s, logroOtro: e.target.value }))}
+                    placeholder="En pocas palabras, qué te gustaría lograr"
+                    className={`${campoBase} w-full`}
+                    style={{ borderColor: 'rgba(255,255,255,.14)' }}
+                  />
+                  <div className="mt-5 flex justify-end">
+                    <Siguiente
+                      onClick={() => {
+                        if (!r.logroOtro.trim()) return setErrores({ logro: 'Cuéntanos brevemente qué te gustaría lograr.' });
+                        ir(siguienteDesde('logro'));
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+              {errores.logro && (
+                <p className="m-0 mt-4 text-[13.5px] font-medium" style={{ color: '#E8762B' }}>
+                  {errores.logro}
+                </p>
+              )}
+              <div className="mt-8">
+                <Atras onClick={() => ir(anteriorDesde('logro'))} />
+              </div>
+            </div>
+          )}
+
           {paso === 'etapa' && (
             <PasoOpcion
               contexto="Contexto"
-              pregunta="¿En qué etapa está esta necesidad?"
+              pregunta="¿En qué momento estás?"
               opciones={ETAPAS}
               valor={r.etapa}
               onSeleccionar={(v) => elegirYAvanzar(() => setR((s) => ({ ...s, etapa: v })))}
@@ -721,7 +817,7 @@ export default function BriefPage() {
           {paso === 'tiempo' && (
             <PasoOpcion
               contexto="Contexto"
-              pregunta="¿En cuánto tiempo la necesitas resolver?"
+              pregunta="¿Cuándo te gustaría comenzar?"
               opciones={TIEMPOS}
               valor={r.tiempo}
               onSeleccionar={(v) => elegirYAvanzar(() => setR((s) => ({ ...s, tiempo: v })))}
@@ -838,8 +934,10 @@ export default function BriefPage() {
 
           {paso === 'persona-correo' && (
             <PasoTexto
-              contexto="Sobre ti"
-              pregunta="¿Cuál es tu correo empresarial?"
+              // Lámina 33: explicar para qué se piden los datos — va en el
+              // primer dato de contacto; la etiqueta dice qué dato se pide.
+              contexto="Tu correo empresarial"
+              pregunta="¿Dónde podemos contactarte para conversar sobre tu necesidad?"
               placeholder="nombre@tuempresa.com"
               tipo="email"
               autoComplete="email"
@@ -967,7 +1065,7 @@ export default function BriefPage() {
                     ir('resultado');
                   }}
                 >
-                  Enviar
+                  Quiero recibir orientación
                 </Siguiente>
               </div>
             </div>
@@ -990,8 +1088,11 @@ export default function BriefPage() {
                 {r.prioridad && r.prioridad !== 'orientacion' && (
                   <ResumenCampo label="Pilar recomendado" valor={NOMBRE_PILAR[r.prioridad]} />
                 )}
-                <ResumenCampo label="Etapa" valor={r.etapa} />
-                <ResumenCampo label="Tiempo estimado" valor={r.tiempo} />
+                {r.logro && (
+                  <ResumenCampo label="Lo que quieres lograr" valor={r.logro === 'Otro' ? r.logroOtro : r.logro} />
+                )}
+                <ResumenCampo label="Momento" valor={r.etapa} />
+                <ResumenCampo label="Cuándo comenzar" valor={r.tiempo} />
                 {necesidadesComplementarias.length > 0 && (
                   <div className="sm:col-span-2">
                     <ResumenCampo label="También puede aportarte" valor={necesidadesComplementarias.join(' · ')} />

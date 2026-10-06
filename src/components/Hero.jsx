@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
 import { loadSequence, nearestLoaded, esPantallaChica } from '../utils/frameSequence';
@@ -317,28 +318,32 @@ export default function Hero() {
             // menú hasta abajo, y centra su contenido dentro de esa franja.
             className="pointer-events-auto absolute bottom-[7%] left-0 flex w-full flex-col items-start justify-center gap-[18px] text-left opacity-0 sm:gap-[24px] md:w-[72%] lg:top-[104px] lg:bottom-[6%] lg:w-[min(520px,42%)]"
           >
+            {/* Copy "CAMBIOS WEBSITE GEC · octubre 2026" (lámina 2) — literal.
+                Titular más largo que el anterior: baja el tope del clamp para
+                que no empuje los CTA fuera de la franja en desktop. */}
             <h1
-              className="m-0 text-[clamp(30px,6vw,56px)] leading-[1.04] font-bold text-white"
+              className="m-0 text-[clamp(26px,4.6vw,46px)] leading-[1.08] font-bold text-white"
               style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-.03em', textWrap: 'balance' }}
             >
-              Somos una agencia de <span className="text-[#F5B301]">Crecimiento Creativo Empresarial</span>.
+              Detectamos qué está frenando <span className="text-[#F5B301]">el crecimiento de tu empresa</span> y
+              ayudamos a corregirlo.
             </h1>
             <p
               className="m-0 max-w-[52ch] text-[clamp(14px,1.1vw,17px)] leading-[1.7]"
               style={{ color: 'rgba(237,234,228,.74)' }}
             >
-              Ayudamos a las empresas a crecer desde adentro hacia afuera con estrategia,
-              producción, formación, soluciones y experiencias en un solo ecosistema.
+              Desde cómo atraés y atendés clientes, hasta cómo trabaja tu equipo, cómo funcionan tus
+              procesos y qué tecnología estás utilizando.
             </p>
             <div className="flex flex-wrap gap-3">
-              <a
-                href="#ecosistema"
-                onClick={() => track('hero_cta_clicked', { cta: 'ecosistema' })}
+              <Link
+                to="/cuentanos-tu-reto/"
+                onClick={() => track('hero_cta_clicked', { cta: 'brief' })}
                 className="rounded-full bg-[#F5B301] px-7 py-[15px] text-sm font-semibold text-[#0B0B0C] transition-colors hover:bg-[#FFD24A]"
                 style={{ fontFamily: 'Poppins, sans-serif' }}
               >
-                Conocer el ecosistema
-              </a>
+                Encuentra la solución que necesita tu empresa →
+              </Link>
               <a
                 href="#contacto"
                 onClick={() => track('hero_cta_clicked', { cta: 'contacto' })}

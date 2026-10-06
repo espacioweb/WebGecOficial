@@ -14,9 +14,12 @@ const NOMBRE_PILAR = {
 
 const limpio = (v, max = 160) => String(v || '').trim().slice(0, max);
 
+// Compara los textos literales de ETAPAS/TIEMPOS de src/pages/BriefPage.jsx —
+// si cambian allá hay que cambiarlos aquí. Las etapas son las de octubre 2026
+// (antes: Exploración / Necesidad clara / Evaluación / Listo para iniciar…).
 function clasificar(etapa, tiempo) {
-  if (etapa === 'Listo para iniciar' && (tiempo === '30 días' || tiempo === '1 a 3 meses')) return 'Prioritaria';
-  if (etapa === 'Evaluación' || etapa === 'Necesidad clara') return 'En evaluación';
+  if (etapa === 'Necesito comenzar pronto' && (tiempo === '30 días' || tiempo === '1 a 3 meses')) return 'Prioritaria';
+  if (etapa === 'Quiero evaluar una solución') return 'En evaluación';
   return 'Para desarrollar';
 }
 
@@ -59,6 +62,7 @@ export async function onRequestPost({ request }) {
 
 🗂️ Pilar recomendado: *${NOMBRE_PILAR[prioridad] || 'Orientación'}*
 📝 Necesidad: ${limpio(body?.necesidad, 300)}
+🎯 Quiere lograr: ${limpio(body?.logro) || '—'}
 ➕ También le sirve: ${complementarias || '—'}
 
 📈 Etapa: ${limpio(body?.etapa)} · Tiempo: ${limpio(body?.tiempo)} · Inversión: ${limpio(body?.inversion)}

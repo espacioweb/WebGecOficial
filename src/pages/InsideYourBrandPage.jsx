@@ -3,36 +3,92 @@ import { Lightbulb, Wrench, MessagesSquare, Sparkles, FileQuestion } from 'lucid
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP, insideVideo, iybVideosSeed } from '../data/site';
 import { P } from '../utils/textStyles';
-import { Eyebrow, CtaPrimary, CtaSecondary } from '../components/PilarPage';
+import { B, Eyebrow, CtaPrimary, CtaSecondary } from '../components/PilarPage';
 import VideoCarousel from '../components/VideoCarousel';
 import useCanalVideos from '../hooks/useCanalVideos';
 import { track } from '../utils/analytics';
 
 const DORADO = '#F5B301';
 
-// IYB-02 · Tipos de contenido — contenido aprobado, textual.
+// IYB-02 · Tipos de contenido — copy "CAMBIOS WEBSITE GEC · octubre 2026"
+// (lámina 34), literal: cada tipo gana su descripción y "Ideas para crecer"
+// pasa a "Ideas para entender".
 const TIPOS = [
-  { titulo: 'Ideas para crecer', icon: Lightbulb },
-  { titulo: 'Herramientas para aplicar', icon: Wrench },
-  { titulo: 'Conversaciones', icon: MessagesSquare },
-  { titulo: 'Innovaciones con nuestros clientes', icon: Sparkles },
+  {
+    titulo: 'Ideas para entender',
+    texto: 'Cambios, tendencias y nuevas posibilidades que pueden impactar la forma de crecer, comunicar y trabajar.',
+    icon: Lightbulb,
+  },
+  {
+    titulo: 'Herramientas para aplicar',
+    texto: 'Recomendaciones, guías y recursos para convertir el conocimiento en decisiones y acciones concretas.',
+    icon: Wrench,
+  },
+  {
+    titulo: 'Conversaciones',
+    texto: 'Videos, entrevistas y contenidos donde profundizamos ideas junto a especialistas, empresarios y equipos.',
+    icon: MessagesSquare,
+  },
+  {
+    titulo: 'Innovaciones con nuestros clientes',
+    texto: (
+      <>
+        Proyectos donde mostramos <B>el reto, la idea, lo que desarrollamos y lo que aprendimos en el proceso</B>.
+      </>
+    ),
+    icon: Sparkles,
+  },
 ];
 
-// IYB-02 · Temas — contenido aprobado, textual.
-const TEMAS = ['Marketing', 'Marca', 'Creatividad', 'Inteligencia artificial', 'Tecnología', 'Liderazgo', 'Crecimiento empresarial'];
+// IYB-02 · Temas — misma lámina: sale "Liderazgo", entran "Personas y
+// cultura" y "Experiencia del cliente".
+const TEMAS = [
+  'Marketing',
+  'Marca',
+  'Creatividad',
+  'Inteligencia artificial',
+  'Tecnología',
+  'Personas y cultura',
+  'Experiencia del cliente',
+  'Crecimiento empresarial',
+];
 
-function TipoCard({ titulo, icon: Icon }) {
+function TipoCard({ titulo, texto, icon: Icon }) {
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-white/[.08] bg-[#10161D] p-6">
+    <div className="flex items-start gap-4 rounded-2xl border border-white/[.08] bg-[#10161D] p-6">
       <div className="grid h-11 w-11 flex-none place-items-center rounded-xl" style={{ background: `${DORADO}29`, color: DORADO }}>
         <Icon size={20} strokeWidth={2} />
       </div>
-      <div className="text-[15px] font-bold text-white" style={P}>
-        {titulo}
+      <div className="flex flex-col gap-1.5">
+        <div className="text-[15px] font-bold text-white" style={P}>
+          {titulo}
+        </div>
+        <p className="m-0 text-[13.5px] leading-[1.6]" style={{ ...P, color: 'rgba(242,239,233,.6)' }}>
+          {texto}
+        </p>
       </div>
     </div>
   );
 }
+
+// Lámina 34 — "Sigue aprendiendo con Inside Your Brand": cada canal con su
+// descripción y su CTA. OJO: el texto dice "el canal de GEC", pero WHATSAPP
+// es el enlace a un chat, no a un canal de WhatsApp — cambiar `href` cuando
+// GEC pase la URL del canal.
+const CANALES = [
+  {
+    titulo: 'WhatsApp',
+    texto: 'Ideas, novedades y contenidos seleccionados directamente en el canal de GEC.',
+    cta: 'Unirme al canal',
+    href: WHATSAPP,
+  },
+  {
+    titulo: 'YouTube',
+    texto: 'Videos, conversaciones y contenidos para profundizar en los temas que están cambiando a las empresas.',
+    cta: 'Ver en YouTube',
+    href: insideVideo.channelUrl,
+  },
+];
 
 // Sin publicaciones ni innovaciones reales todavía (ver CLAUDE.md) — en vez
 // de simular tarjetas de contenido que no existe, se muestra un estado
@@ -76,13 +132,22 @@ function BloqueComunidad() {
 
   return (
     <section id="comunidad" className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
-      <div className="mx-auto max-w-[760px] text-center">
+      <div className="mx-auto max-w-[860px] text-center">
         <h2 className="m-0 mb-8 text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white" style={{ ...P, letterSpacing: '-.02em' }}>
-          Sigue descubriendo nuevas formas de hacer crecer tu marca.
+          Sigue aprendiendo con Inside Your Brand
         </h2>
-        <div className="flex flex-wrap items-center justify-center gap-3.5">
-          <CtaSecondary href={WHATSAPP}>Unirme al canal</CtaSecondary>
-          <CtaSecondary href={insideVideo.channelUrl}>Ver en YouTube</CtaSecondary>
+        <div className="grid gap-4 text-left sm:grid-cols-2">
+          {CANALES.map((c) => (
+            <div key={c.titulo} className="flex flex-col items-start gap-3 rounded-2xl border border-white/[.08] bg-[#10161D] p-6">
+              <div className="text-[15px] font-bold text-white" style={P}>
+                {c.titulo}
+              </div>
+              <p className="m-0 flex-1 text-[13.5px] leading-[1.6]" style={{ ...P, color: 'rgba(242,239,233,.6)' }}>
+                {c.texto}
+              </p>
+              <CtaSecondary href={c.href}>{c.cta}</CtaSecondary>
+            </div>
+          ))}
         </div>
 
         <form onSubmit={suscribir} className="mx-auto mt-8 flex max-w-[420px] flex-wrap items-center justify-center gap-2.5">
@@ -146,8 +211,8 @@ export default function InsideYourBrandPage() {
             Inside Your Brand
           </h1>
           <p className="m-0 mb-10 text-[15.5px] leading-[1.75]" style={{ ...P, color: 'rgba(242,239,233,.68)' }}>
-            Conocimiento para comprender el cambio, tomar mejores decisiones y descubrir nuevas posibilidades de crecimiento para las
-            marcas.
+            Un espacio para entender lo que está cambiando, descubrir cómo aplicarlo y conocer las ideas y soluciones que
+            desarrollamos junto a nuestros clientes.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3.5">
             <CtaPrimary to="#tipos" color={DORADO}>
@@ -162,7 +227,7 @@ export default function InsideYourBrandPage() {
       <section id="tipos" className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
         <div className="mx-auto max-w-[1100px]">
           <h2 className="m-0 mb-10 max-w-[28ch] text-[clamp(24px,3vw,36px)] leading-[1.15] font-bold text-white" style={{ ...P, letterSpacing: '-.02em' }}>
-            Conocimiento para comprender, aplicar y crear.
+            Contenido para entender, aplicar y verlo en acción.
           </h2>
           <div className="mb-10 grid gap-4 sm:grid-cols-2">
             {TIPOS.map((t) => (
