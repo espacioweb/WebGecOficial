@@ -1,3 +1,4 @@
+import { Flag, Briefcase, Users, TrendingUp, Sparkles, Clapperboard, HeartPulse } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
@@ -25,6 +26,7 @@ const programas = [
   {
     eyebrow: 'Programa insignia',
     titulo: 'CompañIA',
+    icon: Sparkles,
     lead: 'Adopción de IA para empresas que quieren pasar del interés a la aplicación real.',
     texto: 'Identificamos dónde puede aportar valor, preparamos a los equipos y acompañamos su incorporación al trabajo.',
     link: 'Conocer CompañIA',
@@ -35,6 +37,7 @@ const programas = [
   {
     eyebrow: 'Formación especializada',
     titulo: 'Producción audiovisual con IA',
+    icon: Clapperboard,
     lead: 'Para equipos creativos que necesitan integrar IA sin perder criterio, calidad ni coherencia de marca.',
     texto: 'Aprenden a incorporarla dentro de un flujo práctico de producción audiovisual.',
     link: 'Ver programa',
@@ -44,6 +47,7 @@ const programas = [
   {
     eyebrow: 'Bienestar organizacional',
     titulo: 'Programa Wellness',
+    icon: HeartPulse,
     lead: 'Para empresas que quieren cuidar a sus equipos y construir formas de trabajo más sostenibles.',
     texto: 'Trabajamos bienestar, hábitos y herramientas que favorecen una mejor experiencia dentro de la organización.',
     link: 'Ver programa',
@@ -53,6 +57,7 @@ const programas = [
   {
     eyebrow: 'Cultura organizacional',
     titulo: 'Mejora de Cultura Organizacional',
+    icon: Users,
     lead: 'Cuando la cultura que la empresa necesita no siempre coincide con lo que sucede en el día a día.',
     texto: 'Trabajamos comunicación, comportamientos y formas de colaboración para acercar al equipo a la cultura que se quiere construir.',
     link: 'Ver programa',
@@ -75,7 +80,17 @@ function ProgramaCard({ p }) {
           : `linear-gradient(160deg, ${p.color}10, #10161D 60%)`,
       }}
     >
-      <Eyebrow color={p.color}>{p.eyebrow}</Eyebrow>
+      <div className="flex items-start justify-between gap-4">
+        <Eyebrow color={p.color}>{p.eyebrow}</Eyebrow>
+        {/* Mismo círculo de trazo fino que Valor — ocupa la esquina que
+            quedaba vacía entre la etiqueta y el título. Decorativo. */}
+        <span
+          className="grid h-11 w-11 flex-none place-items-center rounded-full border"
+          style={{ borderColor: `${p.color}55`, background: `${p.color}14`, color: p.color }}
+        >
+          <p.icon size={20} strokeWidth={1.75} aria-hidden="true" />
+        </span>
+      </div>
       <div className="flex flex-col gap-2.5">
         <h3 className="m-0 text-[clamp(22px,2.2vw,26px)] leading-[1.15] font-extrabold text-white" style={{ ...P, letterSpacing: '-.02em' }}>
           {p.titulo}
@@ -170,18 +185,22 @@ export default function EducaPage() {
         items: [
           {
             titulo: 'Parte de un reto real',
+            icon: Flag,
             texto: 'Diseñamos cada programa desde una necesidad concreta de la empresa, no desde un temario genérico.',
           },
           {
             titulo: 'Se lleva al día a día',
+            icon: Briefcase,
             texto: 'Trabajamos con casos, situaciones y herramientas que el equipo puede aplicar en su trabajo.',
           },
           {
             titulo: 'Se adapta al equipo',
+            icon: Users,
             texto: 'Ajustamos contenidos, nivel y dinámica según el rol y el contexto de quienes participan.',
           },
           {
             titulo: 'Busca generar adopción',
+            icon: TrendingUp,
             texto: 'Orientamos el aprendizaje para convertirlo en nuevos criterios, hábitos y formas de trabajar.',
           },
         ],

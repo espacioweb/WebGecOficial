@@ -1,4 +1,4 @@
-import { CalendarCheck, Gamepad2, Vote, MonitorPlay, Sparkles } from 'lucide-react';
+import { CalendarCheck, Gamepad2, Vote, MonitorPlay, Sparkles, Target, MousePointerClick, ClipboardList } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
@@ -45,14 +45,17 @@ export default function ExperiencePage() {
         items: [
           {
             titulo: 'Tiene un propósito claro',
+            icon: Target,
             texto: 'Cada interacción parte de una acción que queremos provocar: descubrir, responder, registrarse, elegir, participar o conectar.',
           },
           {
             titulo: 'Se siente fácil y natural',
+            icon: MousePointerClick,
             texto: 'Diseñamos dinámicas intuitivas para que la tecnología facilite la experiencia en lugar de convertirse en una barrera.',
           },
           {
             titulo: 'Deja algo útil para continuar',
+            icon: ClipboardList,
             texto: 'La interacción puede generar respuestas, preferencias o información que ayude a la marca a conocer mejor a su audiencia y dar el siguiente paso.',
           },
         ],

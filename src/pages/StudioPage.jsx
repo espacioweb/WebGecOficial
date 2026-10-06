@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Building2, Clapperboard, GraduationCap, Megaphone, Radio, Mic } from 'lucide-react';
+import { Building2, Clapperboard, GraduationCap, Megaphone, Radio, Mic, Search, Compass } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
@@ -73,6 +73,7 @@ export default function StudioPage() {
         items: [
           {
             titulo: 'La necesidad',
+            icon: Search,
             texto: (
               <>
                 Una empresa puede necesitar <B>presentar, explicar, vender, formar o fortalecer su marca</B>. Todo
@@ -82,6 +83,7 @@ export default function StudioPage() {
           },
           {
             titulo: 'La dirección',
+            icon: Compass,
             texto: (
               <>
                 Definimos <B>qué contar, cómo contarlo y qué formato funciona mejor</B>, manteniendo coherencia con
@@ -91,6 +93,7 @@ export default function StudioPage() {
           },
           {
             titulo: 'La producción',
+            icon: Clapperboard,
             texto: (
               <>
                 Convertimos esa dirección en <B>soluciones visuales y audiovisuales</B> pensadas para comunicar mejor

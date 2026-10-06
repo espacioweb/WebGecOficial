@@ -1,4 +1,4 @@
-import { Compass, Palette, Megaphone, SlidersHorizontal } from 'lucide-react';
+import { Compass, Palette, Megaphone, SlidersHorizontal, Target, Users, MessagesSquare, BarChart3, Gem } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
@@ -42,22 +42,27 @@ export default function MarketingPage() {
         items: [
           {
             titulo: '“Hacemos de todo, pero no sabemos qué priorizar.”',
+            icon: Target,
             texto: 'Ponemos foco en lo que realmente necesita la marca y el negocio.',
           },
           {
             titulo: '“Conocemos nuestro producto, pero ¿seguimos entendiendo al cliente?”',
+            icon: Users,
             texto: 'Revisamos mercado, audiencias y oportunidades para tomar mejores decisiones.',
           },
           {
             titulo: '“Cada canal parece estar diciendo algo diferente.”',
+            icon: MessagesSquare,
             texto: 'Conectamos mensajes y puntos de contacto para construir una comunicación más coherente.',
           },
           {
             titulo: '“Invertimos y hacemos acciones, pero no siempre sabemos qué está funcionando.”',
+            icon: BarChart3,
             texto: 'Usamos información y resultados para ajustar, priorizar y decidir mejor.',
           },
           {
             titulo: '“Queremos crecer sin perder lo que hace valiosa a nuestra marca.”',
+            icon: Gem,
             texto: 'Construimos una dirección que fortalece posicionamiento, diferenciación y consistencia en el tiempo.',
           },
         ],

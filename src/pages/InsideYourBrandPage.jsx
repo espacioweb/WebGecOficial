@@ -7,6 +7,7 @@ import { B, Eyebrow, CtaPrimary, CtaSecondary } from '../components/PilarPage';
 import VideoCarousel from '../components/VideoCarousel';
 import useCanalVideos from '../hooks/useCanalVideos';
 import { track } from '../utils/analytics';
+import { icons } from '../components/SocialIcons';
 
 const DORADO = '#F5B301';
 
@@ -78,12 +79,14 @@ function TipoCard({ titulo, texto, icon: Icon }) {
 const CANALES = [
   {
     titulo: 'WhatsApp',
+    icono: 'whatsapp',
     texto: 'Ideas, novedades y contenidos seleccionados directamente en el canal de GEC.',
     cta: 'Unirme al canal',
     href: WHATSAPP,
   },
   {
     titulo: 'YouTube',
+    icono: 'youtube',
     texto: 'Videos, conversaciones y contenidos para profundizar en los temas que están cambiando a las empresas.',
     cta: 'Ver en YouTube',
     href: insideVideo.channelUrl,
@@ -139,8 +142,16 @@ function BloqueComunidad() {
         <div className="grid gap-4 text-left sm:grid-cols-2">
           {CANALES.map((c) => (
             <div key={c.titulo} className="flex flex-col items-start gap-3 rounded-2xl border border-white/[.08] bg-[#10161D] p-6">
-              <div className="text-[15px] font-bold text-white" style={P}>
-                {c.titulo}
+              <div className="flex items-center gap-3">
+                <span
+                  className="grid h-11 w-11 flex-none place-items-center rounded-full border"
+                  style={{ borderColor: `${DORADO}55`, background: `${DORADO}12`, color: DORADO }}
+                >
+                  {icons[c.icono]}
+                </span>
+                <div className="text-[15px] font-bold text-white" style={P}>
+                  {c.titulo}
+                </div>
               </div>
               <p className="m-0 flex-1 text-[13.5px] leading-[1.6]" style={{ ...P, color: 'rgba(242,239,233,.6)' }}>
                 {c.texto}

@@ -408,8 +408,21 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
             >
               {valor.items.map((v, i) => {
                 const item = isRich(v) ? v : { titulo: v };
+                const Icon = item.icon;
                 return (
                   <div key={item.titulo} className="flex flex-col gap-2.5 bg-[#0A0E13] p-7">
+                    {/* Ícono opcional: círculo de trazo fino en el color del
+                        pilar (referencia del usuario, oct. 2026) — llena el
+                        arranque de cada celda, que con solo el número se veía
+                        vacío. Decorativo: aria-hidden, el título ya lo dice. */}
+                    {Icon && (
+                      <div
+                        className="mb-2 grid h-11 w-11 place-items-center rounded-full border"
+                        style={{ borderColor: `${hero.color}55`, background: `${hero.color}14`, color: hero.color }}
+                      >
+                        <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
+                      </div>
+                    )}
                     <span className="text-[13px] font-bold" style={{ ...P, color: '#F5B301' }}>
                       {String(i + 1).padStart(2, '0')}
                     </span>

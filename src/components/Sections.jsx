@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { X, Eye, ScanSearch, Network } from 'lucide-react';
 import { icons } from './SocialIcons';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
@@ -54,22 +54,30 @@ export function Manifiesto() {
             {
               t: 'Lo que se ve afuera',
               d: 'Hay oportunidades que no se convierten, clientes que se pierden, ventas sin seguimiento y esfuerzos de marketing donde no siempre está claro qué está funcionando.',
+              icon: Eye,
             },
             {
               t: 'Lo que puede estar pasando adentro',
               d: 'Equipos saturados, procesos que dependen de pocas personas, tareas que se repiten, tecnología que no se aprovecha o IA sin una aplicación clara para el negocio.',
+              icon: ScanSearch,
             },
             {
               t: 'Lo que hace GEC',
               d: 'Conectamos comunicación, procesos, equipos, sistemas, servicio y experiencias de marca para que la empresa funcione mejor y sus clientes también lo sientan.',
+              icon: Network,
             },
-          ].map((b) => (
-            <div key={b.t} className="flex flex-col gap-2.5">
+          ].map(({ t, d, icon: Icon }) => (
+            <div key={t} className="flex flex-col gap-2.5">
+              {/* Mismo círculo de trazo fino que la sección Valor de los
+                  pilares, en dorado (el acento del Home). Decorativo. */}
+              <div className="mb-2 grid h-11 w-11 place-items-center rounded-full border border-[#F5B301]/35 bg-[#F5B301]/[.07] text-[#F5B301]">
+                <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
+              </div>
               <h3 className="m-0 text-[15px] font-semibold text-[#EDEAE4]" style={P}>
-                {b.t}
+                {t}
               </h3>
               <p className="m-0 text-[15px] leading-[1.75] font-light" style={{ color: 'rgba(237,234,228,.6)' }}>
-                {b.d}
+                {d}
               </p>
             </div>
           ))}

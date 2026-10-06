@@ -1,4 +1,4 @@
-import { Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon, Workflow, Users, ShieldCheck } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
@@ -249,14 +249,17 @@ export default function SolucionaPage() {
         items: [
           {
             titulo: 'Primero entendemos el proceso',
+            icon: Workflow,
             texto: 'Revisamos dónde se pierde tiempo, información o seguimiento antes de proponer una herramienta.',
           },
           {
             titulo: 'Pensamos en quienes la van a usar',
+            icon: Users,
             texto: 'Simplificamos pasos y organizamos la información para que la solución sea práctica y fácil de incorporar al trabajo.',
           },
           {
             titulo: 'Cuidamos que funcione en el tiempo',
+            icon: ShieldCheck,
             texto: 'Consideramos costos, crecimiento, mantenimiento y capacidad de gestión para que la solución siga siendo útil a medida que la empresa avanza.',
           },
         ],
