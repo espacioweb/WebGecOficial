@@ -1,6 +1,6 @@
 import { cloneElement, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Image as ImageIcon } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Image as ImageIcon } from 'lucide-react';
 import { useGSAP } from '@gsap/react';
 import { gsap } from '../utils/gsapSetup';
 import { P } from '../utils/textStyles';
@@ -8,6 +8,7 @@ import { track } from '../utils/analytics';
 import { WHATSAPP } from '../data/site';
 import { icons } from './SocialIcons';
 import PilarFamiliaNav from './PilarFamiliaNav';
+import { leerRetorno } from '../utils/retorno';
 
 const isRich = (item) => typeof item === 'object' && item !== null;
 
@@ -278,6 +279,36 @@ function CierreSecondary({ href, children }) {
   );
 }
 
+// "Volver a <pilar>": cápsula flotante (vidrio, abajo a la izquierda) que
+// aparece solo si se entró a esta página desde su tarjeta del Home. Lleva de
+// vuelta al Home y el Home baja con scroll suave hasta esa misma tarjeta
+// (ver irATarjeta en utils/retorno.js) — no al inicio de todo. El logo del
+// header sigue llevando al inicio; esto es el camino de regreso al punto.
+function VolverAlHome({ pilarId }) {
+  const navigate = useNavigate();
+  const [retorno] = useState(() => leerRetorno());
+  if (!retorno || retorno.id !== pilarId) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => navigate('/', { state: { volverA: retorno.id } })}
+      className="group fixed bottom-[clamp(16px,2.4vw,28px)] left-[clamp(16px,2.4vw,28px)] z-[90] flex animate-[modalIn_.6s_.5s_cubic-bezier(.2,.8,.2,1)_both] cursor-pointer items-center gap-3 rounded-full border border-white/[.12] bg-[#0A0E13]/70 py-2 pr-5 pl-2 text-left shadow-[0_20px_50px_-20px_rgba(0,0,0,.9)] backdrop-blur-[12px] transition-[border-color,transform] duration-300 hover:-translate-y-0.5 hover:border-[#F5B301]/50 motion-reduce:animate-none"
+    >
+      <span className="grid h-9 w-9 flex-none place-items-center rounded-full bg-[#F5B301] text-[#0B0B0C]">
+        <ArrowLeft size={17} strokeWidth={2.2} className="transition-transform duration-300 group-hover:-translate-x-0.5" aria-hidden="true" />
+      </span>
+      <span className="flex flex-col leading-tight">
+        <span className="text-[10.5px] font-semibold tracking-[.18em] text-white/50 uppercase" style={P}>
+          Inicio
+        </span>
+        <span className="text-[13.5px] font-semibold text-[#F2EFE9]" style={P}>
+          Volver a {retorno.nombre}
+        </span>
+      </span>
+    </button>
+  );
+}
+
 // Patrón compartido de las páginas de pilar: Hero · Valor · Alcance ·
 // bloques opcionales del pilar · Cierre · Familia Meraki (el Footer ya vive
 // en App, global a todo el sitio).
@@ -540,6 +571,7 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
       </section>
 
       <PilarFamiliaNav current={pilarId} />
+      <VolverAlHome pilarId={pilarId} />
     </main>
   );
 }

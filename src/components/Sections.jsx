@@ -6,6 +6,7 @@ import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
 import { loadSequence, nearestLoaded, esPantallaChica } from '../utils/frameSequence';
 import { track } from '../utils/analytics';
+import { guardarRetorno } from '../utils/retorno';
 import ScrollHint from './ScrollHint';
 import {
   pilares,
@@ -111,7 +112,93 @@ function VideoExplicativo() {
 }
 
 /* ─────────────────────────── 02 Manifiesto ─────────────────────────── */
+const MANIFIESTO = [
+  {
+    t: 'Lo que se ve afuera',
+    d: 'Hay oportunidades que no se convierten, clientes que se pierden, ventas sin seguimiento y esfuerzos de marketing donde no siempre está claro qué está funcionando.',
+    icon: Eye,
+  },
+  {
+    t: 'Lo que puede estar pasando adentro',
+    d: 'Equipos saturados, procesos que dependen de pocas personas, tareas que se repiten, tecnología que no se aprovecha o IA sin una aplicación clara para el negocio.',
+    icon: ScanSearch,
+  },
+  {
+    t: 'Lo que hace GEC',
+    d: 'Conectamos comunicación, procesos, equipos, sistemas, servicio y experiencias de marca para que la empresa funcione mejor y sus clientes también lo sientan.',
+    icon: Network,
+  },
+];
+
+// Tarjeta interactiva: un foco de luz dorado sigue al cursor (variables CSS
+// --mx/--my escritas directo en el nodo, sin estado de React — nada se
+// re-renderiza mientras se mueve el mouse), el borde se enciende, el círculo
+// del ícono se llena de dorado y una línea fina crece arriba. En táctil no
+// hay hover: la tarjeta ya se ve completa sin él.
+function ManifiestoCard({ item, i }) {
+  const Icon = item.icon;
+  const mover = (e) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.setProperty('--mx', `${e.clientX - r.left}px`);
+    e.currentTarget.style.setProperty('--my', `${e.clientY - r.top}px`);
+  };
+  return (
+    <div
+      onMouseMove={mover}
+      className="group relative flex flex-col gap-3 overflow-hidden rounded-2xl border border-white/[.09] bg-[#0D0D10] p-7 transition-[transform,border-color,box-shadow] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-1.5 hover:border-[#F5B301]/40 hover:shadow-[0_30px_80px_-30px_rgba(245,179,1,.35)] motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+    >
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{ background: 'radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgba(245,179,1,.13), transparent 70%)' }}
+      />
+      <span
+        aria-hidden="true"
+        className="absolute top-0 left-0 h-px w-0 bg-gradient-to-r from-[#F5B301] to-transparent transition-[width] duration-700 ease-out group-hover:w-full"
+      />
+      <div className="relative flex items-center justify-between">
+        <div className="grid h-12 w-12 place-items-center rounded-full border border-[#F5B301]/45 bg-[#F5B301]/[.08] text-[#F5B301] transition-[background-color,color,transform] duration-500 group-hover:scale-110 group-hover:bg-[#F5B301] group-hover:text-[#0B0B0C]">
+          <Icon size={21} strokeWidth={1.75} aria-hidden="true" />
+        </div>
+        <span className="text-[12px] font-semibold tracking-[.2em] text-white/25 transition-colors duration-500 group-hover:text-[#F5B301]/70" style={P}>
+          {String(i + 1).padStart(2, '0')}
+        </span>
+      </div>
+      <h3 className="relative m-0 mt-3 text-[17px] leading-[1.3] font-semibold text-[#F2EFE9]" style={P}>
+        {item.t}
+      </h3>
+      <p className="relative m-0 text-[15px] leading-[1.75]" style={{ color: 'rgba(237,234,228,.74)' }}>
+        {item.d}
+      </p>
+    </div>
+  );
+}
+
 export function Manifiesto() {
+  const tarjetasRef = useRef(null);
+
+  // Entrada escalonada al llegar con el scroll: las tres tarjetas suben y
+  // aparecen una tras otra (afuera → adentro → GEC, el mismo orden del
+  // relato). Sin animación con prefers-reduced-motion.
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        const t = gsap.from(tarjetasRef.current.children, {
+          y: 48,
+          opacity: 0,
+          duration: 0.9,
+          ease: 'power3.out',
+          stagger: 0.14,
+          scrollTrigger: { trigger: tarjetasRef.current, start: 'top 85%', toggleActions: 'play none none reverse' },
+        });
+        return () => t.scrollTrigger?.kill();
+      });
+      return () => mm.revert();
+    },
+    { scope: tarjetasRef },
+  );
+
   return (
     <section className="relative bg-[#060607] px-[clamp(24px,5vw,90px)] py-[clamp(90px,11vw,180px)]">
       <div className="mx-auto grid max-w-[1180px] gap-11">
@@ -121,41 +208,13 @@ export function Manifiesto() {
           className="m-0 text-[clamp(24px,2.9vw,46px)] leading-[1.24] font-medium text-[#EDEAE4]"
           style={{ ...P, letterSpacing: '-.02em', textWrap: 'pretty' }}
         >
-          {/* Copy "CAMBIOS WEBSITE GEC · octubre 2026" (lámina 3) — literal. */}
-          Ayudamos a las empresas a detectar dónde se frena su crecimiento y dónde se rompe la
-          experiencia del cliente, fortaleciendo desde adentro lo que necesita funcionar mejor afuera.
+          {/* Versión corta pedida por el usuario (oct. 2026) sobre la lámina 3. */}
+          Ayudamos a las empresas a detectar qué frena su crecimiento y afecta la experiencia del cliente,
+          fortaleciendo desde adentro lo que se refleja afuera.
         </p>
-        <div className="grid gap-7 border-t border-white/10 pt-5 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
-          {[
-            {
-              t: 'Lo que se ve afuera',
-              d: 'Hay oportunidades que no se convierten, clientes que se pierden, ventas sin seguimiento y esfuerzos de marketing donde no siempre está claro qué está funcionando.',
-              icon: Eye,
-            },
-            {
-              t: 'Lo que puede estar pasando adentro',
-              d: 'Equipos saturados, procesos que dependen de pocas personas, tareas que se repiten, tecnología que no se aprovecha o IA sin una aplicación clara para el negocio.',
-              icon: ScanSearch,
-            },
-            {
-              t: 'Lo que hace GEC',
-              d: 'Conectamos comunicación, procesos, equipos, sistemas, servicio y experiencias de marca para que la empresa funcione mejor y sus clientes también lo sientan.',
-              icon: Network,
-            },
-          ].map(({ t, d, icon: Icon }) => (
-            <div key={t} className="flex flex-col gap-2.5">
-              {/* Mismo círculo de trazo fino que la sección Valor de los
-                  pilares, en dorado (el acento del Home). Decorativo. */}
-              <div className="mb-2 grid h-11 w-11 place-items-center rounded-full border border-[#F5B301]/35 bg-[#F5B301]/[.07] text-[#F5B301]">
-                <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
-              </div>
-              <h3 className="m-0 text-[15px] font-semibold text-[#EDEAE4]" style={P}>
-                {t}
-              </h3>
-              <p className="m-0 text-[15px] leading-[1.75] font-light" style={{ color: 'rgba(237,234,228,.6)' }}>
-                {d}
-              </p>
-            </div>
+        <div ref={tarjetasRef} className="grid gap-4 md:grid-cols-3">
+          {MANIFIESTO.map((item, i) => (
+            <ManifiestoCard key={item.t} item={item} i={i} />
           ))}
         </div>
       </div>
@@ -337,6 +396,10 @@ export function Pilares({ onOpenPanel }) {
               </p>
               <Link
                 to={b.ruta}
+                // Recuerda desde qué tarjeta se salió del Home, para que la
+                // página del pilar ofrezca volver justo aquí (VolverAlHome
+                // en PilarPage.jsx) en vez de al inicio de todo.
+                onClick={() => guardarRetorno(b)}
                 className="inline-flex w-fit items-center gap-2 rounded-full border px-5 py-2.5 text-[13px] font-semibold transition-colors hover:opacity-80"
                 style={{ ...P, borderColor: b.chipBorder, color: b.fg }}
               >

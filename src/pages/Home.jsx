@@ -1,4 +1,9 @@
+import { useContext, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Hero from '../components/Hero';
+import { LenisContext } from '../context/LenisContext';
+import { irATarjeta } from '../utils/retorno';
+import useDocumentMeta from '../hooks/useDocumentMeta';
 import ScrollRail from '../components/ScrollRail';
 import {
   Manifiesto,
@@ -43,6 +48,30 @@ import {
 // footer/nav vuelven también (ver site.js/ScrollRail.jsx).
 
 export default function Home() {
+  const { state } = useLocation();
+  const lenisRef = useContext(LenisContext);
+
+  // Mismo título/descripción que index.html. Sin esto, al volver al Home
+  // desde una página de pilar la pestaña seguía diciendo "Educa — …" (el SPA
+  // no recarga el <head>).
+  useDocumentMeta({
+    title: 'Grupo Espacio Creativo — Crecimiento Creativo Empresarial',
+    description:
+      'Ayudamos a las empresas a crecer desde adentro hacia afuera con estrategia, producción, formación, soluciones y experiencias en un solo ecosistema. Tegucigalpa, Honduras.',
+    path: '/',
+  });
+
+  // "Volver a <pilar>" desde una página de pilar (VolverAlHome en
+  // PilarPage.jsx) llega con `state.volverA` = id de la tarjeta: se baja
+  // hasta ella en vez de quedarse en el inicio. Se limpia el state del
+  // historial para que recargar la página no repita el salto.
+  useEffect(() => {
+    const id = state?.volverA;
+    if (!id) return;
+    irATarjeta(id, lenisRef?.current);
+    window.history.replaceState({ ...window.history.state, usr: null }, '');
+  }, [state, lenisRef]);
+
   return (
     <>
       <ScrollRail />
