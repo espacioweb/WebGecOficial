@@ -97,6 +97,17 @@ export function HeroCharacter({ img, video, focus = 50, color, alt, haloBold = f
   );
 }
 
+// Hover compartido de los cuadros de las páginas internas (pedido del
+// usuario, oct. 2026): el cuadro sube y escala apenas, y borde, fondo,
+// sombra e ícono toman el color del pilar. El color llega por la variable
+// CSS `--c` (style) — así las clases de hover pueden usarlo; un borde o
+// fondo puesto en `style` le ganaría al hover y lo anularía.
+export const HOVER_CUADRO =
+  'transition-[transform,border-color,background-color,box-shadow] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-1 hover:scale-[1.02] hover:border-(--c) hover:bg-[color-mix(in_srgb,var(--c)_8%,#10161D)] hover:shadow-[0_28px_70px_-34px_var(--c)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100';
+// Ícono dentro del cuadro: tinte suave en reposo, relleno sólido al hover.
+export const ICONO_CUADRO =
+  'bg-[color-mix(in_srgb,var(--c)_16%,transparent)] text-(--c) transition-[background-color,color,transform] duration-500 group-hover:scale-110 group-hover:bg-(--c) group-hover:text-[#0B0B0C]';
+
 // Tarjeta con ícono, microtexto y un slot marcado (borde punteado) para la
 // foto/video que todavía no existe — Valor y Alcance la comparten. Los
 // pilares que aún no tienen este nivel de detalle siguen pasando strings
@@ -105,13 +116,13 @@ export function SlotCard({ item }) {
   const Icon = item.icon;
   const SlotIcon = item.slotIcon ?? ImageIcon;
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-white/[.08] bg-[#10161D] p-6 sm:flex-row sm:items-stretch">
+    <div
+      className={`group flex flex-col gap-4 rounded-2xl border border-white/[.08] bg-[#10161D] p-6 sm:flex-row sm:items-stretch ${HOVER_CUADRO}`}
+      style={{ '--c': item.color ?? '#F5B301' }}
+    >
       <div className="flex min-w-0 flex-1 flex-col">
         {Icon && (
-          <div
-            className="mb-4 grid h-11 w-11 flex-none place-items-center rounded-xl"
-            style={{ background: `${item.color}29`, color: item.color }}
-          >
+          <div className={`mb-4 grid h-11 w-11 flex-none place-items-center rounded-xl ${ICONO_CUADRO}`}>
             <Icon size={20} strokeWidth={2} />
           </div>
         )}
@@ -441,16 +452,21 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
                 const item = isRich(v) ? v : { titulo: v };
                 const Icon = item.icon;
                 return (
-                  <div key={item.titulo} className="flex flex-col gap-2.5 bg-[#0A0E13] p-7">
+                  // La celda vive dentro de una grilla con overflow-hidden (los
+                  // divisores de 1 px): escalar la celda la recortaría en los
+                  // bordes, así que se tiñe el fondo y escala el contenido.
+                  <div
+                    key={item.titulo}
+                    className="group bg-[#0A0E13] p-7 transition-colors duration-500 hover:bg-[color-mix(in_srgb,var(--c)_9%,#0A0E13)]"
+                    style={{ '--c': hero.color }}
+                  >
+                    <div className="flex origin-top-left flex-col gap-2.5 transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-[1.035] motion-reduce:transition-none motion-reduce:group-hover:scale-100">
                     {/* Ícono opcional: círculo de trazo fino en el color del
                         pilar (referencia del usuario, oct. 2026) — llena el
                         arranque de cada celda, que con solo el número se veía
                         vacío. Decorativo: aria-hidden, el título ya lo dice. */}
                     {Icon && (
-                      <div
-                        className="mb-2 grid h-11 w-11 place-items-center rounded-full border"
-                        style={{ borderColor: `${hero.color}55`, background: `${hero.color}14`, color: hero.color }}
-                      >
+                      <div className={`mb-2 grid h-11 w-11 place-items-center rounded-full border border-[color-mix(in_srgb,var(--c)_35%,transparent)] ${ICONO_CUADRO}`}>
                         <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
                       </div>
                     )}
@@ -465,6 +481,7 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
                         {item.texto}
                       </p>
                     )}
+                    </div>
                   </div>
                 );
               })}

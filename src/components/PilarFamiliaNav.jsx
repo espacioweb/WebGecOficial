@@ -67,17 +67,26 @@ export default function PilarFamiliaNav({ current }) {
             const active = p.id === current;
             const acento = ACENTO_ACTIVO[p.id] ?? '#F5B301';
             return (
+              // Hover: mismo patrón que el resto de cuadros (HOVER_CUADRO en
+              // PilarPage) — sube, escala y se tiñe del color de ese pilar;
+              // el avatar crece un poco más y el nombre toma el color.
               <Link
                 key={p.id}
                 to={p.ruta}
-                className="group flex flex-col items-center gap-3 rounded-2xl border px-3 py-6 text-center transition-colors"
-                style={{
-                  borderColor: active ? `${acento}99` : 'rgba(255,255,255,.08)',
-                  background: active ? `${acento}14` : 'transparent',
-                }}
+                className={`group flex flex-col items-center gap-3 rounded-2xl border px-3 py-6 text-center transition-[transform,border-color,background-color,box-shadow] duration-500 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-1 hover:scale-[1.04] hover:border-(--c) hover:bg-[color-mix(in_srgb,var(--c)_12%,transparent)] hover:shadow-[0_24px_60px_-30px_var(--c)] motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:hover:scale-100 ${
+                  active
+                    ? 'border-[color-mix(in_srgb,var(--c)_60%,transparent)] bg-[color-mix(in_srgb,var(--c)_8%,transparent)]'
+                    : 'border-white/[.08] bg-transparent'
+                }`}
+                style={{ '--c': acento }}
               >
-                <Avatar p={p} active={active} acento={acento} />
-                <span className="text-[13.5px] font-semibold" style={{ ...P, color: active ? acento : '#EDEAE4' }}>
+                <div className="transition-transform duration-500 ease-[cubic-bezier(.2,.8,.2,1)] group-hover:scale-110 motion-reduce:group-hover:scale-100">
+                  <Avatar p={p} active={active} acento={acento} />
+                </div>
+                <span
+                  className={`text-[13.5px] font-semibold transition-colors duration-300 group-hover:text-(--c) ${active ? 'text-(--c)' : 'text-[#EDEAE4]'}`}
+                  style={P}
+                >
                   {p.name}
                 </span>
               </Link>

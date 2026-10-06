@@ -3,7 +3,7 @@ import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
 import { P } from '../utils/textStyles';
-import PilarPage, { Eyebrow, HeroCharacter } from '../components/PilarPage';
+import PilarPage, { Eyebrow, HeroCharacter, HOVER_CUADRO, ICONO_CUADRO } from '../components/PilarPage';
 
 const BRIEF_EDUCA = '/cuentanos-tu-reto/?pilar=educa';
 // Un solo color de acción en toda la página (antes cambiaba entre dorado,
@@ -72,12 +72,17 @@ function ProgramaCard({ p }) {
     <a
       href={p.href}
       {...(externo ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
-      className="group flex min-h-[260px] flex-col justify-between gap-8 rounded-2xl border p-8 transition-colors hover:border-white/25"
+      // Borde por clase (no por style) para que el hover pueda pintarlo; el
+      // degradado va como backgroundImage, encima del color de fondo que
+      // tiñe HOVER_CUADRO, así el tinte se ve a través.
+      className={`group flex min-h-[260px] flex-col justify-between gap-8 rounded-2xl border p-8 ${HOVER_CUADRO} ${
+        p.destacado ? 'border-[color-mix(in_srgb,var(--c)_40%,transparent)]' : 'border-white/[.08]'
+      }`}
       style={{
-        borderColor: p.destacado ? `${p.color}66` : 'rgba(255,255,255,.08)',
-        background: p.destacado
+        '--c': p.color,
+        backgroundImage: p.destacado
           ? `linear-gradient(160deg, ${p.color}24, transparent 70%)`
-          : `linear-gradient(160deg, ${p.color}10, #10161D 60%)`,
+          : `linear-gradient(160deg, ${p.color}10, transparent 60%)`,
       }}
     >
       <div className="flex items-start justify-between gap-4">
@@ -85,8 +90,7 @@ function ProgramaCard({ p }) {
         {/* Mismo círculo de trazo fino que Valor — ocupa la esquina que
             quedaba vacía entre la etiqueta y el título. Decorativo. */}
         <span
-          className="grid h-11 w-11 flex-none place-items-center rounded-full border"
-          style={{ borderColor: `${p.color}55`, background: `${p.color}14`, color: p.color }}
+          className={`grid h-11 w-11 flex-none place-items-center rounded-full border border-[color-mix(in_srgb,var(--c)_35%,transparent)] ${ICONO_CUADRO}`}
         >
           <p.icon size={20} strokeWidth={1.75} aria-hidden="true" />
         </span>

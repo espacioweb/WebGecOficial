@@ -4,7 +4,7 @@ import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
 import { P } from '../utils/textStyles';
 import { track } from '../utils/analytics';
-import PilarPage, { B, Eyebrow, HeroCharacter, Intro } from '../components/PilarPage';
+import PilarPage, { B, Eyebrow, HeroCharacter, Intro, HOVER_CUADRO } from '../components/PilarPage';
 
 const BRIEF_SOLUCIONA = '/cuentanos-tu-reto/?pilar=soluciona';
 
@@ -56,7 +56,11 @@ function BloqueFormas() {
         </Intro>
         <div data-reveal className="grid gap-4 md:grid-cols-3">
           {formas.map((f, i) => (
-            <div key={f.t} className="flex flex-col gap-5 rounded-2xl border border-white/[.08] bg-[#10161D] p-7">
+            <div
+              key={f.t}
+              className={`group flex flex-col gap-5 rounded-2xl border border-white/[.08] bg-[#10161D] p-7 ${HOVER_CUADRO}`}
+              style={{ '--c': C.azul }}
+            >
               <div className="flex items-center justify-between">
                 <span className="text-[12px] font-semibold" style={{ ...P, letterSpacing: '.12em', color: C.azul }}>
                   {String(i + 1).padStart(2, '0')} · {f.nivel}
@@ -159,7 +163,7 @@ function ProductoCard({ p, i }) {
       </div>
     </>
   );
-  const cls = 'flex flex-col overflow-hidden rounded-2xl border border-white/[.08] bg-[#10161D]';
+  const cls = `group flex flex-col overflow-hidden rounded-2xl border border-white/[.08] bg-[#10161D] ${HOVER_CUADRO}`;
   // Solo la tarjeta con destino real es link — una flecha sin a dónde ir
   // promete algo que no existe.
   if (p.href) {
@@ -169,13 +173,18 @@ function ProductoCard({ p, i }) {
         target="_blank"
         rel="noreferrer noopener"
         onClick={() => p.href.includes('xpevent') && track('xpevent_clicked')}
-        className={`${cls} transition-colors hover:border-white/20`}
+        className={cls}
+        style={{ '--c': C.azul }}
       >
         {contenido}
       </a>
     );
   }
-  return <div className={cls}>{contenido}</div>;
+  return (
+    <div className={cls} style={{ '--c': C.azul }}>
+      {contenido}
+    </div>
+  );
 }
 
 function BloqueProductosGEC() {
