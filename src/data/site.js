@@ -281,6 +281,7 @@ export const contacto = {
 export const redes = [
   { id: 'youtube', label: 'YouTube', href: 'https://www.youtube.com/Grupoespaciocreativo' },
   { id: 'facebook', label: 'Facebook', href: 'https://www.facebook.com/espaciocreativo/' },
+  { id: 'instagram', label: 'Instagram', href: 'https://www.instagram.com/espaciocreativohn' },
   { id: 'behance', label: 'Behance', href: 'https://www.behance.net/GrupoEspacioCreativo' },
   { id: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/company/grupo-espacio-creativo' },
   { id: 'spotify', label: 'Spotify', href: 'https://open.spotify.com/show/1nZxk3zAlFguE9RJcOQu1P' },
