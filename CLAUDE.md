@@ -1,191 +1,27 @@
-# CORTEX SCROLLYTELLING — ARCHITECTURE & EXECUTION MANIFESTO
+@AGENTS.md
 
-## Core Philosophy
-This is not a website; it is an immersive cinematic narrative. 
-Performance is non-negotiable: Locked 60 FPS, zero layout shifts, sub-second initial paint, invisible technology, and organic micro-sensory audio feedback.
+# GEC — reglas técnicas vigentes
 
----
+> El manifiesto original (motor de audio procedural, `ScrollyCanvas`, roadmap de 4 fases,
+> pregunta obligatoria por escena) se retiró el 2026-10-08: el audio ya no existe, las
+> escenas están terminadas y el sitio está en producción. Quedan solo las reglas que
+> siguen aplicando.
 
-## TECHNICAL GUARDRAILS & STANDARDS
-
-### 1. Rendering Architecture (Canvas & Motion)
-- **Scrubbing Engine:** Interactive scroll-driven scenes MUST use HTML5 `<canvas>` rendering pre-decoded WebP image sequences (`frame_000.webp`). NEVER use `video.currentTime` on MP4 files for interactive scrubbing.
-- **Progressive Sequence Loading:** Eagerly preload the first ~10-15 frames of a scene's sequence for instant paint; load the rest lazily in the background so initial paint never waits on the full sequence.
-- **Retina Display Scaling:** Set both axes and rescale the drawing context — not just `canvas.width`:
-  ```js
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = rect.width * dpr;
-  canvas.height = rect.height * dpr;
-  canvas.style.width = `${rect.width}px`;
-  canvas.style.height = `${rect.height}px`;
-  ctx.scale(dpr, dpr);
-  ```
-- **Scroll Layer:** Use `lenis` (the package formerly published as `@studio-freight/lenis`, now deprecated in favor of this name) for physics-based smooth scrolling. Sync it to GSAP explicitly — Lenis and ScrollTrigger do not talk to each other by default:
-  ```js
-  lenis.on('scroll', ScrollTrigger.update);
-  gsap.ticker.add((time) => lenis.raf(time * 1000));
-  gsap.ticker.lagSmoothing(0);
-  ```
-- **GSAP Protocol:** Wrap all animations inside `useGSAP()` hooks using refs (`useRef`). NEVER trigger React state re-renders (`useState`) during active scroll events.
-- **Reduced Motion:** Respect `prefers-reduced-motion` via `gsap.matchMedia()` — swap scrubbed/staggered animations for simple crossfades, and skip the audio engine's auto-unlock, when the user has this OS-level preference set.
-
-### 2. Micro-Sensory Experience (Procedural Web Audio)
-- **Procedural Audio Engine:** Implement `src/utils/audioEngine.js` using Web Audio API to synthesize a dynamic sub-bass ambient hum (55Hz-110Hz) modulated by GSAP scroll progress.
-- **Milestone Sound Triggers:** Trigger procedural triangle-wave sub-pulses at key scroll intervals (0%, 25%, 50%, 75%, 100%).
-- **Audio Gesture Unlock:** Bind `audioEngine.init()` / `audioEngine.resume()` to the first user click or scroll interaction to comply with browser autoplay policies.
-- **Muted by Default:** The experience must be fully coherent with audio off. Audio is an enhancement the user opts into via the toggle in `<Header />`, never a requirement — and it must stay off automatically when `prefers-reduced-motion` is set.
-- **Lifecycle Cleanup:** `audioEngine` must expose a `dispose()` that stops all active oscillators and calls `ctx.close()`. Call it on `<ScrollyCanvas />` unmount to avoid leaking `AudioContext` instances across route changes or React Strict Mode double-invokes.
-
-### 3. Glassmorphism UI & Optics
-- Dark mode baseline (`#050505`). Panels use `backdrop-filter: blur(12px)` with subtle `1px` translucent borders (`rgba(255,255,255,0.08)`).
-- Mobile Viewport: Use `h-[100dvh]` (Dynamic Viewport Height) to eliminate mobile browser navigation bar jumps.
-
----
-
-## 🎬 STORYBOARD & INTERACTIVE SCENE DEFINITION WORKFLOW
-
-To optimize asset generation and allow flexible motion types across ANY section, follow this interactive protocol:
-
-1. **Centralized Storyboard Data (`src/data/storyboard.json`):**
-   Before generating assets, create `src/data/storyboard.json` defining all scenes, prompts, text overlays, and scroll thresholds.
-
-2. **Scene Classification Prompting (Mandatory Question):**
-   Before creating or generating assets for ANY scene in `src/data/storyboard.json`, Claude Code MUST ask the user:
-   > *"For Scene [N] ('[Scene Title]'): Should this be an **Interactive Scrubbing Sequence** (scroll controls 3D motion frame-by-frame) or an **Ambient Loop** (video plays continuously while scroll triggers UI layers)?"*
-
-3. **Technical Pipeline by Scene Type:**
-   - **Type A — SCRUBBING (Continuous 3D Scroll):**
-     * Generate video with Higgsfield MCP.
-     * Extract/Convert into a WebP image sequence stored in `/public/assets/sequences/scene_[N]/frame_000.webp`.
-     * Render on HTML5 `<canvas>` synced to GSAP ScrollTrigger (`scrub: true`).
-   - **Type B — AMBIENT LOOP:**
-     * Generate MP4 loop video in `/public/assets/videos/scene_[N].mp4`.
-     * Render as `<video loop autoplay muted>` background layer with GSAP text/card overlays at milestone thresholds (10%, 25%, 50%, 75%).
-
-4. **Sequential Validation Protocol:**
-   Process scenes ONE BY ONE. Never generate assets for Scene N+1 until Scene N is rendered, tested on `http://localhost:5173`, and approved by the user.
-
----
-
-## 🗺️ EXECUTION ROADMAP
-
-### Phase 1: Environment, Canvas Core & Audio Engine
-- Initialize React + Vite + Tailwind CSS + Lucide Icons + GSAP + Lenis.
-- Build `src/utils/audioEngine.js` for zero-file-size procedural sound synthesis.
-- Build `<ScrollyCanvas />` with High-DPI support, WebP sequence loader, and GSAP ScrollTrigger scrubbing connected to `audioEngine.updateScrollAudio()`.
-- Implement LQIP (Low-Quality Image Placeholder) for instant initial render.
-
-### Phase 2: Narrative Overlays & Micro-Interactions
-- Build `<Header />` with capsule aesthetics, audio toggle button (Mute/Unmute), and glow states.
-- Construct floating text overlays with staggered GSAP fade-in/out transitions synced to frame thresholds (0% -> 25% -> 50% -> 75% -> 100%). Trigger `audioEngine.playMilestoneChime()` on scene transitions.
-
-### Phase 3: Asset Integration & Sequential Scenes (Higgsfield MCP)
-- Create `src/data/storyboard.json`.
-- Sequentially prompt the user for Scene Type (Scrubbing vs. Ambient Loop) and generate assets via Higgsfield MCP one by one.
-
-### Phase 4: Production Build & Deployment
-- Audit performance to guarantee steady 60 FPS and clean Web Audio node memory management.
-- Deploy to Cloudflare Pages via GitHub repository.
-
----
-
-## 🔊 REFERENCE IMPLEMENTATION: AUDIO ENGINE (`src/utils/audioEngine.js`)
-
-When executing Phase 1, create the file `src/utils/audioEngine.js` using the exact Web Audio API architecture below:
-
-```javascript
-// src/utils/audioEngine.js
-
-class SyntheticAudioEngine {
-  constructor() {
-    this.ctx = null;
-    this.droneOsc = null;
-    this.droneGain = null;
-    this.filter = null;
-    this.isInitialized = false;
-  }
-
-  init() {
-    if (this.isInitialized) return;
-    
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    this.ctx = new AudioCtx();
-
-    // Drone Sub-bass (55Hz - Note A1)
-    this.droneOsc = this.ctx.createOscillator();
-    this.droneGain = this.ctx.createGain();
-    this.filter = this.ctx.createBiquadFilter();
-
-    this.droneOsc.type = 'sine';
-    this.droneOsc.frequency.setValueAtTime(55, this.ctx.currentTime); 
-
-    this.filter.type = 'lowpass';
-    this.filter.frequency.setValueAtTime(120, this.ctx.currentTime);
-
-    this.droneGain.gain.setValueAtTime(0.02, this.ctx.currentTime); 
-
-    this.droneOsc.connect(this.filter);
-    this.filter.connect(this.droneGain);
-    this.droneGain.connect(this.ctx.destination);
-
-    this.droneOsc.start();
-    this.isInitialized = true;
-  }
-
-  updateScrollAudio(progress) {
-    if (!this.isInitialized || this.ctx.state !== 'running') return;
-
-    const targetFreq = 55 + progress * 55;
-    this.droneOsc.frequency.setTargetAtTime(targetFreq, this.ctx.currentTime, 0.1);
-
-    const targetCutoff = 120 + progress * 350;
-    this.filter.frequency.setTargetAtTime(targetCutoff, this.ctx.currentTime, 0.1);
-  }
-
-  playMilestoneChime(frequency = 220) {
-    if (!this.isInitialized || this.ctx.state !== 'running') return;
-
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(frequency, this.ctx.currentTime);
-
-    gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 1.4);
-
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-
-    osc.start();
-    osc.stop(this.ctx.currentTime + 1.4);
-  }
-
-  resume() {
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
-  }
-
-  dispose() {
-    if (!this.isInitialized) return;
-
-    this.droneOsc.stop();
-    this.droneOsc.disconnect();
-    this.filter.disconnect();
-    this.droneGain.disconnect();
-    this.ctx.close();
-
-    this.ctx = null;
-    this.droneOsc = null;
-    this.droneGain = null;
-    this.filter = null;
-    this.isInitialized = false;
-  }
-}
-
-export const audioEngine = new SyntheticAudioEngine();
-```
+- **Scrubbing**: escenas controladas por scroll en `<canvas>` con secuencias WebP
+  pre-decodificadas (`frame_000.webp`), nunca `video.currentTime` sobre un MP4. Carga
+  progresiva por refinamiento (ver bug #11 de la bitácora).
+- **Retina**: ajustar `canvas.width/height` por `devicePixelRatio`, fijar el tamaño CSS y
+  `ctx.scale(dpr, dpr)`.
+- **Lenis + ScrollTrigger** sincronizados a mano: `lenis.on('scroll', ScrollTrigger.update)`,
+  `gsap.ticker.add((t) => lenis.raf(t * 1000))`, `gsap.ticker.lagSmoothing(0)`.
+- **GSAP** dentro de `useGSAP()` con refs. Nada de `useState` durante el scroll.
+- **Reduced motion** vía `gsap.matchMedia()`: sin Lenis, sin loops, sin entradas animadas.
+- **Base visual**: oscuro (`#050505`–`#0A0E13`), paneles con `backdrop-filter: blur(12px)` y
+  borde `rgba(255,255,255,0.08)`. Alto de pantalla con `100dvh`.
+- **Escenas nuevas**: antes de generar assets, preguntar si son scrubbing o loop y seguir las
+  reglas de Higgsfield de abajo. Una escena a la vez, aprobada antes de la siguiente.
+- **Deploy**: push a `main` → Cloudflare Pages. Se verifica que el sitio publicado sirva el
+  bundle y los assets nuevos.
 
 ---
 
@@ -225,7 +61,8 @@ Stack: **React 19 + Vite 8 + Tailwind v4 + GSAP/ScrollTrigger + Lenis**. Dev en
 | `src/data/storyboard.json` | Registro de escenas: prompts, IDs de Higgsfield, estado |
 
 **Huérfanos**: `src/components/ScrollyCanvas.jsx` y `src/utils/audioEngine.js` ya no se
-importan (el Hero absorbió el canvas y el audio se retiró). Se pueden borrar.
+importan (el Hero absorbió el canvas y el audio se retiró). Se pueden borrar si el usuario
+lo confirma.
 
 ## Generación de assets con Higgsfield — reglas duras
 
@@ -442,7 +279,6 @@ hito de sección (7) más 2 intermedias entre cada par.
   botón tampoco se ve, así que el comportamiento es coherente. **El usuario lo dio por
   bueno; no tocar sin que lo pida.** Nota para tests: Playwright no puede pulsarlo con
   `click()` — hay que abrir el panel por código o posicionarse dentro de esa ventana.
-- Fase 4 del roadmap: build de producción y deploy a Cloudflare Pages.
 - Consultado y sin responder: si Valor y Portafolio también deberían tener *snap* por
   tarjeta (hoy solo hacen scrub continuo).
 - Borrar los dos archivos huérfanos si se confirma que el audio no vuelve.
@@ -462,10 +298,6 @@ hito de sección (7) más 2 intermedias entre cada par.
 > se puede). **Regla del usuario: sin textos inventados que el .md no traiga** — si hace
 > falta más presencia visual en un bloque, se resuelve con jerarquía (ícono, tamaño,
 > espaciado), no con más prosa.
->
-> **Ojo:** no confundir con el "Fase 4 del roadmap" mencionado arriba en este mismo
-> archivo (Production Build & Deployment) — es la numeración de fases de un documento
-> distinto (el manifiesto original de este CLAUDE.md), no de la guía.
 
 ### Decisiones no negociables de la guía (no romper sin que el usuario lo pida)
 - Sin página ni bloque "Nosotros".
