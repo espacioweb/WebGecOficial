@@ -46,6 +46,20 @@
   }
 }
 
+/* La superficie del programa y sus campos se distinguen del sitio oscuro.
+   Variables locales mantienen intacto el formulario independiente y el dorado seleccionado. */
+.programa-modal {
+  --brief-option-background: #333D49;
+  --brief-option-border: rgba(255, 255, 255, .26);
+  --brief-option-badge: rgba(237, 234, 228, .7);
+}
+
+.programa-modal input,
+.programa-modal textarea,
+.programa-modal select {
+  background-color: #333D49;
+}
+
 @keyframes gecFloat {
   0%,
   100% {

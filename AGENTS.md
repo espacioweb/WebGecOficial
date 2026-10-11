@@ -39,6 +39,8 @@ Compartido por Codex y Claude Code. Cada línea de este archivo debe cambiar lo 
 
 ## Lessons
 <!-- Lo más reciente arriba. Elimina lo que ya no aplique. -->
+- Cuando tarjetas animadas precedan un video, reserva separación suficiente también durante su desplazamiento de entrada.
+- Cuando un formulario se abra en modal, inicia las respuestas sin preselección y distingue su superficie del fondo de la web con contraste visible.
 - Cuando un video sigue inmediatamente al contenido, evita un CTA que solo desplace hacia él y revisa el espacio acumulado entre secciones.
 - Cuando un programa abra un formulario opcional, preséntalo en un modal amplio que permita cerrar y conservar la navegación y la posición de origen.
 - Cuando un pilar cambia de enfoque, revisa que el H1 no conserve el tema anterior (Educa ya no habla de IA).

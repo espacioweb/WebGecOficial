@@ -61,7 +61,7 @@ const OTRA_OPCION = {
   experience: 'Otra experiencia',
 };
 
-// tema= en la URL viene de los "Ver programa" de /educa/ — precarga la
+// tema= en la URL del formulario independiente — precarga la
 // respuesta de B-03 en vez de dejar a la persona elegirla otra vez. Wellness y
 // Cultura no tienen opción propia en Educa: caen en "Otras habilidades" con
 // el nombre del programa ya escrito en el detalle (TEMA_A_DETALLE), así el
@@ -136,8 +136,8 @@ function Opcion({ letra, active, onClick, children }) {
       className="flex w-full cursor-pointer items-center gap-4 rounded-2xl border px-5 py-4 text-left text-[16px] font-medium transition-all duration-200 hover:-translate-y-0.5"
       style={{
         ...P,
-        borderColor: active ? '#F5B301' : 'rgba(255,255,255,.12)',
-        background: active ? 'rgba(245,179,1,.12)' : '#10161D',
+        borderColor: active ? '#F5B301' : 'var(--brief-option-border, rgba(255,255,255,.12))',
+        background: active ? 'rgba(245,179,1,.12)' : 'var(--brief-option-background, #10161D)',
         color: active ? '#FFFFFF' : '#EDEAE4',
         boxShadow: active ? '0 10px 28px rgba(245,179,1,.14)' : 'none',
       }}
@@ -147,7 +147,7 @@ function Opcion({ letra, active, onClick, children }) {
         style={{
           borderColor: active ? '#F5B301' : 'rgba(255,255,255,.18)',
           background: active ? '#F5B301' : 'transparent',
-          color: active ? '#10131A' : 'rgba(237,234,228,.42)',
+          color: active ? '#10131A' : 'var(--brief-option-badge, rgba(237,234,228,.42))',
         }}
       >
         {letra}
@@ -396,6 +396,7 @@ export function BriefForm({ embedded = false, pilar, tema }) {
   const formRef = useRef(null);
 
   const leerGuardado = () => {
+    if (embedded) return null;
     try {
       return JSON.parse(localStorage.getItem(storageKey) || 'null');
     } catch {
@@ -408,6 +409,8 @@ export function BriefForm({ embedded = false, pilar, tema }) {
     return g?.paso && g.paso !== 'resultado' ? g.paso : 'intro';
   });
   const [r, setR] = useState(() => {
+    // Un modal inicia una conversación nueva; pilar y tema siguen en fuente.
+    if (embedded) return RESPUESTAS_INICIALES;
     const g = leerGuardado();
     if (g?.r) {
       // Un progreso guardado antes del cambio de octubre 2026 puede traer una
@@ -447,13 +450,13 @@ export function BriefForm({ embedded = false, pilar, tema }) {
     // "resultado" no se guarda: si se guardara, el removeItem() de
     // enviarBrief() quedaría pisado por este mismo efecto un instante
     // después (el cambio a "resultado" también dispara este efecto).
-    if (paso === 'intro' || paso === 'resultado') return;
+    if (embedded || paso === 'intro' || paso === 'resultado') return;
     try {
       localStorage.setItem(storageKey, JSON.stringify({ paso, r }));
     } catch {
       /* modo privado: no pasa nada, solo no persiste */
     }
-  }, [paso, r, storageKey]);
+  }, [embedded, paso, r, storageKey]);
 
   // Transición entre preguntas: la firma de un formulario conversacional. Sin
   // esto cada cambio de paso se siente como una recarga, no como avanzar.
@@ -594,7 +597,7 @@ export function BriefForm({ embedded = false, pilar, tema }) {
       console.error('Envío del brief falló', e);
     });
     try {
-      localStorage.removeItem(storageKey);
+      if (!embedded) localStorage.removeItem(storageKey);
     } catch {
       /* no-op */
     }
@@ -617,7 +620,7 @@ export function BriefForm({ embedded = false, pilar, tema }) {
   };
 
   return (
-    <Container ref={formRef} className={`relative bg-[#0A0E13] ${embedded ? '' : 'min-h-[100dvh]'}`}>
+    <Container ref={formRef} className={`relative ${embedded ? 'bg-transparent' : 'min-h-[100dvh] bg-[#0A0E13]'}`}>
       {paso !== 'intro' && paso !== 'resultado' && <BarraProgreso actual={pasoActual} total={totalPasos} embedded={embedded} />}
       <div className={`flex items-center justify-center px-[clamp(20px,5vw,60px)] ${embedded ? 'min-h-[min(560px,65dvh)] py-10 sm:py-14' : 'min-h-[100dvh] py-[130px]'}`}>
         <div ref={contentRef} className="w-full max-w-[600px]">

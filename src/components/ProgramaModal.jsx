@@ -43,11 +43,11 @@ export default function ProgramaModal({ titulo, tema, onClose }) {
         const rect = event.currentTarget.getBoundingClientRect();
         if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) onClose();
       }}
-      className="fixed inset-0 m-auto w-[calc(100%-32px)] max-w-[1100px] max-h-[90dvh] overflow-hidden rounded-[24px] border border-white/15 bg-[#0A0E13] p-0 text-[#EDEAE4] shadow-2xl backdrop:bg-black/80 backdrop:backdrop-blur-md"
+      className="programa-modal fixed inset-0 m-auto w-[calc(100%-32px)] max-w-[1100px] max-h-[90dvh] overflow-hidden rounded-[24px] border border-white/25 bg-[#222831] p-0 text-[#EDEAE4] shadow-[0_32px_100px_rgba(0,0,0,.8),0_0_0_1px_rgba(255,255,255,.06)] backdrop:bg-black/85 backdrop:backdrop-blur-[12px]"
       style={P}
     >
       <div className="flex max-h-[90dvh] flex-col">
-        <header className="flex shrink-0 items-center justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-8">
+        <header className="flex shrink-0 items-center justify-between gap-4 border-b border-white/20 bg-[#2B323C] px-5 py-4 sm:px-8">
           <h2 id="programa-modal-titulo" className="m-0 text-[clamp(18px,2vw,24px)] font-bold leading-tight">{titulo}</h2>
           <button
             type="button"

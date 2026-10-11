@@ -184,7 +184,7 @@ export function Manifiesto() {
       const mm = gsap.matchMedia();
       mm.add('(prefers-reduced-motion: no-preference)', () => {
         const t = gsap.from(tarjetasRef.current.children, {
-          y: 48,
+          y: 24,
           opacity: 0,
           duration: 0.9,
           ease: 'power3.out',
@@ -213,7 +213,7 @@ export function Manifiesto() {
             <ManifiestoCard key={item.t} item={item} i={i} />
           ))}
         </div>
-        <div id="video-explicativo-gec">
+        <div id="video-explicativo-gec" className="pt-9 md:pt-11">
           <VideoExplicativo />
         </div>
         <p className="m-0 text-center text-[clamp(18px,2vw,26px)] font-medium text-[#EDEAE4]" style={P}>
