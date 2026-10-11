@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import ProgramaModal from '../components/ProgramaModal';
 import { Flag, Briefcase, Users, TrendingUp, Sparkles, Clapperboard, HeartPulse } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
@@ -18,8 +20,7 @@ const GOLD = '#F5B301';
 // las dos tarjetas insignia + las filas Marca / Programas corporativos.
 // CompañIA ya tiene su propio sitio (compania.grupoespaciocreativo.com) — se
 // enlaza afuera en vez de repetir aquí los 6 pasos; los otros tres programas
-// no tienen página todavía, así que llevan al brief con el tema ya marcado
-// (decisión confirmada con el usuario). Se escribe "CompañIA" y no
+// abren el brief dentro de un modal para conservar la navegación. Se escribe "CompañIA" y no
 // "CompañÍA" como trae el PDF: es la grafía vigente de la guía y la que usa
 // el propio sitio del programa.
 const programas = [
@@ -66,16 +67,18 @@ const programas = [
   },
 ];
 
-function ProgramaCard({ p }) {
+function ProgramaCard({ p, onOpen }) {
   const externo = p.href.startsWith('http');
+  const Card = externo ? 'a' : 'button';
   return (
-    <a
-      href={p.href}
-      {...(externo ? { target: '_blank', rel: 'noreferrer noopener' } : {})}
+    <Card
+      {...(externo
+        ? { href: p.href, target: '_blank', rel: 'noreferrer noopener' }
+        : { type: 'button', onClick: () => onOpen(p), 'aria-haspopup': 'dialog' })}
       // Borde por clase (no por style) para que el hover pueda pintarlo; el
       // degradado va como backgroundImage, encima del color de fondo que
       // tiñe HOVER_CUADRO, así el tinte se ve a través.
-      className={`group flex min-h-[260px] flex-col justify-between gap-8 rounded-2xl border p-8 ${HOVER_CUADRO} ${
+      className={`group flex cursor-pointer text-left min-h-[260px] flex-col justify-between gap-8 rounded-2xl border p-8 ${HOVER_CUADRO} ${
         p.destacado ? 'border-[color-mix(in_srgb,var(--c)_40%,transparent)]' : 'border-white/[.08]'
       }`}
       style={{
@@ -109,12 +112,13 @@ function ProgramaCard({ p }) {
           {p.link} →
         </span>
       </div>
-    </a>
+    </Card>
   );
 }
 
 // `id="areas"`: el CTA secundario del hero apunta aquí (ver PilarPage).
 function BloqueProgramas() {
+  const [programa, setPrograma] = useState(null);
   return (
     <section id="areas" className="border-t border-white/[.07] bg-[#0A0E13]/60 px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
       <div className="mx-auto max-w-[1100px]">
@@ -127,10 +131,17 @@ function BloqueProgramas() {
         </h2>
         <div data-reveal className="grid gap-4 sm:grid-cols-2">
           {programas.map((p) => (
-            <ProgramaCard key={p.titulo} p={p} />
+            <ProgramaCard key={p.titulo} p={p} onOpen={setPrograma} />
           ))}
         </div>
       </div>
+      {programa && (
+        <ProgramaModal
+          titulo={programa.titulo}
+          tema={new URL(programa.href, window.location.origin).searchParams.get('tema')}
+          onClose={() => setPrograma(null)}
+        />
+      )}
     </section>
   );
 }

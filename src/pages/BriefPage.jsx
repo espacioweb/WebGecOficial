@@ -157,9 +157,9 @@ function Opcion({ letra, active, onClick, children }) {
   );
 }
 
-function BarraProgreso({ actual, total }) {
+function BarraProgreso({ actual, total, embedded }) {
   return (
-    <div className="fixed inset-x-0 top-0 z-[100] h-[3px] bg-white/[.06]">
+    <div className={`${embedded ? 'sticky' : 'fixed inset-x-0'} top-0 z-[100] h-[3px] bg-white/[.06]`}>
       <div
         className="h-full bg-[#F5B301] transition-[width] duration-500 ease-out"
         style={{ width: `${Math.min(100, (actual / total) * 100)}%` }}
@@ -280,7 +280,10 @@ function ModalServicios({ open, onClose, actual }) {
   useEffect(() => {
     if (!open) return undefined;
     const onKey = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -375,19 +378,26 @@ const RESPUESTAS_INICIALES = {
 };
 
 export default function BriefPage() {
-  const [params] = useSearchParams();
-  const pilarParam = params.get('pilar');
-  const temaParam = params.get('tema');
-
   useDocumentMeta({
     title: 'Cuéntanos qué necesita tu empresa | Grupo Espacio Creativo',
     description: 'Responde unas preguntas breves y te orientamos hacia la solución de GEC más adecuada. Menos de 90 segundos.',
     path: '/cuentanos-tu-reto/',
   });
 
+  return <BriefForm />;
+}
+
+export function BriefForm({ embedded = false, pilar, tema }) {
+  const [params] = useSearchParams();
+  const pilarParam = pilar ?? params.get('pilar');
+  const temaParam = tema ?? params.get('tema');
+  const storageKey = temaParam ? `${STORAGE_KEY}:${pilarParam}:${temaParam}` : STORAGE_KEY;
+  const Container = embedded ? 'div' : 'main';
+  const formRef = useRef(null);
+
   const leerGuardado = () => {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+      return JSON.parse(localStorage.getItem(storageKey) || 'null');
     } catch {
       return null;
     }
@@ -439,11 +449,11 @@ export default function BriefPage() {
     // después (el cambio a "resultado" también dispara este efecto).
     if (paso === 'intro' || paso === 'resultado') return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ paso, r }));
+      localStorage.setItem(storageKey, JSON.stringify({ paso, r }));
     } catch {
       /* modo privado: no pasa nada, solo no persiste */
     }
-  }, [paso, r]);
+  }, [paso, r, storageKey]);
 
   // Transición entre preguntas: la firma de un formulario conversacional. Sin
   // esto cada cambio de paso se siente como una recarga, no como avanzar.
@@ -512,7 +522,8 @@ export default function BriefPage() {
     else if (paso !== 'resultado') track('brief_step_completed', { paso });
     setErrores({});
     setPaso(siguiente);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (embedded) formRef.current?.closest('[data-programa-scroll]')?.scrollTo({ top: 0, behavior: 'smooth' });
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // "Abandonado" = se fue de la pestaña (o cerró) sin llegar al resultado,
@@ -583,7 +594,7 @@ export default function BriefPage() {
       console.error('Envío del brief falló', e);
     });
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(storageKey);
     } catch {
       /* no-op */
     }
@@ -606,9 +617,9 @@ export default function BriefPage() {
   };
 
   return (
-    <main className="relative min-h-[100dvh] bg-[#0A0E13]">
-      {paso !== 'intro' && paso !== 'resultado' && <BarraProgreso actual={pasoActual} total={totalPasos} />}
-      <div className="flex min-h-[100dvh] items-center justify-center px-[clamp(20px,5vw,60px)] py-[130px]">
+    <Container ref={formRef} className={`relative bg-[#0A0E13] ${embedded ? '' : 'min-h-[100dvh]'}`}>
+      {paso !== 'intro' && paso !== 'resultado' && <BarraProgreso actual={pasoActual} total={totalPasos} embedded={embedded} />}
+      <div className={`flex items-center justify-center px-[clamp(20px,5vw,60px)] ${embedded ? 'min-h-[min(560px,65dvh)] py-10 sm:py-14' : 'min-h-[100dvh] py-[130px]'}`}>
         <div ref={contentRef} className="w-full max-w-[600px]">
           {paso === 'intro' && (
             <div className="text-center">
@@ -1138,6 +1149,6 @@ export default function BriefPage() {
       </div>
 
       <ModalServicios open={modalAbierto} onClose={() => setModalAbierto(false)} actual={r.prioridad} />
-    </main>
+    </Container>
   );
 }

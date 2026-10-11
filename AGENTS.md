@@ -39,6 +39,8 @@ Compartido por Codex y Claude Code. Cada línea de este archivo debe cambiar lo 
 
 ## Lessons
 <!-- Lo más reciente arriba. Elimina lo que ya no aplique. -->
+- Cuando un video sigue inmediatamente al contenido, evita un CTA que solo desplace hacia él y revisa el espacio acumulado entre secciones.
+- Cuando un programa abra un formulario opcional, preséntalo en un modal amplio que permita cerrar y conservar la navegación y la posición de origen.
 - Cuando un pilar cambia de enfoque, revisa que el H1 no conserve el tema anterior (Educa ya no habla de IA).
 - Cuando me muestres un mockup para corregir un detalle, aplica su lenguaje visual completo a la página, no solo el detalle señalado (Soluciona, sept. 2026).
 - Cuando pidas quitar algo "de un bloque", confirma si es el bloque entero o solo ese elemento antes de borrar (Pilares: eran solo las pastillas).

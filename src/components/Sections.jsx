@@ -1,4 +1,4 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { X, Eye, ScanSearch, Network, Play } from 'lucide-react';
 import { icons } from './SocialIcons';
@@ -8,7 +8,6 @@ import { loadSequence, nearestLoaded, esPantallaChica } from '../utils/frameSequ
 import { track } from '../utils/analytics';
 import { guardarRetorno } from '../utils/retorno';
 import ScrollHint from './ScrollHint';
-import { LenisContext } from '../context/LenisContext';
 import {
   pilares,
   proceso,
@@ -177,28 +176,6 @@ function ManifiestoCard({ item, i }) {
 
 export function Manifiesto() {
   const tarjetasRef = useRef(null);
-  const videoRef = useRef(null);
-  const lenisRef = useContext(LenisContext);
-
-  const irAlVideo = () => {
-    const destino = videoRef.current;
-    if (!destino) return;
-    const reducirMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const enfocarReproduccion = () => {
-      destino.querySelector('button, video')?.focus({ preventScroll: true });
-    };
-    if (lenisRef?.current) {
-      lenisRef.current.scrollTo(destino, {
-        offset: -24,
-        immediate: reducirMovimiento,
-        onComplete: enfocarReproduccion,
-      });
-    } else {
-      destino.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'center' });
-      enfocarReproduccion();
-    }
-  };
-
   // Entrada escalonada al llegar con el scroll: las tres tarjetas suben y
   // aparecen una tras otra (oportunidad → solución → implementación, el orden del
   // relato). Sin animación con prefers-reduced-motion.
@@ -222,7 +199,7 @@ export function Manifiesto() {
   );
 
   return (
-    <section className="relative bg-[#060607] px-[clamp(24px,5vw,90px)] py-[clamp(90px,11vw,180px)]">
+    <section className="relative bg-[#060607] px-[clamp(24px,5vw,90px)] pt-[clamp(90px,11vw,180px)] pb-[clamp(24px,3vw,48px)]">
       <div className="mx-auto grid max-w-[1180px] gap-11">
         <Eyebrow>NUESTRA PROMESA DE VALOR</Eyebrow>
         <h2
@@ -236,16 +213,7 @@ export function Manifiesto() {
             <ManifiestoCard key={item.t} item={item} i={i} />
           ))}
         </div>
-        <button
-          type="button"
-          onClick={irAlVideo}
-          aria-controls="video-explicativo-gec"
-          className="justify-self-start rounded-full bg-[#F5B301] px-7 py-4 text-[15px] font-semibold text-[#0B0B0C] transition-transform duration-300 hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#F5B301] motion-reduce:transition-none motion-reduce:hover:scale-100"
-          style={P}
-        >
-          Descubrí qué podemos hacer por tu negocio
-        </button>
-        <div ref={videoRef} id="video-explicativo-gec">
+        <div id="video-explicativo-gec">
           <VideoExplicativo />
         </div>
         <p className="m-0 text-center text-[clamp(18px,2vw,26px)] font-medium text-[#EDEAE4]" style={P}>
@@ -348,7 +316,7 @@ export function Pilares({ onOpenPanel }) {
     <section
       ref={secRef}
       id="ecosistema"
-      className="flex flex-col gap-[clamp(16px,2vw,28px)] bg-[#060607] px-[clamp(16px,3vw,44px)] pt-[clamp(40px,6vw,90px)] pb-[clamp(60px,7vw,120px)]"
+      className="flex flex-col gap-[clamp(16px,2vw,28px)] bg-[#060607] px-[clamp(16px,3vw,44px)] pt-[clamp(24px,3vw,48px)] pb-[clamp(60px,7vw,120px)]"
     >
       <div className="flex flex-wrap items-end justify-between gap-[30px] px-[clamp(8px,1.5vw,26px)] pb-[clamp(20px,3vw,50px)]">
         <div className="flex flex-col gap-[18px]">
