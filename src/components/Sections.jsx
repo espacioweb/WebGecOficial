@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { X, Eye, ScanSearch, Network, Play } from 'lucide-react';
 import { icons } from './SocialIcons';
@@ -8,6 +8,7 @@ import { loadSequence, nearestLoaded, esPantallaChica } from '../utils/frameSequ
 import { track } from '../utils/analytics';
 import { guardarRetorno } from '../utils/retorno';
 import ScrollHint from './ScrollHint';
+import { LenisContext } from '../context/LenisContext';
 import {
   pilares,
   proceso,
@@ -37,9 +38,9 @@ function Eyebrow({ children, color = 'rgba(237,234,228,.45)' }) {
 }
 
 /* ───────────────────── Video explicativo (Meraki) ─────────────────────
-   Pieza "Desde adentro hacia afuera" (73 s, solo textos + SFX) — cuenta lo
-   mismo que el Manifiesto de abajo (afuera · adentro · lo que hace GEC), así
-   que va justo antes como entrada visual. Se codificó para web desde el
+   Pieza "Desde adentro hacia afuera" (73 s, solo textos + SFX) — muestra
+   ejemplos y posibilidades después de la promesa de valor y sus
+   tres pasos. Se codificó para web desde el
    original de 20.6 MB (1600 px, H.264 crf 26, AAC 96k, +faststart → 4.9 MB);
    el original sigue en public/assets/videos sin entrar al repo.
    `preload="none"` + póster: no se descarga nada hasta que la persona da
@@ -80,7 +81,7 @@ function VideoExplicativo() {
               track('content_opened', { tipo: 'video', id: 'explicativo-gec' });
             }}
             aria-label="Reproducir el video explicativo de GEC"
-            className="group absolute inset-0 cursor-pointer border-0 bg-transparent p-0"
+            className="group absolute inset-0 cursor-pointer border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-[#F5B301]"
           >
             <img
               src={EXPLICATIVO.poster}
@@ -114,18 +115,18 @@ function VideoExplicativo() {
 /* ─────────────────────────── 02 Manifiesto ─────────────────────────── */
 const MANIFIESTO = [
   {
-    t: 'Lo que se ve afuera',
-    d: 'Hay oportunidades que no se convierten, clientes que se pierden, ventas sin seguimiento y esfuerzos de marketing donde no siempre está claro qué está funcionando.',
+    t: 'Identificamos la oportunidad',
+    d: 'Detectamos qué necesita mejorar en la experiencia de tus clientes, la comunicación o el trabajo de tus equipos.',
     icon: Eye,
   },
   {
-    t: 'Lo que puede estar pasando adentro',
-    d: 'Equipos saturados, procesos que dependen de pocas personas, tareas que se repiten, tecnología que no se aprovecha o IA sin una aplicación clara para el negocio.',
+    t: 'Diseñamos la solución',
+    d: 'Transformamos esa necesidad en una experiencia, un programa, una herramienta o una iniciativa creativa.',
     icon: ScanSearch,
   },
   {
-    t: 'Lo que hace GEC',
-    d: 'Conectamos comunicación, procesos, equipos, sistemas, servicio y experiencias de marca para que la empresa funcione mejor y sus clientes también lo sientan.',
+    t: 'La hacemos realidad',
+    d: 'Combinamos estrategia, contenido, formación, tecnología y experiencias para desarrollarla e implementarla.',
     icon: Network,
   },
 ];
@@ -176,9 +177,30 @@ function ManifiestoCard({ item, i }) {
 
 export function Manifiesto() {
   const tarjetasRef = useRef(null);
+  const videoRef = useRef(null);
+  const lenisRef = useContext(LenisContext);
+
+  const irAlVideo = () => {
+    const destino = videoRef.current;
+    if (!destino) return;
+    const reducirMovimiento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const enfocarReproduccion = () => {
+      destino.querySelector('button, video')?.focus({ preventScroll: true });
+    };
+    if (lenisRef?.current) {
+      lenisRef.current.scrollTo(destino, {
+        offset: -24,
+        immediate: reducirMovimiento,
+        onComplete: enfocarReproduccion,
+      });
+    } else {
+      destino.scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'center' });
+      enfocarReproduccion();
+    }
+  };
 
   // Entrada escalonada al llegar con el scroll: las tres tarjetas suben y
-  // aparecen una tras otra (afuera → adentro → GEC, el mismo orden del
+  // aparecen una tras otra (oportunidad → solución → implementación, el orden del
   // relato). Sin animación con prefers-reduced-motion.
   useGSAP(
     () => {
@@ -202,21 +224,33 @@ export function Manifiesto() {
   return (
     <section className="relative bg-[#060607] px-[clamp(24px,5vw,90px)] py-[clamp(90px,11vw,180px)]">
       <div className="mx-auto grid max-w-[1180px] gap-11">
-        <VideoExplicativo />
-        <Eyebrow>Nuestra promesa de valor</Eyebrow>
-        <p
+        <Eyebrow>NUESTRA PROMESA DE VALOR</Eyebrow>
+        <h2
           className="m-0 text-[clamp(24px,2.9vw,46px)] leading-[1.24] font-medium text-[#EDEAE4]"
           style={{ ...P, letterSpacing: '-.02em', textWrap: 'pretty' }}
         >
-          {/* Versión corta pedida por el usuario (oct. 2026) sobre la lámina 3. */}
-          Ayudamos a las empresas a detectar qué frena su crecimiento y afecta la experiencia del cliente,
-          fortaleciendo desde adentro lo que se refleja afuera.
-        </p>
+          Convertimos necesidades de tu empresa en soluciones creativas que puede poner en práctica.
+        </h2>
         <div ref={tarjetasRef} className="grid gap-4 md:grid-cols-3">
           {MANIFIESTO.map((item, i) => (
             <ManifiestoCard key={item.t} item={item} i={i} />
           ))}
         </div>
+        <button
+          type="button"
+          onClick={irAlVideo}
+          aria-controls="video-explicativo-gec"
+          className="justify-self-start rounded-full bg-[#F5B301] px-7 py-4 text-[15px] font-semibold text-[#0B0B0C] transition-transform duration-300 hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#F5B301] motion-reduce:transition-none motion-reduce:hover:scale-100"
+          style={P}
+        >
+          Descubrí qué podemos hacer por tu negocio
+        </button>
+        <div ref={videoRef} id="video-explicativo-gec">
+          <VideoExplicativo />
+        </div>
+        <p className="m-0 text-center text-[clamp(18px,2vw,26px)] font-medium text-[#EDEAE4]" style={P}>
+          Marcas que crecen desde adentro hacia afuera.
+        </p>
       </div>
     </section>
   );
