@@ -1,15 +1,18 @@
-# Separación de video y contraste del modal
+# Modal global del brief y propuesta de recuperación
 
-Autorizado el 11 de octubre de 2026. Respaldos .backups/modal-contraste-20261011/.
+Autorizado por usuario el11 octubre2026. Cambiar todos los accesos internos al mismo brief; diseñar propuesta de recordatorios, sin implementarlos ni enviar correos aún. Respaldos .backups/modal-global-20261011/.
 
-1. [x] Reproducir: medir gap tarjetas/video con animación normal y revisar preselección en modal limpio + borrador existente.
-2. [x] Reservar aire tarjetas/video incluso durante animación; mantener compacta transición posterior a pilares. Verificar medidas y capturas móvil/escritorio.
-3. [x] Modales abren desde intro con respuestas sin preselección ni restauración automática de borradores. Conservar contexto del programa separado de respuestas cuando corresponda y ruta independiente intacta. Verificar tres programas y selección manual.
-4. [x] Modal gris más claro, borde/sombra definidos, backdrop oscuro desenfocado y opciones diferenciadas dentro del modal. Mantener identidad premium, dorado en acciones. Revisar captura real y cierre/foco/scroll.
-5. [x] Revisor solo lectura, build, lint archivos y navegador: vacío, selección manual, reapertura, borrador anterior, X/Escape, responsive. Sin envío real.
+1. [x] Inventario: HeroHome y BriefCTAHome; hero+cierre de Marketing, Studio, Educa, Soluciona, Experience;3 programasEduca. Header Hablemos/contacto/footer no abren brief directamente. Backend solo avisaTelegram al completar; correo ocurre tarde; embedded empieza limpio sin persistencia.
+2. [x] Centralizar apertura de enlaces al brief en App y reutilizar modal para cualquier pilar/tema. Conservar ruta original como acceso directo y clics modificados; modal no cambia URL ni scroll. Unificar programasEduca. Demostración: inventario DOM de enlaces, rutas y fuentes correctas.
+3. [x] Revisor solo lectura + build/lint de archivos, navegador desktop/mobile, todos los CTAs de5 pilares y2 Home,3 programas, vacío/cierre/reapertura/directURL, foco y scroll. Sin envío de datos.
+4. [x] Proponer captura temprana correo, permiso recordatorio, borradores servidor, reanudación segura y envío único por inactividad/cancelación al completar; cotejar capacidades actuales y docs oficiales. Propuesta separada de cambios autorizados.
 
-Sin dependencias ni cambios ajenos. No commit/publicación sin aprobación. Si falla dos veces un paso, detener y replantear.
+Sin dependencias nuevas ni cambios al envío. Lessons registradas. Detener/replantear tras dos fallos del mismo paso. Commit/publicación pendientes de aprobación para esta corrección.
 
-Resultados: reproducido gap -4 px con GSAP y48 y precarga audiovisual/educa en draft. Corrección verificada con GSAP activo: separación mínima64 px escritorio y56 px móvil; final88/80 px. Build pasa con aviso existente de bundle>500kB; eslint de3 JSX pasa y diff--check limpio. Revisor estático conforme; su cálculo de gap omitía gap44, comprobado en navegador por raíz.
-Los3 programas abren intro y opciones sin selección incluso con draft viejo; vacío muestra error y selección manual se pinta dorada. Reapertura inicia limpio, draft antiguo permanece intacto. Ruta independiente conserva su conducta previa. Contexto pilar/tema sigue en fuente del payload (revisión estática; no envío real). Modal colores verificados y capturas desktop/mobile/contexto inspeccionadas; no desborda, X/Escape cierran y foco retorna. Superficie gris34,40,49, opciones51,61,73 y fondo85%+blur12. País telefónicoHN conserva default técnico previo; no se precargan respuestas de necesidad/área.
-Listo localmente; pendiente aprobación de commit y producción.
+Verificación: build pasa (aviso existente bundle>500kB), eslint4 archivos y diff--check limpios. Revisor sin bloqueantes. Los15 accesos reales comprobados desktop:2 Home+2 por cada pilar+3 programasEduca abren dialog único, mantienen ruta, respuestas0 seleccionadas y foco retorna. Móvil390px probado Home+5pilares: ancho358 sin overflow, vacío bloquea avance, X cierra. URL directa mantiene BriefPage; recarga cierra modal. Lenis fondo bloqueado y rueda funciona tras cierre. Ctrl/Meta/cliccentral no interceptados; dobleactivación abre1 dialog. Fuente pilar/tema confirmada por revisión del código; no envío real.
+
+Propuesta recuperación (no implementada): correo después de2 preguntas de contexto con opt-in explícito sin marcar para guardar avance y recibir1 recordatorio. Guardar borrador server tras cada avance, lastActivity, estado, consentimiento y fuente. D1 para persistencia y WorkerCron revisa elegibles, revalida no-completado/cancelado justo antes de envío y usa Resend existente (configuración live no comprobada). Enviar1 recordatorio después de24h de inactividad; cancelar al completar o pedir no recibir más. Enlace token opaco con expiración y sin correo/respuestas en URL; resume explícito restaura respuestas propias y paso, apertura normal sigue limpia. No depender de visibilitychange/beacon para decidir abandono. Sin correo capturado no se pueden recuperar abandonos anteriores.
+Fuentes oficiales: https://developers.cloudflare.com/d1/ y https://developers.cloudflare.com/workers/configuration/cron-triggers/; Resend soporta enviar/programar/cancelar https://resend.com/docs/dashboard/emails/schedule-email y https://resend.com/docs/api-reference/emails/cancel-email .
+Métricas sugeridas: tasa de finalización, abandono por paso, borradores con permiso, retomados/completados tras correo. Texto de email propuesto: «Te quedó pendiente contarnos qué necesita tu empresa. Guardamos tus respuestas para que puedas continuar desde donde lo dejaste. Nos ayudarán a proponerte una solución más adecuada.» CTA «Continuar mis respuestas».
+
+Cambio global listo localmente; commit/producción pendientes de aprobación. Recordatorios solo propuesta para siguiente etapa.

@@ -7,6 +7,7 @@ import Header from './components/Header';
 import NavOverlay from './components/NavOverlay';
 import { Footer } from './components/Sections';
 import ScrollToTop from './components/ScrollToTop';
+import BriefModalController from './components/BriefModalController';
 import Home from './pages/Home';
 import MarketingPage from './pages/MarketingPage';
 import StudioPage from './pages/StudioPage';
@@ -82,6 +83,7 @@ function App() {
     <BrowserRouter>
       <LenisContext.Provider value={lenisRef}>
         <ScrollToTop />
+        <BriefModalController />
         <Header menuOpen={menuOpen} onToggleMenu={() => setMenuOpen((v) => !v)} />
         <NavOverlay open={menuOpen} onClose={() => setMenuOpen(false)} />
         <Routes>

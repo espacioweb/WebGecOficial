@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import ProgramaModal from '../components/ProgramaModal';
 import { Flag, Briefcase, Users, TrendingUp, Sparkles, Clapperboard, HeartPulse } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
@@ -67,14 +65,14 @@ const programas = [
   },
 ];
 
-function ProgramaCard({ p, onOpen }) {
+function ProgramaCard({ p }) {
   const externo = p.href.startsWith('http');
-  const Card = externo ? 'a' : 'button';
   return (
-    <Card
+    <a
+      href={p.href}
       {...(externo
-        ? { href: p.href, target: '_blank', rel: 'noreferrer noopener' }
-        : { type: 'button', onClick: () => onOpen(p), 'aria-haspopup': 'dialog' })}
+        ? { target: '_blank', rel: 'noreferrer noopener' }
+        : { 'aria-haspopup': 'dialog' })}
       // Borde por clase (no por style) para que el hover pueda pintarlo; el
       // degradado va como backgroundImage, encima del color de fondo que
       // tiñe HOVER_CUADRO, así el tinte se ve a través.
@@ -112,13 +110,12 @@ function ProgramaCard({ p, onOpen }) {
           {p.link} →
         </span>
       </div>
-    </Card>
+    </a>
   );
 }
 
 // `id="areas"`: el CTA secundario del hero apunta aquí (ver PilarPage).
 function BloqueProgramas() {
-  const [programa, setPrograma] = useState(null);
   return (
     <section id="areas" className="border-t border-white/[.07] bg-[#0A0E13]/60 px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
       <div className="mx-auto max-w-[1100px]">
@@ -131,17 +128,10 @@ function BloqueProgramas() {
         </h2>
         <div data-reveal className="grid gap-4 sm:grid-cols-2">
           {programas.map((p) => (
-            <ProgramaCard key={p.titulo} p={p} onOpen={setPrograma} />
+            <ProgramaCard key={p.titulo} p={p} />
           ))}
         </div>
       </div>
-      {programa && (
-        <ProgramaModal
-          titulo={programa.titulo}
-          tema={new URL(programa.href, window.location.origin).searchParams.get('tema')}
-          onClose={() => setPrograma(null)}
-        />
-      )}
     </section>
   );
 }

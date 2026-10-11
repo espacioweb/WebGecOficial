@@ -39,6 +39,7 @@ Compartido por Codex y Claude Code. Cada línea de este archivo debe cambiar lo 
 
 ## Lessons
 <!-- Lo más reciente arriba. Elimina lo que ya no aplique. -->
+- Cuando cambie la apertura de un formulario compartido, aplica el comportamiento a todos sus accesos en Home, pilares y programas, y comprueba el inventario completo de enlaces.
 - Cuando tarjetas animadas precedan un video, reserva separación suficiente también durante su desplazamiento de entrada.
 - Cuando un formulario se abra en modal, inicia las respuestas sin preselección y distingue su superficie del fondo de la web con contraste visible.
 - Cuando un video sigue inmediatamente al contenido, evita un CTA que solo desplace hacia él y revisa el espacio acumulado entre secciones.

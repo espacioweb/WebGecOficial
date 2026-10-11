@@ -5,13 +5,13 @@ import { LenisContext } from '../context/LenisContext';
 import { BriefForm } from '../pages/BriefPage';
 import { P } from '../utils/textStyles';
 
-export default function ProgramaModal({ titulo, tema, onClose }) {
+export default function ProgramaModal({ titulo, pilar = '', tema = '', onClose, opener }) {
   const dialogRef = useRef(null);
   const lenisRef = useContext(LenisContext);
 
   useEffect(() => {
     const dialog = dialogRef.current;
-    const origen = document.activeElement;
+    const origen = opener ?? document.activeElement;
     const lenis = lenisRef?.current;
     const yaDetenido = lenis?.isStopped;
     const overflow = document.body.style.overflow;
@@ -26,9 +26,9 @@ export default function ProgramaModal({ titulo, tema, onClose }) {
       document.body.style.overflow = overflow;
       document.body.style.paddingRight = padding;
       if (!yaDetenido) lenis?.start();
-      origen?.focus({ preventScroll: true });
+      if (origen?.isConnected) origen.focus({ preventScroll: true });
     };
-  }, [lenisRef]);
+  }, [lenisRef, opener]);
 
   return createPortal(
     <dialog
@@ -52,7 +52,7 @@ export default function ProgramaModal({ titulo, tema, onClose }) {
           <button
             type="button"
             autoFocus
-            aria-label="Cerrar programa"
+            aria-label="Cerrar formulario"
             onClick={onClose}
             className="grid h-11 w-11 shrink-0 cursor-pointer place-items-center rounded-full border border-white/20 text-white hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#F5B301]"
           >
@@ -60,7 +60,7 @@ export default function ProgramaModal({ titulo, tema, onClose }) {
           </button>
         </header>
         <div data-programa-scroll data-lenis-prevent className="min-h-0 overflow-y-auto overscroll-contain">
-          <BriefForm embedded pilar="educa" tema={tema} />
+          <BriefForm embedded pilar={pilar} tema={tema} />
         </div>
       </div>
     </dialog>,
