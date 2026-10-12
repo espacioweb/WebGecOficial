@@ -5,11 +5,12 @@ import { Check, ArrowLeft, X, ArrowRight } from 'lucide-react';
 import { gsap } from '../utils/gsapSetup';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP, pilares } from '../data/site';
-import { PAISES, formatTelefono, validarCorreoEmpresarial } from '../data/paises';
+import { PAISES, formatTelefono } from '../data/paises';
 import { P } from '../utils/textStyles';
 import { Eyebrow, CtaPrimary } from '../components/PilarPage';
 import { track } from '../utils/analytics';
 import useBriefDraft from '../hooks/useBriefDraft';
+import { VINCULOS_NEGOCIO, NECESIDADES_DIGITALES, validarCorreoContacto, validarContactoBrief, validarEnlaceNegocio } from '../data/brief-contact';
 
 const NOMBRE_PILAR = {
   marketing: 'Marketing',
@@ -233,7 +234,7 @@ function PasoOpcion({ contexto, pregunta, opciones, valor, onSeleccionar, onAtra
 
 // Pantalla genérica de un solo campo de texto — Enter envía igual que el
 // botón, foco automático al entrar a la pregunta.
-function PasoTexto({ contexto, pregunta, placeholder, valor, onChange, onContinuar, onAtras, error, tipo = 'text', autoComplete, opcional, children }) {
+function PasoTexto({ contexto, pregunta, placeholder, valor, onChange, onContinuar, onAtras, error, tipo = 'text', autoComplete, opcional, children, disabled }) {
   const inputRef = useRef(null);
   useEffect(() => {
     inputRef.current?.focus();
@@ -264,12 +265,70 @@ function PasoTexto({ contexto, pregunta, placeholder, valor, onChange, onContinu
       {children}
       <div className="mt-8 flex items-center justify-between">
         <Atras onClick={onAtras} />
-        <Siguiente type="submit">{opcional ? 'Continuar' : 'OK'}</Siguiente>
+        <Siguiente type="submit" disabled={disabled}>{opcional ? 'Continuar' : 'OK'}</Siguiente>
       </div>
       <p className="m-0 mt-5 text-[12px]" style={{ ...P, color: 'rgba(237,234,228,.28)' }}>
         Presiona Enter ↵
       </p>
     </form>
+  );
+}
+
+function VerificarCorreoBrief({ answers, onVerified, onContinue, onBack }) {
+  const [token, setToken] = useState(null);
+  const [codigo, setCodigo] = useState('');
+  const [ocupado, setOcupado] = useState(false);
+  const [error, setError] = useState('');
+  const [espera, setEspera] = useState(0);
+  const controller = useRef(null);
+  const busy = useRef(false);
+  useEffect(() => () => controller.current?.abort(), []);
+  useEffect(() => {
+    if (espera <= 0) return undefined;
+    const timeout = setTimeout(() => setEspera((n) => Math.max(0, n - 1)), 1000);
+    return () => clearTimeout(timeout);
+  }, [espera]);
+  const verificado = validarContactoBrief(answers).ok;
+  const solicitar = async (verificar = false) => {
+    if (busy.current || (verificar && !/^\d{6}$/.test(codigo))) return;
+    busy.current = true;
+    setOcupado(true);
+    setError('');
+    controller.current = new AbortController();
+    try {
+      const response = await fetch(`/api/brief/email/${verificar ? 'verify' : 'send'}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: controller.current.signal,
+        body: JSON.stringify(verificar ? { token, codigo } : { correo: answers.persona.correo, empresa: answers.empresa, persona: { vinculo: answers.persona.vinculo }, contacto: answers.contacto }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        if (data.reenviarEn) setEspera(data.reenviarEn);
+        throw new Error(data.mensaje || 'No pudimos verificar tu correo. Inténtalo de nuevo.');
+      }
+      if (verificar) onVerified(data.correo, data.verificationProof);
+      else { setToken(data.token); setCodigo(''); setEspera(data.reenviarEn || 60); }
+    } catch (e) { if (e.name !== 'AbortError') setError(e.message); }
+    finally { busy.current = false; setOcupado(false); }
+  };
+  return (
+    <div>
+      <Pregunta contexto="Verifica tu correo">{verificado ? 'Tu correo está verificado.' : 'Confirmemos que podemos contactarte.'}</Pregunta>
+      <p className="mb-6 break-all text-[15px] text-white/80" style={P}>{answers.persona.correo}</p>
+      {!verificado && <p className="mb-6 text-sm leading-relaxed text-white/65">Te enviaremos un código de seis dígitos. Verificar el correo permite continuar; los recordatorios siguen siendo opcionales.</p>}
+      {!verificado && token && <form onSubmit={(event) => { event.preventDefault(); solicitar(true); }}>
+        <label htmlFor="brief-email-code" className="mb-2 block text-sm text-white/80">Código de verificación</label>
+        <input id="brief-email-code" type="text" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={codigo} onChange={(event) => setCodigo(event.target.value.replace(/\D/g, '').slice(0, 6))} className={`${campoBase} w-full tracking-[.3em]`} autoFocus />
+        <p className="mt-3 text-xs text-white/60">El código caduca en 10 minutos. Revisa también la carpeta de spam.</p>
+        <div className="mt-6"><Siguiente type="submit" disabled={ocupado || codigo.length !== 6}>{ocupado ? 'Verificando…' : 'Verificar y continuar'}</Siguiente></div>
+      </form>}
+      {error && <p role="alert" className="mt-4 text-sm text-[#E8762B]">{error}</p>}
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-5">
+        <Atras onClick={onBack} />
+        {verificado ? <Siguiente onClick={onContinue}>Continuar</Siguiente> : token
+          ? <button type="button" disabled={ocupado || espera > 0} className="text-sm font-semibold text-[#F5B301] disabled:cursor-not-allowed disabled:text-white/45" onClick={() => solicitar()}>{espera > 0 ? `Reenviar en ${espera} s` : 'Reenviar código'}</button>
+          : <Siguiente disabled={ocupado || espera > 0} onClick={() => solicitar()}>{ocupado ? 'Enviando…' : espera > 0 ? `Espera ${espera} s` : 'Enviar código'}</Siguiente>}
+      </div>
+    </div>
   );
 }
 
@@ -373,7 +432,8 @@ const RESPUESTAS_INICIALES = {
   tiempo: null,
   inversion: null,
   empresa: { nombre: '', sector: '', ubicacion: '', tamano: '', web: '' },
-  persona: { nombre: '', cargo: '', rol: '', correo: '', pais: 'HN', telefono: '', canal: '' },
+  persona: { nombre: '', cargo: '', rol: '', vinculo: '', correo: '', pais: 'HN', telefono: '', canal: '' },
+  contacto: { tipo: 'corporativo', presencia: '', necesidadDigital: '', verificationProof: '' },
   consentimiento: false,
   reminderConsent: false,
 };
@@ -419,7 +479,9 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
   );
 
   const source = useMemo(() => recoveredSource || { pilar: pilarParam || null, tema: temaParam || null, utm, url: window.location.href.split('#')[0] }, [recoveredSource, pilarParam, temaParam, utm]);
-  const draft = useBriefDraft({ answers: r, step: paso, source, consent: r.reminderConsent, enabled: !recoveryState && paso !== 'intro' && paso !== 'resultado' && validarCorreoEmpresarial(r.persona.correo).ok, initialToken: recoveredToken });
+  const contactoValido = validarContactoBrief(r).ok;
+  const correoPersonal = r.contacto.tipo === 'personal';
+  const draft = useBriefDraft({ answers: r, step: paso, source, consent: r.reminderConsent, enabled: !recoveryState && paso !== 'intro' && paso !== 'resultado' && contactoValido, initialToken: recoveredToken });
   useEffect(() => {
     if (recovery?.action !== 'continuar') return undefined;
     const abort = new AbortController();
@@ -428,8 +490,8 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
         if (!response.ok) throw new Error('Este enlace ya no está disponible. Puede haber vencido o el formulario ya fue completado o cancelado.');
         const data = await response.json();
         const answers = data.answers;
-        if (!answers || !Array.isArray(answers.areas) || !answers.persona || !answers.empresa || !['intro', 'filtro', 'prioridad', 'pilar', 'logro', 'etapa', 'tiempo', 'inversion', 'empresa-nombre', 'empresa-sector', 'empresa-ubicacion', 'empresa-tamano', 'empresa-web', 'persona-nombre', 'persona-cargo', 'persona-correo', 'persona-telefono', 'persona-rol', 'persona-canal', 'persona-consentimiento'].includes(data.step)) throw new Error('No pudimos recuperar estas respuestas.');
-        setR({ ...structuredClone(RESPUESTAS_INICIALES), ...answers, persona: { ...RESPUESTAS_INICIALES.persona, ...answers.persona }, empresa: { ...RESPUESTAS_INICIALES.empresa, ...answers.empresa }, reminderConsent: data.reminderConsent });
+        if (!answers || !Array.isArray(answers.areas) || !answers.persona || !answers.empresa || !['intro', 'filtro', 'prioridad', 'pilar', 'logro', 'etapa', 'tiempo', 'inversion', 'empresa-nombre', 'empresa-sector', 'empresa-ubicacion', 'empresa-tamano', 'empresa-web', 'persona-nombre', 'persona-cargo', 'persona-correo', 'persona-telefono', 'persona-rol', 'persona-canal', 'persona-consentimiento', 'negocio-nombre', 'negocio-vinculo', 'negocio-presencia', 'negocio-digital', 'correo-verificar'].includes(data.step)) throw new Error('No pudimos recuperar estas respuestas.');
+        setR({ ...structuredClone(RESPUESTAS_INICIALES), ...answers, contacto: { ...RESPUESTAS_INICIALES.contacto, ...answers.contacto }, persona: { ...RESPUESTAS_INICIALES.persona, ...answers.persona }, empresa: { ...RESPUESTAS_INICIALES.empresa, ...answers.empresa }, reminderConsent: data.reminderConsent });
         setRecoveredSource(data.source);
         setRecoveredToken(recovery.token);
         setPaso(data.step);
@@ -455,7 +517,15 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
   const pais = useMemo(() => PAISES.find((p) => p.code === r.persona.pais) || PAISES[0], [r.persona.pais]);
 
   const setEmpresa = (k) => (e) => setR((s) => ({ ...s, empresa: { ...s.empresa, [k]: e.target.value } }));
-  const setPersona = (k) => (e) => setR((s) => ({ ...s, persona: { ...s.persona, [k]: e.target.value } }));
+  const setPersona = (k) => (e) => {
+    const value = e.target.value;
+    if (k === 'correo') setErrores({});
+    setR((s) => ({ ...s, persona: { ...s.persona, [k]: value }, ...(k === 'correo' && value.trim().toLowerCase() !== s.persona.correo.trim().toLowerCase() ? { contacto: { ...s.contacto, verificationProof: '' } } : {}) }));
+  };
+  const cambiarTipoCorreo = (tipo) => {
+    setR((s) => ({ ...s, contacto: { ...s.contacto, tipo, verificationProof: '' } }));
+    setErrores({});
+  };
 
   const toggleArea = (id) => {
     setR((s) => {
@@ -478,17 +548,18 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
     else if (!esOrientacion) s.push('pilar');
     else s.push('logro');
     s.push('persona-correo');
+    if (correoPersonal) s.push('negocio-nombre', 'negocio-vinculo', 'negocio-presencia', 'negocio-digital', 'correo-verificar');
     if (necesitaPrioridad) s.push('pilar');
     if (!esOrientacion) s.push('logro');
     s.push(
       'etapa',
       'tiempo',
       'inversion',
-      'empresa-nombre',
+      ...(!correoPersonal ? ['empresa-nombre'] : []),
       'empresa-sector',
       'empresa-ubicacion',
       'empresa-tamano',
-      'empresa-web',
+      ...(!correoPersonal ? ['empresa-web'] : []),
       'persona-nombre',
       'persona-cargo',
       'persona-telefono',
@@ -498,11 +569,14 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
       'resultado',
     );
     return s;
-  }, [necesitaPrioridad, esOrientacion]);
+  }, [necesitaPrioridad, esOrientacion, correoPersonal]);
   const pasoActual = Math.max(1, secuencia.indexOf(paso) + 1);
   const totalPasos = secuencia.length - 1; // sin contar "resultado"
+  const avanzarTimer = useRef(null);
 
   const ir = (siguiente) => {
+    clearTimeout(avanzarTimer.current);
+    avanzarTimer.current = null;
     if (paso === 'intro') track('brief_started');
     else if (paso !== 'resultado') track('brief_step_completed', { paso });
     setErrores({});
@@ -522,7 +596,6 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
 
   // Auto-avance: fija la respuesta y, un instante después (para que se vea
   // el estado activo antes de saltar), pasa a la siguiente pregunta.
-  const avanzarTimer = useRef(null);
   useEffect(() => () => clearTimeout(avanzarTimer.current), []);
   const elegirYAvanzar = (actualizar) => {
     if (avanzarTimer.current) return;
@@ -558,6 +631,7 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
       inversion: r.inversion,
       empresa: r.empresa,
       persona: { ...r.persona, telefono: `+${pais.dial} ${formatTelefono(r.persona.telefono, pais.mask)}` },
+      contacto: r.contacto,
       fuente: source,
       ts: Date.now(),
     };
@@ -585,6 +659,7 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
 
   const avanzarTexto = () => {
     const errs = {};
+    if (paso === 'negocio-nombre' && r.empresa.nombre.trim().length < 2) errs.campo = 'Escribe el nombre de tu negocio.';
     if (paso === 'empresa-nombre' && !r.empresa.nombre.trim()) errs.campo = 'Escribe el nombre de la empresa.';
     if (paso === 'empresa-sector' && !r.empresa.sector.trim()) errs.campo = 'Escribe el sector.';
     if (paso === 'empresa-ubicacion' && !r.empresa.ubicacion.trim()) errs.campo = 'Escribe la ubicación.';
@@ -592,8 +667,8 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
     if (paso === 'persona-nombre' && !r.persona.nombre.trim()) errs.campo = 'Escribe tu nombre.';
     if (paso === 'persona-cargo' && !r.persona.cargo.trim()) errs.campo = 'Escribe tu cargo.';
     if (paso === 'persona-correo') {
-      const mail = validarCorreoEmpresarial(r.persona.correo);
-      if (!mail.ok) errs.campo = mail.motivo;
+      const mail = validarCorreoContacto(r.persona.correo, r.contacto.tipo);
+      if (!mail.ok) errs.campo = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(r.persona.correo.trim()) && !correoPersonal ? 'Este parece ser un correo personal. Si tu negocio aún no tiene correo corporativo, puedes continuar por la opción de abajo.' : mail.motivo;
     }
     if (Object.keys(errs).length) return setErrores(errs);
     ir(siguienteDesde(paso));
@@ -947,9 +1022,9 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
             <PasoTexto
               // Lámina 33: explicar para qué se piden los datos — va en el
               // primer dato de contacto; la etiqueta dice qué dato se pide.
-              contexto="Tu correo empresarial"
+              contexto={correoPersonal ? 'Tu correo de contacto' : 'Tu correo empresarial'}
               pregunta="¿Dónde podemos contactarte para conversar sobre tu necesidad?"
-              placeholder="nombre@tuempresa.com"
+              placeholder={correoPersonal ? 'nombre@gmail.com' : 'nombre@tuempresa.com'}
               tipo="email"
               autoComplete="email"
               valor={r.persona.correo}
@@ -958,12 +1033,52 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
               onAtras={() => ir(anteriorDesde('persona-correo'))}
               error={errores.campo}
             >
+              <div className="mt-5 border-l-2 border-[#F5B301]/50 pl-4">
+                {correoPersonal ? <>
+                  <p className="m-0 text-sm leading-relaxed text-white/70">Puedes usar tu correo personal. Primero nos contarás sobre tu negocio y confirmarás el correo con un código.</p>
+                  <button type="button" className="mt-2 cursor-pointer text-sm font-semibold text-[#F5B301] underline-offset-4 hover:underline" onClick={() => cambiarTipoCorreo('corporativo')}>Usar correo corporativo</button>
+                </> : <>
+                  <button type="button" className="cursor-pointer text-sm font-semibold text-[#F5B301] underline-offset-4 hover:underline" onClick={() => cambiarTipoCorreo('personal')}>Aún no tengo correo corporativo</button>
+                  <p className="m-0 mt-2 text-xs leading-relaxed text-white/60">Si tienes un negocio que todavía no cuenta con correo corporativo, puedes continuar con tu correo personal.</p>
+                </>}
+              </div>
               <label className="mt-5 flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-white/80">
                 <input type="checkbox" checked={r.reminderConsent} onChange={(event) => setR((state) => ({ ...state, reminderConsent: event.target.checked }))} className="mt-1 h-4 w-4 shrink-0 accent-[#F5B301]" />
                 <span>Guardar mi avance y enviarme un recordatorio si no termino. Podré continuar desde el correo y desactivar el recordatorio.</span>
               </label>
             </PasoTexto>
           )}
+
+          {paso === 'negocio-nombre' && <PasoTexto contexto="Sobre tu negocio" pregunta="¿Cómo se llama tu negocio?" placeholder="Nombre del negocio" autoComplete="organization" valor={r.empresa.nombre} onChange={setEmpresa('nombre')} onContinuar={avanzarTexto} onAtras={() => ir(anteriorDesde(paso))} error={errores.campo} />}
+
+          {paso === 'negocio-vinculo' && <PasoOpcion contexto="Sobre tu negocio" pregunta="¿Cuál es tu relación con el negocio?" opciones={VINCULOS_NEGOCIO} valor={r.persona.vinculo} onSeleccionar={(v) => elegirYAvanzar(() => setR((s) => ({ ...s, persona: { ...s.persona, vinculo: v } })))} onAtras={() => ir(anteriorDesde(paso))} />}
+
+          {paso === 'negocio-presencia' && <form onSubmit={(event) => {
+            event.preventDefault();
+            if (!r.contacto.presencia) return setErrores({ campo: 'Indica si tu negocio tiene website o un perfil comercial.' });
+            if (r.contacto.presencia === 'enlace' && !validarEnlaceNegocio(r.empresa.web)) return setErrores({ campo: 'Escribe un dominio o un enlace válido al website o perfil comercial de tu negocio.' });
+            ir(siguienteDesde(paso));
+          }}>
+            <Pregunta contexto="Sobre tu negocio">¿Dónde podemos conocer tu negocio?</Pregunta>
+            <div className="flex flex-col gap-3">
+              <Opcion letra="A" active={r.contacto.presencia === 'enlace'} onClick={() => { setErrores({}); setR((s) => ({ ...s, contacto: { ...s.contacto, presencia: 'enlace' } })); }}>Tenemos website o un perfil comercial en redes</Opcion>
+              <Opcion letra="B" active={r.contacto.presencia === 'ninguna'} onClick={() => elegirYAvanzar(() => setR((s) => ({ ...s, empresa: { ...s.empresa, web: '' }, contacto: { ...s.contacto, presencia: 'ninguna' } })))}>Aún no tenemos ninguno</Opcion>
+            </div>
+            {r.contacto.presencia === 'enlace' && <div className="mt-6">
+              <label htmlFor="brief-business-link" className="mb-2 block text-sm text-white/80">Website o perfil comercial</label>
+              <input id="brief-business-link" className={`${campoBase} w-full`} type="text" inputMode="url" autoComplete="url" value={r.empresa.web} onChange={setEmpresa('web')} placeholder="tunegocio.com o enlace a tu perfil comercial" />
+            </div>}
+            {errores.campo && <p role="alert" className="mt-3 text-sm text-[#E8762B]">{errores.campo}</p>}
+            <div className="mt-8 flex items-center justify-between"><Atras onClick={() => ir(anteriorDesde(paso))} /><Siguiente type="submit">Continuar</Siguiente></div>
+          </form>}
+
+          {paso === 'negocio-digital' && <PasoOpcion contexto="Presencia digital" pregunta="¿Tu negocio necesita dominio, correo corporativo o website?" opciones={NECESIDADES_DIGITALES} valor={r.contacto.necesidadDigital} onSeleccionar={(v) => elegirYAvanzar(() => setR((s) => ({ ...s, contacto: { ...s.contacto, necesidadDigital: v } })))} onAtras={() => ir(anteriorDesde(paso))} />}
+
+          {paso === 'correo-verificar' && <VerificarCorreoBrief key={r.persona.correo.trim().toLowerCase()} answers={r} onBack={() => ir(anteriorDesde(paso))} onContinue={() => ir(siguienteDesde(paso))} onVerified={(correo, verificationProof) => {
+            if (correo !== r.persona.correo.trim().toLowerCase() || !verificationProof) return;
+            setR((s) => s.persona.correo.trim().toLowerCase() === correo ? { ...s, contacto: { ...s.contacto, verificationProof } } : s);
+            ir(siguienteDesde(paso));
+          }} />}
 
           {paso === 'persona-telefono' && (
             <form
@@ -1100,6 +1215,7 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
 
               <div className="mb-8 grid gap-x-8 gap-y-5 rounded-2xl border border-white/[.08] bg-[#10161D] p-6 text-left sm:grid-cols-2">
                 <ResumenCampo label="Empresa" valor={r.empresa.nombre} />
+                {correoPersonal && <ResumenCampo label="Presencia digital" valor={r.contacto.necesidadDigital} />}
                 <ResumenCampo label="Contacto" valor={[r.persona.nombre, r.persona.cargo].filter(Boolean).join(' · ')} />
                 <ResumenCampo label="Necesidad" valor={necesidadFinal} />
                 {r.prioridad && r.prioridad !== 'orientacion' && (
@@ -1155,7 +1271,7 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
       </div>
 
       {paso !== 'intro' && paso !== 'resultado' && draft.status !== 'idle' && <div role="status" className="px-6 pb-5 text-center text-xs text-white/70">
-        {draft.status === 'saving' ? 'Guardando tu avance…' : draft.status === 'saved' ? 'Avance guardado. Si no terminas, te enviaremos un recordatorio.' : 'No pudimos guardar tu avance.'}
+        {draft.status === 'paused' ? 'Los cambios actuales aún no están guardados. Completa la validación del correo para guardarlos.' : draft.status === 'pending' ? 'Cambios pendientes de guardar…' : draft.status === 'saving' ? 'Guardando tu avance…' : draft.status === 'saved' ? 'Avance guardado. Si no terminas, te enviaremos un recordatorio.' : 'No pudimos guardar tu avance.'}
         {draft.status === 'error' && <button type="button" className="ml-2 text-[#F5B301] underline" onClick={() => draft.flush().catch(() => {})}>Reintentar</button>}
       </div>}
       <ModalServicios open={modalAbierto} onClose={() => setModalAbierto(false)} actual={r.prioridad} />

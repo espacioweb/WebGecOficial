@@ -3,6 +3,7 @@
 // aquí, server-side, para que nunca viaje de vuelta al navegador.
 
 import { completeDraft, readBody } from '../../shared/brief-recovery.js';
+import { validarContactoServidor } from '../../shared/brief-contact.js';
 
 const NOTIFY_URL = 'https://palabras-gec.operaciones-659.workers.dev/notify';
 
@@ -46,6 +47,11 @@ export async function onRequestPost({ request, env }) {
   const prioridad = body?.prioridad;
   const clasificacion = clasificar(body?.etapa, body?.tiempo);
 
+  try {
+    const validation = await validarContactoServidor(body,env);
+    if (validation.error) return json({error:validation.error,mensaje:validation.mensaje},validation.status);
+  } catch { return json({error:'storage'},503); }
+
   if (body?.draftToken) {
     try {
       const completion = await completeDraft(body.draftToken, persona.correo, env);
@@ -66,6 +72,9 @@ export async function onRequestPost({ request, env }) {
 🏢 ${limpio(empresa.nombre)} (${limpio(empresa.sector)}, ${limpio(empresa.ubicacion)}, ${limpio(empresa.tamano)})
 🌐 ${limpio(empresa.web) || '—'}
 📧 ${limpio(persona.correo)}
+🏷️ Contacto: ${body?.contacto?.tipo === 'personal' ? 'Correo personal verificado · negocio declarado' : 'Correo corporativo'}
+🤝 Vínculo con el negocio: ${limpio(persona.vinculo) || '—'}
+🖥️ Dominio, correo corporativo o website: ${limpio(body?.contacto?.necesidadDigital) || '—'}
 📱 ${limpio(persona.telefono, 40)}
 💬 Prefiere: ${limpio(persona.canal)} · Rol: ${limpio(persona.rol)}
 

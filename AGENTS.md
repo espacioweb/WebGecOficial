@@ -38,6 +38,7 @@ Compartido por Codex y Claude Code. Cada línea de este archivo debe cambiar lo 
 - Pregúntame antes de cambiar cualquier cosa por encima de Lessons
 
 ## Lessons
+- Cuando un correo personal quede rechazado, ofrece una ruta explícita para negocios sin correo corporativo y no muestres avance guardado para datos actuales sin validar.
 <!-- Lo más reciente arriba. Elimina lo que ya no aplique. -->
 - Cuando cambie la apertura de un formulario compartido, aplica el comportamiento a todos sus accesos en Home, pilares y programas, y comprueba el inventario completo de enlaces.
 - Cuando tarjetas animadas precedan un video, reserva separación suficiente también durante su desplazamiento de entrada.

@@ -1,4 +1,5 @@
-import { DAY, TTL, json, clean, validEmail, sanitizeAnswers, sanitizeSource, signToken, creatorHash, readBody, findDraft, configured } from '../../../shared/brief-recovery.js';
+import { DAY, TTL, json, clean, sanitizeAnswers, sanitizeSource, signToken, creatorHash, readBody, findDraft, configured } from '../../../shared/brief-recovery.js';
+import { validarContactoServidor } from '../../../shared/brief-contact.js';
 export async function onRequestGet({request,env}) {
   if (!configured(env)) return json({error:'config'},503);
   try {
@@ -29,7 +30,10 @@ export async function onRequestPost({request,env}) {
       return confirmed?.consent === 0 ? json({cancelled:true}) : json({error:'persist'},503);
     } catch { return json({error:'storage'},503); }
   }
-  if (!validEmail(email)) return json({error:'correo'},400);
+  try {
+    const validation = await validarContactoServidor(answers,env);
+    if (validation.error) return json({error:validation.error,mensaje:validation.mensaje},validation.status);
+  } catch { return json({error:'storage'},503); }
   const step = clean(body?.step,80);
   if (!step) return json({error:'step'},400);
   try {
@@ -54,7 +58,9 @@ export async function onRequestPost({request,env}) {
     const hash = await creatorHash(request,env.BRIEF_RECOVERY_SECRET);
     const count = await env.BRIEF_DB.prepare('SELECT SUM(CASE WHEN email = ? THEN 1 ELSE 0 END) AS emails, SUM(CASE WHEN creator_hash = ? THEN 1 ELSE 0 END) AS ips FROM brief_drafts WHERE created_at >= ? AND (email = ? OR creator_hash = ?)').bind(email,hash,now-DAY,email,hash).first();
     if (count.emails >= 3 || count.ips >= 20) return json({error:'rate_limit'},429);
-    const id = crypto.randomUUID(), expires = now+TTL;
+    const id = crypto.randomUUID();
+    const expires = answers.contacto.tipo === 'personal'
+      ? Math.min(now+TTL, Number(answers.contacto.verificationProof.split('.')[1])) : now+TTL;
     await env.BRIEF_DB.prepare('INSERT INTO brief_drafts (id,client_id,email,answers,source,step,consent,created_at,updated_at,expires_at,creator_hash) VALUES (?,?,?,?,?,?,1,?,?,?,?) ON CONFLICT(client_id) DO NOTHING').bind(id,body.clientId,email,JSON.stringify(answers),JSON.stringify(sanitizeSource(body.source)),step,now,now,expires,hash).run();
     const created = await env.BRIEF_DB.prepare('SELECT id,email,expires_at,state,revision FROM brief_drafts WHERE client_id = ?').bind(body.clientId).first();
     if (!created || created.email !== email) return json({error:'client_id'},409);

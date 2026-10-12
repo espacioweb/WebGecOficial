@@ -10,14 +10,17 @@ export default function useBriefDraft({ answers, step, source, consent, enabled,
   const stopped = useRef(false);
   const mounted = useRef(true);
   const [status, setStatus] = useState('idle');
+  const [lastSaved, setLastSaved] = useState(null);
+  const snapshotKey = JSON.stringify({ answers, step, source, reminderConsent: consent });
   const latest = useRef(null);
   const canSave = useRef(enabled);
   useEffect(() => { canSave.current = enabled; }, [enabled]);
-  useEffect(() => { latest.current = { answers, step, source, reminderConsent: consent }; }, [answers, step, source, consent]);
+  useEffect(() => { latest.current = { answers, step, source, reminderConsent: consent, eligible: enabled }; }, [answers, step, source, consent, enabled]);
   useEffect(() => { if (initialToken) token.current = initialToken; }, [initialToken]);
 
   const flush = useCallback(() => {
     if (stopped.current) return Promise.resolve(token.current);
+    if (latest.current?.reminderConsent && !latest.current.eligible) return Promise.reject(new Error('Valida el correo actual antes de guardar el avance.'));
     pending.current = latest.current;
     if (running.current) return running.current;
     running.current = (async () => {
@@ -25,11 +28,13 @@ export default function useBriefDraft({ answers, step, source, consent, enabled,
         const snapshot = pending.current;
         pending.current = null;
         if (!snapshot.reminderConsent && !token.current) continue;
+        if (snapshot.reminderConsent && !snapshot.eligible) continue;
         if (mounted.current) setStatus('saving');
         try {
+          const payload = { answers: snapshot.answers, step: snapshot.step, source: snapshot.source, reminderConsent: snapshot.reminderConsent };
           const response = await fetch('/api/brief/draft', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...snapshot, clientId: clientId.current, ...(token.current ? { token: token.current } : {}) }),
+            body: JSON.stringify({ ...payload, clientId: clientId.current, ...(token.current ? { token: token.current } : {}) }),
             keepalive: true,
           });
           if (!response.ok) {
@@ -44,7 +49,10 @@ export default function useBriefDraft({ answers, step, source, consent, enabled,
           // Consent may be withdrawn while the first creation is in flight,
           // before its token exists. Queue that latest withdrawal immediately.
           if (token.current && latest.current && !latest.current.reminderConsent) pending.current = latest.current;
-          if (mounted.current) setStatus(snapshot.reminderConsent ? 'saved' : 'idle');
+          if (mounted.current) {
+            setLastSaved(snapshot.reminderConsent ? JSON.stringify(payload) : null);
+            setStatus(snapshot.reminderConsent ? 'saved' : 'idle');
+          }
         } catch (error) {
           pending.current = pending.current || snapshot;
           if (mounted.current) setStatus('error');
@@ -72,5 +80,7 @@ export default function useBriefDraft({ answers, step, source, consent, enabled,
     };
   }, [flush]);
 
-  return { status, flush, reset: () => { stopped.current = false; token.current = null; clientId.current = crypto.randomUUID(); pending.current = null; setStatus('idle'); }, stop: () => { stopped.current = true; pending.current = null; }, token };
+  const visibleStatus = consent && !enabled && status !== 'idle' ? 'paused'
+    : status === 'saved' && lastSaved !== snapshotKey ? 'pending' : status;
+  return { status: visibleStatus, flush, reset: () => { stopped.current = false; token.current = null; clientId.current = crypto.randomUUID(); pending.current = null; setLastSaved(null); setStatus('idle'); }, stop: () => { stopped.current = true; pending.current = null; }, token };
 }

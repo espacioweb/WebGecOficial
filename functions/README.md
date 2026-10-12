@@ -183,3 +183,40 @@ npx wrangler pages dev dist --port 8788 \
 
 Con una clave falsa, `enviar` responde 502 (que es correcto: Resend la rechaza)
 y el resto de comprobaciones sí se puede probar entera.
+
+## Brief: negocios sin correo corporativo
+
+La ruta normal exige correo corporativo en navegador y servidor. La alternativa
+explícita `contacto.tipo=personal` pide nombre del negocio, vínculo declarado,
+website/perfil comercial o ausencia explícita y necesidad digital. Esto declara
+el contexto comercial; el código acredita únicamente el control del correo.
+
+- `POST /api/brief/email/send`: `{correo,empresa,persona:{vinculo},contacto}`;
+  respuesta `{ok,token,segundos:600,reenviarEn:60}`.
+- `POST /api/brief/email/verify`: `{token,codigo}`; respuesta
+  `{ok,correo,verificationProof}`. No genera avisos del catálogo.
+- Borradores y envío final validan la prueba en D1 y su firma, correo y vigencia.
+  Editar el correo invalida la prueba en el navegador. El borrador personal
+  vence como máximo junto con la prueba (14 días).
+- Cinco intentos por código, consumo único, espera de 60 segundos para reenviar,
+  cinco envíos por correo y veinte por IP en 24 horas. Las reservas y los
+  intentos se actualizan de forma atómica en SQL. Fallos de proveedor también
+  consumen la reserva para evitar reintentos abusivos.
+- El código se almacena solo como HMAC. Las pruebas y códigos nunca van en logs
+  ni analytics. Las filas antiguas se purgan al solicitar códigos, conservando
+  las pruebas todavía válidas.
+- Guardar avance y recibir recordatorio siguen siendo opcionales. Retirar esa
+  autorización funciona incluso si se borró el correo o ya no es válido.
+
+Antes de desplegar este cambio, aplicar la migración nueva en cada entorno:
+
+```bash
+wrangler d1 execute gec-brief-recovery-preview --remote --config wrangler.local.jsonc --file migrations/0002_brief_email.sql
+wrangler d1 execute gec-brief-recovery --remote --config wrangler.local.jsonc --env production --file migrations/0002_brief_email.sql
+node --test tests/backend/brief-recovery.test.js tests/backend/brief-contact.test.js
+```
+
+Reutiliza `BRIEF_DB`, `BRIEF_RECOVERY_SECRET` y `RESEND_API_KEY` existentes.
+No cambia `/api/otp/*` ni requiere dependencias o claves nuevas. En Vite, las
+pruebas UI interceptan las respuestas; la entrega real del código se verifica
+por separado después de publicar con autorización del usuario.

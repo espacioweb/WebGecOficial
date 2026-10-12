@@ -14,8 +14,10 @@ export function sanitizeAnswers(raw) {
   result.empresa = {};
   for (const key of ['nombre','sector','ubicacion','tamano','web']) result.empresa[key] = clean(raw?.empresa?.[key]);
   result.persona = {};
-  for (const key of ['nombre','cargo','rol','correo','pais','telefono','canal']) result.persona[key] = clean(raw?.persona?.[key], key === 'correo' ? 254 : 200);
+  for (const key of ['nombre','cargo','rol','vinculo','correo','pais','telefono','canal']) result.persona[key] = clean(raw?.persona?.[key], key === 'correo' ? 254 : 200);
   result.persona.correo = emailOf(raw);
+  result.contacto = {};
+  for (const key of ['tipo','presencia','necesidadDigital','verificationProof']) result.contacto[key] = clean(raw?.contacto?.[key],200);
   result.consentimiento = raw?.consentimiento === true;
   return result;
 }
