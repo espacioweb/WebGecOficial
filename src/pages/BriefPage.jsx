@@ -9,6 +9,7 @@ import { PAISES, formatTelefono, validarCorreoEmpresarial } from '../data/paises
 import { P } from '../utils/textStyles';
 import { Eyebrow, CtaPrimary } from '../components/PilarPage';
 import { track } from '../utils/analytics';
+import useBriefDraft from '../hooks/useBriefDraft';
 
 const NOMBRE_PILAR = {
   marketing: 'Marketing',
@@ -61,19 +62,6 @@ const OTRA_OPCION = {
   experience: 'Otra experiencia',
 };
 
-// tema= en la URL del formulario independiente — precarga la
-// respuesta de B-03 en vez de dejar a la persona elegirla otra vez. Wellness y
-// Cultura no tienen opción propia en Educa: caen en "Otras habilidades" con
-// el nombre del programa ya escrito en el detalle (TEMA_A_DETALLE), así el
-// paso no queda pidiendo texto que la persona ya eligió al hacer clic.
-const TEMA_A_NECESIDAD = {
-  companiia: 'Adopción o aplicación de IA',
-  audiovisual: 'Aprender audiovisual con IA',
-  wellness: 'Otras habilidades',
-  cultura: 'Otras habilidades',
-};
-const TEMA_A_DETALLE = { wellness: 'Programa Wellness', cultura: 'Mejora de Cultura Organizacional' };
-
 // Copy "CAMBIOS WEBSITE GEC · octubre 2026" (lámina 33): la etapa deja de
 // sonar a calificación comercial. OJO — functions/api/brief.js clasifica
 // comparando estos textos literales (`clasificar()`); si cambian aquí hay que
@@ -95,7 +83,18 @@ const ROLES = ['Decisor final', 'Influye en la decisión', 'Recopila informació
 const CANALES = ['WhatsApp', 'Correo', 'Llamada'];
 const LETRAS = ['A', 'B', 'C', 'D', 'E', 'F'];
 
-const STORAGE_KEY = 'gec-brief-progreso';
+// Cache between StrictMode initializer calls; clear only after mounting.
+let pendingRecoveryLink = null;
+function consumeRecoveryLink() {
+  if (pendingRecoveryLink) return pendingRecoveryLink;
+  const hash = new URLSearchParams(window.location.hash.slice(1));
+  const token = hash.get('continuar') || hash.get('cancelar');
+  if (!token) return null;
+  window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search);
+  pendingRecoveryLink = { token, action: hash.has('cancelar') ? 'cancelar' : 'continuar' };
+  return pendingRecoveryLink;
+}
+
 
 const campoBase =
   'rounded-xl border bg-[#10161D] px-5 py-4 text-[17px] text-[#EDEAE4] outline-none transition-colors placeholder:text-[rgba(237,234,228,.3)] focus:border-[#F5B301]';
@@ -234,7 +233,7 @@ function PasoOpcion({ contexto, pregunta, opciones, valor, onSeleccionar, onAtra
 
 // Pantalla genérica de un solo campo de texto — Enter envía igual que el
 // botón, foco automático al entrar a la pregunta.
-function PasoTexto({ contexto, pregunta, placeholder, valor, onChange, onContinuar, onAtras, error, tipo = 'text', autoComplete, opcional }) {
+function PasoTexto({ contexto, pregunta, placeholder, valor, onChange, onContinuar, onAtras, error, tipo = 'text', autoComplete, opcional, children }) {
   const inputRef = useRef(null);
   useEffect(() => {
     inputRef.current?.focus();
@@ -262,6 +261,7 @@ function PasoTexto({ contexto, pregunta, placeholder, valor, onChange, onContinu
           {error}
         </p>
       )}
+      {children}
       <div className="mt-8 flex items-center justify-between">
         <Atras onClick={onAtras} />
         <Siguiente type="submit">{opcional ? 'Continuar' : 'OK'}</Siguiente>
@@ -375,65 +375,37 @@ const RESPUESTAS_INICIALES = {
   empresa: { nombre: '', sector: '', ubicacion: '', tamano: '', web: '' },
   persona: { nombre: '', cargo: '', rol: '', correo: '', pais: 'HN', telefono: '', canal: '' },
   consentimiento: false,
+  reminderConsent: false,
 };
 
 export default function BriefPage() {
+  const [recovery] = useState(consumeRecoveryLink);
+  useEffect(() => { pendingRecoveryLink = null; }, []);
   useDocumentMeta({
     title: 'Cuéntanos qué necesita tu empresa | Grupo Espacio Creativo',
     description: 'Responde unas preguntas breves y te orientamos hacia la solución de GEC más adecuada. Menos de 90 segundos.',
     path: '/cuentanos-tu-reto/',
   });
 
-  return <BriefForm />;
+  return <BriefForm recovery={recovery} />;
 }
 
-export function BriefForm({ embedded = false, pilar, tema }) {
+export function BriefForm({ embedded = false, pilar, tema, recovery }) {
   const [params] = useSearchParams();
   const pilarParam = pilar ?? params.get('pilar');
   const temaParam = tema ?? params.get('tema');
-  const storageKey = temaParam ? `${STORAGE_KEY}:${pilarParam}:${temaParam}` : STORAGE_KEY;
   const Container = embedded ? 'div' : 'main';
   const formRef = useRef(null);
-
-  const leerGuardado = () => {
-    if (embedded) return null;
-    try {
-      return JSON.parse(localStorage.getItem(storageKey) || 'null');
-    } catch {
-      return null;
-    }
-  };
-
-  const [paso, setPaso] = useState(() => {
-    const g = leerGuardado();
-    return g?.paso && g.paso !== 'resultado' ? g.paso : 'intro';
-  });
-  const [r, setR] = useState(() => {
-    // Un modal inicia una conversación nueva; pilar y tema siguen en fuente.
-    if (embedded) return RESPUESTAS_INICIALES;
-    const g = leerGuardado();
-    if (g?.r) {
-      // Un progreso guardado antes del cambio de octubre 2026 puede traer una
-      // etapa con el texto viejo ("Listo para iniciar"…) que ya no es opción:
-      // se descarta para que la vuelva a elegir, si no, el servidor la
-      // clasificaría mal.
-      const etapa = ETAPAS.includes(g.r.etapa) ? g.r.etapa : null;
-      return { ...RESPUESTAS_INICIALES, ...g.r, etapa };
-    }
-    if (pilarParam && NOMBRE_PILAR[pilarParam]) {
-      return {
-        ...RESPUESTAS_INICIALES,
-        areas: [pilarParam],
-        prioridad: pilarParam,
-        necesidad: TEMA_A_NECESIDAD[temaParam] ?? null,
-        necesidadOtra: TEMA_A_DETALLE[temaParam] ?? '',
-      };
-    }
-    return RESPUESTAS_INICIALES;
-  });
+  const [paso, setPaso] = useState('intro');
+  const [r, setR] = useState(() => structuredClone(RESPUESTAS_INICIALES));
+  const [recoveryState, setRecoveryState] = useState(recovery ? recovery.action === 'cancelar' ? 'cancel-confirm' : 'loading' : null);
+  const [recoveredSource, setRecoveredSource] = useState(null);
+  const [recoveredToken, setRecoveredToken] = useState(null);
+  const [enviando, setEnviando] = useState(false);
   const [errores, setErrores] = useState({});
   const [modalAbierto, setModalAbierto] = useState(false);
   const enviado = useRef(false);
+  const completionSaved = useRef(false);
   const contentRef = useRef(null);
 
   const utm = useMemo(
@@ -446,17 +418,25 @@ export function BriefForm({ embedded = false, pilar, tema }) {
     [params],
   );
 
+  const source = useMemo(() => recoveredSource || { pilar: pilarParam || null, tema: temaParam || null, utm, url: window.location.href.split('#')[0] }, [recoveredSource, pilarParam, temaParam, utm]);
+  const draft = useBriefDraft({ answers: r, step: paso, source, consent: r.reminderConsent, enabled: !recoveryState && paso !== 'intro' && paso !== 'resultado' && validarCorreoEmpresarial(r.persona.correo).ok, initialToken: recoveredToken });
   useEffect(() => {
-    // "resultado" no se guarda: si se guardara, el removeItem() de
-    // enviarBrief() quedaría pisado por este mismo efecto un instante
-    // después (el cambio a "resultado" también dispara este efecto).
-    if (embedded || paso === 'intro' || paso === 'resultado') return;
-    try {
-      localStorage.setItem(storageKey, JSON.stringify({ paso, r }));
-    } catch {
-      /* modo privado: no pasa nada, solo no persiste */
-    }
-  }, [embedded, paso, r, storageKey]);
+    if (recovery?.action !== 'continuar') return undefined;
+    const abort = new AbortController();
+    fetch('/api/brief/draft', { signal: abort.signal, headers: { Authorization: `Bearer ${recovery.token}` } })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Este enlace ya no está disponible. Puede haber vencido o el formulario ya fue completado o cancelado.');
+        const data = await response.json();
+        const answers = data.answers;
+        if (!answers || !Array.isArray(answers.areas) || !answers.persona || !answers.empresa || !['intro', 'filtro', 'prioridad', 'pilar', 'logro', 'etapa', 'tiempo', 'inversion', 'empresa-nombre', 'empresa-sector', 'empresa-ubicacion', 'empresa-tamano', 'empresa-web', 'persona-nombre', 'persona-cargo', 'persona-correo', 'persona-telefono', 'persona-rol', 'persona-canal', 'persona-consentimiento'].includes(data.step)) throw new Error('No pudimos recuperar estas respuestas.');
+        setR({ ...structuredClone(RESPUESTAS_INICIALES), ...answers, persona: { ...RESPUESTAS_INICIALES.persona, ...answers.persona }, empresa: { ...RESPUESTAS_INICIALES.empresa, ...answers.empresa }, reminderConsent: data.reminderConsent });
+        setRecoveredSource(data.source);
+        setRecoveredToken(recovery.token);
+        setPaso(data.step);
+        setRecoveryState(null);
+      }).catch((error) => { if (error.name !== 'AbortError') setRecoveryState(error.message); });
+    return () => abort.abort();
+  }, [recovery]);
 
   // Transición entre preguntas: la firma de un formulario conversacional. Sin
   // esto cada cambio de paso se siente como una recarga, no como avanzar.
@@ -495,9 +475,12 @@ export function BriefForm({ embedded = false, pilar, tema }) {
   const secuencia = useMemo(() => {
     const s = ['filtro'];
     if (necesitaPrioridad) s.push('prioridad');
-    if (!esOrientacion) s.push('pilar');
+    else if (!esOrientacion) s.push('pilar');
+    else s.push('logro');
+    s.push('persona-correo');
+    if (necesitaPrioridad) s.push('pilar');
+    if (!esOrientacion) s.push('logro');
     s.push(
-      'logro',
       'etapa',
       'tiempo',
       'inversion',
@@ -508,7 +491,6 @@ export function BriefForm({ embedded = false, pilar, tema }) {
       'empresa-web',
       'persona-nombre',
       'persona-cargo',
-      'persona-correo',
       'persona-telefono',
       'persona-rol',
       'persona-canal',
@@ -529,19 +511,6 @@ export function BriefForm({ embedded = false, pilar, tema }) {
     else window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // "Abandonado" = se fue de la pestaña (o cerró) sin llegar al resultado,
-  // habiendo ya empezado. `visibilitychange` es más confiable que
-  // `beforeunload` para mandar el evento a tiempo, sobre todo en móvil.
-  useEffect(() => {
-    const onHidden = () => {
-      if (document.visibilityState !== 'hidden') return;
-      if (paso === 'intro' || paso === 'resultado') return;
-      track('brief_abandoned', { paso });
-    };
-    document.addEventListener('visibilitychange', onHidden);
-    return () => document.removeEventListener('visibilitychange', onHidden);
-  }, [paso]);
-
   const siguienteDesde = (actual) => {
     const i = secuencia.indexOf(actual);
     return secuencia[i + 1] ?? 'resultado';
@@ -553,9 +522,12 @@ export function BriefForm({ embedded = false, pilar, tema }) {
 
   // Auto-avance: fija la respuesta y, un instante después (para que se vea
   // el estado activo antes de saltar), pasa a la siguiente pregunta.
+  const avanzarTimer = useRef(null);
+  useEffect(() => () => clearTimeout(avanzarTimer.current), []);
   const elegirYAvanzar = (actualizar) => {
+    if (avanzarTimer.current) return;
     actualizar();
-    setTimeout(() => ir(siguienteDesde(paso)), 260);
+    avanzarTimer.current = setTimeout(() => { avanzarTimer.current = null; ir(siguienteDesde(paso)); }, 260);
   };
 
   const validarFiltro = () => {
@@ -572,9 +544,10 @@ export function BriefForm({ embedded = false, pilar, tema }) {
       ? r.necesidadOtra
       : r.necesidad;
 
-  const enviarBrief = () => {
+  const enviarBrief = async () => {
     if (enviado.current) return;
     enviado.current = true;
+    setEnviando(true);
     const payload = {
       areas: r.areas,
       prioridad: r.prioridad,
@@ -585,22 +558,29 @@ export function BriefForm({ embedded = false, pilar, tema }) {
       inversion: r.inversion,
       empresa: r.empresa,
       persona: { ...r.persona, telefono: `+${pais.dial} ${formatTelefono(r.persona.telefono, pais.mask)}` },
-      fuente: { pilar: pilarParam, tema: temaParam, utm, url: window.location.href },
+      fuente: source,
       ts: Date.now(),
     };
-    track('brief_submitted', { pilar: r.prioridad || 'orientacion', ...utm });
-    fetch('/api/brief', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    }).catch((e) => {
-      console.error('Envío del brief falló', e);
-    });
     try {
-      if (!embedded) localStorage.removeItem(storageKey);
-    } catch {
-      /* no-op */
-    }
+      // Await all queued writes before completion can cancel the draft atomically.
+      if (completionSaved.current) payload.draftToken = draft.token.current;
+      else if (r.reminderConsent || draft.token.current) payload.draftToken = await draft.flush();
+      const response = await fetch('/api/brief', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({}));
+        if (error.saved) { completionSaved.current = true; draft.stop(); }
+        throw new Error(error.saved ? 'Tus respuestas están guardadas y el recordatorio fue cancelado. Falta confirmar el envío a GEC; puedes reintentarlo.' : 'No pudimos enviar tus respuestas. Inténtalo de nuevo; tu avance sigue aquí.');
+      }
+      draft.stop();
+      track('brief_submitted', { pilar: r.prioridad || 'orientacion', ...utm });
+      ir('resultado');
+    } catch (error) {
+      if (error.saved) { completionSaved.current = true; draft.stop(); }
+      enviado.current = false;
+      setErrores({ envio: error.saved ? 'Tus respuestas ya están guardadas y el recordatorio fue cancelado. Reintenta para confirmar el envío a GEC.' : error.message });
+    } finally { setEnviando(false); }
   };
 
   const avanzarTexto = () => {
@@ -618,6 +598,23 @@ export function BriefForm({ embedded = false, pilar, tema }) {
     if (Object.keys(errs).length) return setErrores(errs);
     ir(siguienteDesde(paso));
   };
+
+  if (recoveryState) return (
+    <Container className="flex min-h-[70dvh] items-center justify-center bg-[#222831] p-8 text-white">
+      <div className="max-w-lg" role="status">
+        <h1 className="text-2xl font-bold">{recoveryState === 'loading' ? 'Recuperando tu avance…' : recoveryState === 'cancel-confirm' ? '¿Desactivar el recordatorio?' : recoveryState}</h1>
+        {recoveryState === 'cancel-confirm' && <Siguiente onClick={async () => {
+          setRecoveryState('loading');
+          try {
+            const response = await fetch('/api/brief/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: recovery.token }) });
+            if (!response.ok) throw new Error('No pudimos cancelar el recordatorio. Inténtalo con el enlace original.');
+            setRecoveryState('El recordatorio ha sido desactivado.');
+          } catch (error) { setRecoveryState(error.message); }
+        }}>Desactivar recordatorio</Siguiente>}
+        {recoveryState !== 'loading' && <button className="mt-6 block text-[#F5B301]" onClick={() => { draft.reset(); setRecoveredToken(null); setRecoveredSource(null); setR(structuredClone(RESPUESTAS_INICIALES)); setPaso('intro'); setRecoveryState(null); }}>Empezar un formulario nuevo</button>}
+      </div>
+    </Container>
+  );
 
   return (
     <Container ref={formRef} className={`relative ${embedded ? 'bg-transparent' : 'min-h-[100dvh] bg-[#0A0E13]'}`}>
@@ -960,7 +957,12 @@ export function BriefForm({ embedded = false, pilar, tema }) {
               onContinuar={avanzarTexto}
               onAtras={() => ir(anteriorDesde('persona-correo'))}
               error={errores.campo}
-            />
+            >
+              <label className="mt-5 flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-white/80">
+                <input type="checkbox" checked={r.reminderConsent} onChange={(event) => setR((state) => ({ ...state, reminderConsent: event.target.checked }))} className="mt-1 h-4 w-4 shrink-0 accent-[#F5B301]" />
+                <span>Guardar mi avance y enviarme un recordatorio si no termino. Podré continuar desde el correo y desactivar el recordatorio.</span>
+              </label>
+            </PasoTexto>
           )}
 
           {paso === 'persona-telefono' && (
@@ -1073,18 +1075,19 @@ export function BriefForm({ embedded = false, pilar, tema }) {
               <div className="mt-8 flex items-center justify-between">
                 <Atras onClick={() => ir(anteriorDesde('persona-consentimiento'))} />
                 <Siguiente
+                  disabled={enviando}
                   onClick={() => {
                     if (!r.consentimiento) return setErrores({ consentimiento: 'Marca la casilla para continuar.' });
                     enviarBrief();
-                    ir('resultado');
                   }}
                 >
-                  Quiero recibir orientación
+                  {enviando ? 'Enviando…' : 'Quiero recibir orientación'}
                 </Siguiente>
               </div>
             </div>
           )}
 
+          {errores.envio && <p role="alert" className="mt-5 text-sm text-[#E8762B]">{errores.envio}</p>}
           {paso === 'resultado' && (
             <div className="text-center">
               <Eyebrow color="#F5B301">Listo</Eyebrow>
@@ -1151,6 +1154,10 @@ export function BriefForm({ embedded = false, pilar, tema }) {
         </div>
       </div>
 
+      {paso !== 'intro' && paso !== 'resultado' && draft.status !== 'idle' && <div role="status" className="px-6 pb-5 text-center text-xs text-white/70">
+        {draft.status === 'saving' ? 'Guardando tu avance…' : draft.status === 'saved' ? 'Avance guardado. Si no terminas, te enviaremos un recordatorio.' : 'No pudimos guardar tu avance.'}
+        {draft.status === 'error' && <button type="button" className="ml-2 text-[#F5B301] underline" onClick={() => draft.flush().catch(() => {})}>Reintentar</button>}
+      </div>}
       <ModalServicios open={modalAbierto} onClose={() => setModalAbierto(false)} actual={r.prioridad} />
     </Container>
   );

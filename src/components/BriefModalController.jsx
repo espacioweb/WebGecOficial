@@ -30,6 +30,7 @@ export default function BriefModalController() {
       if (!link || link.hasAttribute('download') || (link.target && link.target !== '_self')) return;
       const url = new URL(link.href, window.location.href);
       if (url.origin !== window.location.origin) return;
+      if (/^#(?:continuar|cancelar)=/.test(url.hash)) return;
       if (/^\/cuentanos-tu-reto\/?$/.test(url.pathname)) {
         event.preventDefault();
         const pilar = url.searchParams.get('pilar') || '';

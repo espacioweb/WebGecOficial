@@ -1,0 +1,30 @@
+{
+  "name": "gec-brief-reminders",
+  "main": "index.js",
+  "compatibility_date": "2026-10-11",
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "BRIEF_ENDPOINT": "https://grupoespaciocreativo.com/api/brief/reminders"
+  },
+  "triggers": {
+    "crons": [
+      "*/15 * * * *"
+    ]
+  },
+  "env": {
+    "preview": {
+      "name": "gec-brief-reminders-preview",
+      "vars": {
+        "BRIEF_ENDPOINT": "https://brief-recovery.webgecoficial.pages.dev/api/brief/reminders"
+      },
+      "triggers": {
+        "crons": []
+      },
+      "observability": {
+        "enabled": true
+      }
+    }
+  }
+}

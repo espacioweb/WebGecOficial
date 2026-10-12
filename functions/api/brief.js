@@ -2,6 +2,8 @@
 // Telegram. La clasificación (B-05: "nunca mostrar al cliente") se calcula
 // aquí, server-side, para que nunca viaje de vuelta al navegador.
 
+import { completeDraft, readBody } from '../../shared/brief-recovery.js';
+
 const NOTIFY_URL = 'https://palabras-gec.operaciones-659.workers.dev/notify';
 
 const NOMBRE_PILAR = {
@@ -29,10 +31,10 @@ const json = (datos, status = 200) =>
     headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
   });
 
-export async function onRequestPost({ request }) {
+export async function onRequestPost({ request, env }) {
   let body;
   try {
-    body = await request.json();
+    body = await readBody(request);
   } catch {
     return json({ error: 'json' }, 400);
   }
@@ -43,6 +45,13 @@ export async function onRequestPost({ request }) {
   const areas = Array.isArray(body?.areas) ? body.areas : [];
   const prioridad = body?.prioridad;
   const clasificacion = clasificar(body?.etapa, body?.tiempo);
+
+  if (body?.draftToken) {
+    try {
+      const completion = await completeDraft(body.draftToken, persona.correo, env);
+      if (completion.error) return json({ error: completion.error }, completion.status);
+    } catch { return json({ error: 'storage' }, 503); }
+  }
 
   const complementarias = areas
     .filter((a) => a !== prioridad && a !== 'orientacion')
@@ -73,15 +82,14 @@ export async function onRequestPost({ request }) {
 _Grupo Espacio Creativo · brief empresarial_`;
 
   try {
-    await fetch(NOTIFY_URL, {
+    const notification = await fetch(NOTIFY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'custom', message: mensaje }),
     });
-  } catch (e) {
-    // Igual que en otp/verificar: que falle el aviso no puede bloquear al
-    // usuario, que ya completó su parte.
-    console.error('Aviso a Telegram falló', e);
+    if (!notification.ok) return json({ error: 'notification', saved: Boolean(body?.draftToken) }, 502);
+  } catch {
+    return json({ error: 'notification', saved: Boolean(body?.draftToken) }, 502);
   }
 
   return json({ ok: true });

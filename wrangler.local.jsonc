@@ -1,0 +1,20 @@
+{
+  "name": "webgecoficial",
+  "compatibility_date": "2026-07-28",
+  "d1_databases": [{
+    "binding": "BRIEF_DB",
+    "database_name": "gec-brief-recovery-preview",
+    "database_id": "f0e74866-5e1b-418f-8919-8e3e6fa38b4c",
+    "migrations_dir": "migrations"
+  }],
+  "env": {
+    "production": {
+      "d1_databases": [{
+        "binding": "BRIEF_DB",
+        "database_name": "gec-brief-recovery",
+        "database_id": "b92e8c17-1706-4c3d-9bc3-665216e95ea9",
+        "migrations_dir": "migrations"
+      }]
+    }
+  }
+}
