@@ -31,6 +31,10 @@ function cargarGtag(id) {
 }
 
 export function initAnalytics() {
+  // Desde oct. 2026 la etiqueta oficial de Google (G-RZD5LJVV1N) va pegada en
+  // index.html, como pide Google. Si ya está, no se carga otra: dos etiquetas
+  // duplicarían cada visita.
+  if (typeof window.gtag === 'function') return;
   const id = import.meta.env.VITE_GA_MEASUREMENT_ID;
   if (!id) return;
   cargarGtag(id);

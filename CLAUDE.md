@@ -910,9 +910,10 @@ hito de sección (7) más 2 intermedias entre cada par.
    `Home.jsx`). La guía pide una página propia (`/acceso/educa/`), protegida con
    **contraseña** (no OTP), fuera del menú y del sitemap, con meta `noindex` — sigue sin
    construirse; decidir si se hace.
-6. **Fase 6 — lo que falta tras el SEO básico y la capa de eventos de arriba**: el propio
-   GA4 conectado de verdad (falta el Measurement ID real — pedírselo al usuario o que cree
-   la propiedad), Search Console verificado, Schema Service por pilar, BreadcrumbList en
+6. **Fase 6 — lo que falta tras el SEO básico y la capa de eventos de arriba**: GA4 ya
+   está conectado (2026-10-12): la etiqueta oficial `G-RZD5LJVV1N` va pegada tal cual en
+   `index.html` justo después de `<head>`, y `initAnalytics()` no carga otra si ya existe
+   `window.gtag` (no configurar además `VITE_GA_MEASUREMENT_ID`). Falta: Search Console verificado, Schema Service por pilar, BreadcrumbList en
    páginas internas, y los dos eventos que quedaron sin punto de enganche
    (`intro_skipped`, `innovation_opened` — ver ítems 3 y 1). El sitio sigue siendo un SPA
    sin prerender/SSR — riesgo real de indexación, ya anotado como TODO en el propio
@@ -920,7 +921,7 @@ hito de sección (7) más 2 intermedias entre cada par.
 7. **Fase 7 — QA**: depende de que lo anterior avance.
 
 ### Siguiente paso sugerido
-Por orden de impacto/costo: (1) pedir al usuario el Measurement ID de GA4 (o ayudarlo a
-crear la propiedad) para activar de verdad lo que ya quedó construido; (2) H-06
+Por orden de impacto/costo: (1) revisar en GA4 que lleguen las visitas y los eventos;
+(2) H-06
 Innovaciones, IYB-03/IYB-04 con contenido real y el Hero de Home, cuando haya
 casos/publicaciones reales y se defina el copy exacto de "Momento 2".
