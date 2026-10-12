@@ -59,8 +59,8 @@ export async function onRequestPost({request,env}) {
     const count = await env.BRIEF_DB.prepare('SELECT SUM(CASE WHEN email = ? THEN 1 ELSE 0 END) AS emails, SUM(CASE WHEN creator_hash = ? THEN 1 ELSE 0 END) AS ips FROM brief_drafts WHERE created_at >= ? AND (email = ? OR creator_hash = ?)').bind(email,hash,now-DAY,email,hash).first();
     if (count.emails >= 3 || count.ips >= 20) return json({error:'rate_limit'},429);
     const id = crypto.randomUUID();
-    const expires = answers.contacto.tipo === 'personal'
-      ? Math.min(now+TTL, Number(answers.contacto.verificationProof.split('.')[1])) : now+TTL;
+    // The draft never outlives the email verification (both contact routes).
+    const expires = Math.min(now+TTL, Number(answers.contacto.verificationProof.split('.')[1]));
     await env.BRIEF_DB.prepare('INSERT INTO brief_drafts (id,client_id,email,answers,source,step,consent,created_at,updated_at,expires_at,creator_hash) VALUES (?,?,?,?,?,?,1,?,?,?,?) ON CONFLICT(client_id) DO NOTHING').bind(id,body.clientId,email,JSON.stringify(answers),JSON.stringify(sanitizeSource(body.source)),step,now,now,expires,hash).run();
     const created = await env.BRIEF_DB.prepare('SELECT id,email,expires_at,state,revision FROM brief_drafts WHERE client_id = ?').bind(body.clientId).first();
     if (!created || created.email !== email) return json({error:'client_id'},409);

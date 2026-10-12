@@ -133,3 +133,21 @@ test('14-day proof expiry, database binding, invalid type and cleanup preserve a
     assert.equal((await finish({request:req(answers,''),env})).status,200);
   }finally{globalThis.fetch=original;}
 });
+
+test('corporate email also gets a code and needs the proof to draft',async()=>{
+  const {env}=setup(); let code; const original=globalThis.fetch;
+  const corp={persona:{correo:'ana@empresa-real.hn'},empresa:{},contacto:{tipo:'corporativo'}};
+  assert.equal(validarContactoBrief(corp).ok,false); assert.equal(validarContactoBrief(corp,{requireProof:false}).ok,true);
+  globalThis.fetch=async (_url,init) => {code=JSON.parse(init.body).text.match(/\d{6}/)[0];return Response.json({id:'mock'});};
+  try {
+    const sent=await send({request:req(sendingBody(corp)),env}); assert.equal(sent.status,200);
+    const {token}=await sent.json();
+    const checked=await verify({request:req({token,codigo:code},'email/verify'),env}); assert.equal(checked.status,200);
+    const {verificationProof}=await checked.json();
+    const ok={...corp,contacto:{tipo:'corporativo',verificationProof}};
+    assert.equal(validarContactoBrief(ok).ok,true);
+    assert.equal((await save({request:req({clientId:crypto.randomUUID(),answers:ok,step:'etapa',reminderConsent:true},'draft'),env})).status,200);
+  } finally {globalThis.fetch=original;}
+  const gmailComoCorporativo={persona:{correo:'x@gmail.com'},contacto:{tipo:'corporativo'}};
+  assert.equal((await send({request:req(sendingBody(gmailComoCorporativo),'email/send','192.0.2.99'),env})).status,400);
+});

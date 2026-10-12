@@ -72,7 +72,7 @@ export async function onRequestPost({ request, env }) {
 🏢 ${limpio(empresa.nombre)} (${limpio(empresa.sector)}, ${limpio(empresa.ubicacion)}, ${limpio(empresa.tamano)})
 🌐 ${limpio(empresa.web) || '—'}
 📧 ${limpio(persona.correo)}
-🏷️ Contacto: ${body?.contacto?.tipo === 'personal' ? 'Correo personal verificado · negocio declarado' : 'Correo corporativo'}
+🏷️ Contacto: ${body?.contacto?.tipo === 'personal' ? 'Correo personal verificado · negocio declarado' : 'Correo corporativo verificado'}
 🤝 Vínculo con el negocio: ${limpio(persona.vinculo) || '—'}
 🖥️ Dominio, correo corporativo o website: ${limpio(body?.contacto?.necesidadDigital) || '—'}
 📱 ${limpio(persona.telefono, 40)}

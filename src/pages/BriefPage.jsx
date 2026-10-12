@@ -435,7 +435,9 @@ const RESPUESTAS_INICIALES = {
   persona: { nombre: '', cargo: '', rol: '', vinculo: '', correo: '', pais: 'HN', telefono: '', canal: '' },
   contacto: { tipo: 'corporativo', presencia: '', necesidadDigital: '', verificationProof: '' },
   consentimiento: false,
-  reminderConsent: false,
+  // Marcado por defecto a pedido del usuario (oct. 2026): quien no quiera el
+  // recordatorio lo desmarca. No guarda nada hasta verificar el correo.
+  reminderConsent: true,
 };
 
 export default function BriefPage() {
@@ -548,6 +550,8 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
     else if (!esOrientacion) s.push('pilar');
     else s.push('logro');
     s.push('persona-correo');
+    // El correo corporativo también se verifica con código, enseguida.
+    if (!correoPersonal) s.push('correo-verificar');
     if (correoPersonal) s.push('negocio-nombre', 'negocio-vinculo', 'negocio-presencia', 'negocio-digital', 'correo-verificar');
     if (necesitaPrioridad) s.push('pilar');
     if (!esOrientacion) s.push('logro');
@@ -644,6 +648,14 @@ export function BriefForm({ embedded = false, pilar, tema, recovery }) {
       });
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
+        // Prueba vencida o ausente (p. ej. un avance recuperado de antes de
+        // que se verificara el correo corporativo): volver a verificar.
+        if (error.error === 'verificacion') {
+          setR((s) => ({ ...s, contacto: { ...s.contacto, verificationProof: '' } }));
+          enviado.current = false;
+          setEnviando(false);
+          return ir('correo-verificar');
+        }
         if (error.saved) { completionSaved.current = true; draft.stop(); }
         throw new Error(error.saved ? 'Tus respuestas están guardadas y el recordatorio fue cancelado. Falta confirmar el envío a GEC; puedes reintentarlo.' : 'No pudimos enviar tus respuestas. Inténtalo de nuevo; tu avance sigue aquí.');
       }

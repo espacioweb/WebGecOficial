@@ -6,11 +6,19 @@ import { onRequestGet, onRequestPost as save } from '../../functions/api/brief/d
 import { onRequestPost as cancel } from '../../functions/api/brief/cancel.js';
 import { onRequestPost as remind } from '../../functions/api/brief/reminders.js';
 import { onRequestPost as finish } from '../../functions/api/brief.js';
-import { DAY } from '../../shared/brief-recovery.js';
+import { DAY, signToken } from '../../shared/brief-recovery.js';
+
+// Since Oct 2026 every draft and submission needs a verified email, corporate
+// included. Each test DB gets one verified challenge per address used below.
+const SECRET='test-secret-with-enough-entropy', UNTIL=Date.now()+13*DAY;
+const VERIFIED={'test@example.com':crypto.randomUUID(),'second@example.com':crypto.randomUUID(),'other@example.com':crypto.randomUUID()};
+const PROOF=Object.fromEntries(await Promise.all(Object.entries(VERIFIED).map(async ([email,id]) => [email,await signToken(id,UNTIL,SECRET+':brief-email')])));
+const contactoDe=(email) => ({tipo:'corporativo',verificationProof:PROOF[email]});
 
 function setup() {
   const sqlite = new DatabaseSync(':memory:');
-  sqlite.exec(readFileSync(new URL('../../migrations/0001_brief_recovery.sql',import.meta.url),'utf8'));
+  for (const name of ['0001_brief_recovery.sql','0002_brief_email.sql']) sqlite.exec(readFileSync(new URL(`../../migrations/${name}`,import.meta.url),'utf8'));
+  for (const [email,id] of Object.entries(VERIFIED)) sqlite.prepare('INSERT INTO brief_email_challenges(id,email,code_hash,creator_hash,created_at,expires_at,verified_at,verified_until,delivered) VALUES(?,?,?,?,?,?,?,?,1)').run(id,email,'x','ip',Date.now(),Date.now()+600000,Date.now(),UNTIL);
   const db = { prepare(sql) {
     let params = [];
     return {bind(...values) { params=values; return this; },
@@ -19,13 +27,13 @@ function setup() {
       async run() { return {meta:sqlite.prepare(sql).run(...params)}; },
     };
   } };
-  const env = {BRIEF_DB:db,BRIEF_RECOVERY_SECRET:'test-secret-with-enough-entropy',RESEND_API_KEY:'fake'};
+  const env = {BRIEF_DB:db,BRIEF_RECOVERY_SECRET:SECRET,RESEND_API_KEY:'fake'};
   return {env,sqlite};
 }
 function request(body,path='draft',extra={}) {
   return new Request(`https://example.com/api/brief/${path}`,{method:'POST',headers:{'Content-Type':'application/json','CF-Connecting-IP':'192.0.2.1',...extra},body:JSON.stringify(body)});
 }
-const answers = {persona:{correo:'test@example.com',nombre:'Test'},areas:['studio'],necesidad:'Video',empresa:{sector:'Servicios'}};
+const answers = {persona:{correo:'test@example.com',nombre:'Test'},areas:['studio'],necesidad:'Video',empresa:{sector:'Servicios'},contacto:contactoDe('test@example.com')};
 async function create(env,extra={}) {
   const response = await save({request:request({clientId:crypto.randomUUID(),answers,source:{pilar:'studio',url:'https://example.com/#continuar=secret'},step:'necesidad',reminderConsent:true,...extra}),env});
   assert.equal(response.status,200);
@@ -82,12 +90,12 @@ test('final completion matches email and persists before success; DB failure pre
   const original=globalThis.fetch; let calls=0;
   globalThis.fetch=async () => { calls++; assert.equal(sqlite.prepare('SELECT state FROM brief_drafts').get().state,'completed'); return Response.json({ok:true}); };
   try {
-    assert.equal((await finish({request:request({persona:{correo:'other@example.com'},draftToken:token},''),env})).status,409); assert.equal(calls,0);
-    assert.equal((await finish({request:request({persona:answers.persona,draftToken:token},''),env})).status,200); assert.equal(calls,1);
+    assert.equal((await finish({request:request({persona:{correo:'other@example.com'},contacto:contactoDe('other@example.com'),draftToken:token},''),env})).status,409); assert.equal(calls,0);
+    assert.equal((await finish({request:request({persona:answers.persona,contacto:answers.contacto,draftToken:token},''),env})).status,200); assert.equal(calls,1);
     sqlite.prepare('UPDATE brief_drafts SET updated_at = ?').run(Date.now()-DAY-1000);
     await remind({request:reminderRequest(env),env}); assert.equal(calls,1);
     const broken={...env,BRIEF_DB:{prepare(){throw new Error('db');}}};
-    assert.equal((await finish({request:request({persona:answers.persona,draftToken:token},''),env:broken})).status,503); assert.equal(calls,1);
+    assert.equal((await finish({request:request({persona:answers.persona,contacto:answers.contacto,draftToken:token},''),env:broken})).status,503); assert.equal(calls,1);
   } finally {globalThis.fetch=original;}
 });
 
@@ -107,7 +115,7 @@ test('revalidate completion between claim and send and preview recipient filter'
   globalThis.fetch=async () => {calls++; return Response.json({id:'mock'});};
   try {assert.equal((await remind({request:reminderRequest(env),env})).status,200); assert.equal(calls,0);} finally {globalThis.fetch=original;}
   env.BRIEF_DB.prepare=basePrepare;
-  await create(env,{answers:{...answers,persona:{correo:'second@example.com'}}});
+  await create(env,{answers:{...answers,persona:{correo:'second@example.com'},contacto:contactoDe('second@example.com')}});
   env.BRIEF_TEST_RECIPIENT='different@example.com';
   sqlite.prepare('UPDATE brief_drafts SET updated_at = ?').run(Date.now()-DAY-1000);
   globalThis.fetch=async () => {calls++; return Response.json({id:'mock'});};
@@ -157,13 +165,13 @@ test('notification failure retains completed lead in DB and confirms delivery on
   const original=globalThis.fetch;
   try {
     globalThis.fetch=async () => new Response('{}',{status:502});
-    const failed = await finish({request:request({persona:answers.persona,draftToken:token},''),env});
+    const failed = await finish({request:request({persona:answers.persona,contacto:answers.contacto,draftToken:token},''),env});
     assert.equal(failed.status,502); assert.deepEqual(await failed.json(),{error:'notification',saved:true});
     const row=sqlite.prepare('SELECT * FROM brief_drafts').get();
     assert.equal(row.state,'completed'); assert.equal(row.consent,0);
     assert.equal(JSON.parse(row.answers).necesidad,'Video');
     globalThis.fetch=async () => Response.json({ok:true});
-    assert.equal((await finish({request:request({persona:answers.persona,draftToken:token},''),env})).status,200);
+    assert.equal((await finish({request:request({persona:answers.persona,contacto:answers.contacto,draftToken:token},''),env})).status,200);
   } finally {globalThis.fetch=original;}
 });
 
@@ -182,11 +190,11 @@ test('autosave after a lost final response signals persisted completion and neve
   const original=globalThis.fetch;
   try {
     globalThis.fetch=async () => Response.json({ok:true});
-    await finish({request:request({persona:answers.persona,draftToken:token},''),env});
+    await finish({request:request({persona:answers.persona,contacto:answers.contacto,draftToken:token},''),env});
     const response=await save({request:request({token,answers:{...answers,necesidad:'Overwrite'},step:'empresa',reminderConsent:true}),env});
     assert.equal(response.status,410); assert.deepEqual(await response.json(),{error:'completed',saved:true});
     assert.equal(JSON.parse(sqlite.prepare('SELECT answers FROM brief_drafts').get().answers).necesidad,'Video');
-    assert.equal((await finish({request:request({persona:answers.persona,draftToken:token},''),env})).status,200);
+    assert.equal((await finish({request:request({persona:answers.persona,contacto:answers.contacto,draftToken:token},''),env})).status,200);
   } finally {globalThis.fetch=original;}
 });
 
@@ -198,4 +206,19 @@ test('resume uses Authorization header without exposing token in the URL, header
   assert.equal(response.status,200); assert.equal((await response.json()).step,'necesidad');
   const priority=await onRequestGet({request:new Request('https://example.com/api/brief/draft?token=invalid',{headers:{Authorization:`Bearer ${token}`}}),env});
   assert.equal(priority.status,200);
+});
+
+test('corporate email without a verified proof cannot save a draft or submit',async () => {
+  const {env,sqlite}=setup(); const original=globalThis.fetch; let calls=0;
+  globalThis.fetch=async () => {calls++; return Response.json({ok:true});};
+  try {
+    const sinPrueba={...answers,contacto:{tipo:'corporativo'}};
+    const ajena={...answers,contacto:contactoDe('second@example.com')};
+    for (const variant of [sinPrueba,ajena]) {
+      assert.ok([400,401].includes((await save({request:request({clientId:crypto.randomUUID(),answers:variant,step:'etapa',reminderConsent:true}),env})).status));
+      assert.ok([400,401].includes((await finish({request:request(variant,''),env})).status));
+    }
+    assert.equal(calls,0); assert.equal(sqlite.prepare('SELECT count(*) AS n FROM brief_drafts').get().n,0);
+    assert.equal((await finish({request:request(answers,''),env})).status,200); assert.equal(calls,1);
+  } finally {globalThis.fetch=original;}
 });

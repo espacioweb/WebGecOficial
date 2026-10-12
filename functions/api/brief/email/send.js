@@ -8,7 +8,7 @@ export async function onRequestPost({ request, env }) {
   try { body = await readBody(request); } catch { return json({error:'json'},400); }
   const answers = sanitizeAnswers({...body,persona:{...body?.persona,correo:body?.correo}});
   const validation = validarContactoBrief(answers,{requireProof:false});
-  if (!validation.ok || answers.contacto.tipo !== 'personal') return json({error:'contacto',mensaje:validation.motivo || 'Selecciona la opción sin correo corporativo.'},400);
+  if (!validation.ok) return json({error:'contacto',mensaje:validation.motivo},400);
   const email = answers.persona.correo, now = Date.now(), id = crypto.randomUUID(), expires = now + CODE_TTL;
   const code = nuevoCodigo();
   try {

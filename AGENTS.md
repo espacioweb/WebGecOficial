@@ -38,6 +38,8 @@ Compartido por Codex y Claude Code. Cada línea de este archivo debe cambiar lo 
 - Pregúntame antes de cambiar cualquier cosa por encima de Lessons
 
 ## Lessons
+- Cuando el brief pida un correo, verifícalo con código siempre, sea corporativo o personal; nada se guarda ni se recuerda antes de verificarlo.
+- Cuando el brief ofrezca el recordatorio de avance, la casilla va marcada por defecto (decisión del usuario); "sin preselección" aplica a las respuestas, no a esa casilla.
 - Cuando un correo personal quede rechazado, ofrece una ruta explícita para negocios sin correo corporativo y no muestres avance guardado para datos actuales sin validar.
 <!-- Lo más reciente arriba. Elimina lo que ya no aplique. -->
 - Cuando cambie la apertura de un formulario compartido, aplica el comportamiento a todos sus accesos en Home, pilares y programas, y comprueba el inventario completo de enlaces.

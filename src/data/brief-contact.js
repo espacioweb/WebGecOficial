@@ -19,16 +19,22 @@ export function enlaceComercialValido(value) {
   } catch { return false; }
 }
 export const validarEnlaceNegocio = enlaceComercialValido;
+// Verificar el correo con un código aplica a las dos rutas (oct. 2026): la
+// corporativa también, para que nadie avance ni reciba recordatorios con un
+// correo falso o mal escrito.
+const pruebaValida = (proof) => /^[a-f0-9-]{36}\.\d{13}\.[a-f0-9]{64}$/.test(proof) && Number(proof.split('.')[1]) > Date.now();
 export function validarContactoBrief(answers, { requireProof = true } = {}) {
   const contacto = answers?.contacto || {};
   const correo = validarCorreoContacto(answers?.persona?.correo, contacto.tipo || 'corporativo');
-  if (!correo.ok || (contacto.tipo || 'corporativo') === 'corporativo') return correo;
+  if (!correo.ok) return correo;
+  if ((contacto.tipo || 'corporativo') === 'corporativo') {
+    return requireProof && !pruebaValida(texto(contacto.verificationProof)) ? { ok: false, motivo: 'Verifica tu correo para continuar.' } : correo;
+  }
   if (texto(answers?.empresa?.nombre).length < 2) return { ok: false, motivo: 'Escribe el nombre de tu negocio.' };
   if (!VINCULOS_NEGOCIO.includes(answers?.persona?.vinculo)) return { ok: false, motivo: 'Indica tu relación con el negocio.' };
   if (!['enlace', 'ninguna'].includes(contacto.presencia)) return { ok: false, motivo: 'Indica si tu negocio tiene website o perfil comercial.' };
   if (contacto.presencia === 'enlace' && !enlaceComercialValido(answers?.empresa?.web)) return { ok: false, motivo: 'Escribe un dominio o enlace válido del negocio.' };
   if (!NECESIDADES_DIGITALES.includes(contacto.necesidadDigital)) return { ok: false, motivo: 'Indica si necesitas dominio, correo corporativo o website.' };
-  const proof = texto(contacto.verificationProof);
-  if (requireProof && (!/^[a-f0-9-]{36}\.\d{13}\.[a-f0-9]{64}$/.test(proof) || Number(proof.split('.')[1]) <= Date.now())) return { ok: false, motivo: 'Verifica tu correo para continuar.' };
+  if (requireProof && !pruebaValida(texto(contacto.verificationProof))) return { ok: false, motivo: 'Verifica tu correo para continuar.' };
   return { ok: true, motivo: '' };
 }
