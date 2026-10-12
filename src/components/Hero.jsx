@@ -325,14 +325,22 @@ export default function Hero() {
                 titular "Detectamos qué está frenando…" y su párrafo de la
                 lámina 2: el usuario pidió que ya no estén. Es largo para un
                 H1, así que el clamp va más bajo que el del titular anterior. */}
+            {/* El usuario pidió que "que integra estrategia…" tenga otro peso
+                y tamaño: el H1 queda con la afirmación y el resto baja a
+                bajada, en peso ligero. */}
             <h1
-              className="m-0 max-w-[24ch] text-[clamp(24px,3.3vw,40px)] leading-[1.14] font-bold text-white"
-              style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-.025em', textWrap: 'balance' }}
+              className="m-0 max-w-[20ch] text-[clamp(30px,4.2vw,52px)] leading-[1.06] font-bold text-white"
+              style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-.03em', textWrap: 'balance' }}
             >
-              Somos una agencia de <span className="text-[#F5B301]">crecimiento creativo empresarial</span> que
-              integra estrategia, creatividad, tecnología e inteligencia artificial para ayudar a las empresas a
-              crecer.
+              Somos una agencia de <span className="text-[#F5B301]">crecimiento creativo empresarial</span>
             </h1>
+            <p
+              className="m-0 max-w-[40ch] text-[clamp(16px,1.45vw,21px)] leading-[1.5] font-light"
+              style={{ fontFamily: 'Poppins, sans-serif', color: 'rgba(237,234,228,.8)', textWrap: 'pretty' }}
+            >
+              que integra estrategia, creatividad, tecnología e inteligencia artificial para ayudar a las empresas a
+              crecer.
+            </p>
             <div className="flex flex-wrap gap-3">
               <Link
                 to="/cuentanos-tu-reto/"
