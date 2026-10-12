@@ -238,12 +238,15 @@ export default function Hero() {
       />
 
       {/* Scrim de legibilidad. En móvil el copy va abajo, así que el degradado
-          sube desde el pie; en desktop no hace falta (el personaje va derecha). */}
+          sube desde el pie; en desktop no hace falta (el personaje va derecha).
+          Arranca más arriba desde que el cierre lleva la presentación de GEC
+          sobre el titular (oct. 2026): sin eso esa línea caía sobre las
+          piernas del personaje y no se leía. */}
       <div
         className="pointer-events-none absolute inset-0 lg:hidden"
         style={{
           background:
-            'linear-gradient(180deg, rgba(5,5,6,0) 30%, rgba(5,5,6,.55) 52%, rgba(5,5,6,.92) 72%, #050506 100%)',
+            'linear-gradient(180deg, rgba(5,5,6,0) 22%, rgba(5,5,6,.72) 40%, rgba(5,5,6,.94) 60%, #050506 100%)',
         }}
       />
 
@@ -321,6 +324,15 @@ export default function Hero() {
             {/* Copy "CAMBIOS WEBSITE GEC · octubre 2026" (lámina 2) — literal.
                 Titular más largo que el anterior: baja el tope del clamp para
                 que no empuje los CTA fuera de la franja en desktop. */}
+            {/* Presentación de GEC en pequeño antes del titular (texto del
+                usuario, oct. 2026). */}
+            <p
+              className="m-0 max-w-[46ch] text-[clamp(13px,1vw,15px)] leading-[1.6]"
+              style={{ fontFamily: 'Poppins, sans-serif', color: 'rgba(237,234,228,.62)' }}
+            >
+              Somos una agencia de crecimiento creativo empresarial que integra estrategia, creatividad, tecnología e
+              inteligencia artificial para ayudar a las empresas a crecer.
+            </p>
             <h1
               className="m-0 text-[clamp(26px,4.6vw,46px)] leading-[1.08] font-bold text-white"
               style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-.03em', textWrap: 'balance' }}
