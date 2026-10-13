@@ -886,6 +886,17 @@ hito de sección (7) más 2 intermedias entre cada par.
     filas en sentidos opuestos, pausa en hover, grilla quieta con reduced-motion. El
     dato `sectores` sigue en `site.js` sin usarse.
 
+- **Videos: el explicativo pasa a Marketing y el Home lleva el de intro (2026-10-12).**
+  - `VideoExplicativo` salió de `Sections.jsx` a `src/components/VideoExplicativo.jsx`, con
+    props `video`, `duracion`, `id` y `etiqueta`. Así lo usan el Home y Marketing sin que
+    `/marketing/` cargue todo `Sections.jsx`.
+  - Home: `INTRO_GEC` (`intro-gec.mp4`, 81 s con audio, 28 MB → 5.3 MB a 1600 px, crf 25) en
+    el mismo lugar donde estaba el explicativo. El original (`~/Downloads/video intro
+    WEBSITE GEC.mp4`) no entra al repo.
+  - `/marketing/`: la pieza "Desde adentro hacia afuera" va justo antes de "Cuando hacer
+    marketing ya no es suficiente", vía el nuevo prop `antesDeValor` de `PilarPage`. Solo
+    Marketing; los otros pilares no lo llevan.
+
 ### ❌ Pendiente
 
 1. **Home — bloque aprobado que aún falta:**

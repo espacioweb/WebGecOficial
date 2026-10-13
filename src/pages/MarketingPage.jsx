@@ -3,6 +3,15 @@ import useDocumentMeta from '../hooks/useDocumentMeta';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
 import PilarPage, { HeroCharacter } from '../components/PilarPage';
+import VideoExplicativo from '../components/VideoExplicativo';
+
+// Pieza "Desde adentro hacia afuera" (73 s), antes en el Home: pasó aquí a
+// pedido del usuario (oct. 2026), justo antes de "Cuando hacer marketing ya no
+// es suficiente". El Home ahora lleva el video de intro del sitio.
+const EXPLICATIVO = {
+  src: '/assets/videos/explicativo-gec.mp4',
+  poster: '/assets/videos/explicativo-gec-poster.webp',
+};
 
 const BRIEF_MARKETING = '/cuentanos-tu-reto/?pilar=marketing';
 
@@ -35,6 +44,18 @@ export default function MarketingPage() {
       }}
       // Láminas 11 y 12 — títulos en primera persona del cliente (las citas
       // van con comillas tipográficas, tal cual el PDF).
+      antesDeValor={
+        <section className="px-[clamp(20px,4vw,40px)] pb-[clamp(56px,7vw,96px)]">
+          <div data-reveal className="mx-auto max-w-[1100px]">
+            <VideoExplicativo
+              video={EXPLICATIVO}
+              duracion="1:13"
+              id="explicativo-gec"
+              etiqueta="Reproducir el video explicativo de GEC"
+            />
+          </div>
+        </section>
+      }
       valor={{
         h2: 'Cuando hacer marketing ya no es suficiente.',
         intro:

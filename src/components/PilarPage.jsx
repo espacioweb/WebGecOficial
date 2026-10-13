@@ -365,7 +365,7 @@ function VolverAlHome({ pilarId }) {
 // Patrón compartido de las páginas de pilar: Hero · Valor · Alcance ·
 // bloques opcionales del pilar · Cierre · Familia Meraki (el Footer ya vive
 // en App, global a todo el sitio).
-export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre }) {
+export default function PilarPage({ pilarId, hero, antesDeValor, valor, alcance, extra, cierre }) {
   const mainRef = useRef(null);
 
   // Entradas animadas al hacer scroll — el usuario reportó que las páginas
@@ -466,6 +466,8 @@ export default function PilarPage({ pilarId, hero, valor, alcance, extra, cierre
           pilar — mantiene un solo acento de "atención" consistente entre
           páginas. `texto` es opcional: los pilares sin descripción todavía
           para cada atributo simplemente muestran título + número. */}
+      {antesDeValor}
+
       {valor && (
         <section className="border-t border-white/[.07] px-[clamp(20px,4vw,40px)] py-[clamp(56px,7vw,96px)]">
           <div className="mx-auto max-w-[1100px]">

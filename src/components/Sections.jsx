@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { X, Eye, ScanSearch, Network, Play } from 'lucide-react';
+import { X, Eye, ScanSearch, Network } from 'lucide-react';
 import { icons } from './SocialIcons';
 import { useGSAP } from '@gsap/react';
 import { gsap, ScrollTrigger } from '../utils/gsapSetup';
@@ -8,6 +8,7 @@ import { loadSequence, nearestLoaded, esPantallaChica } from '../utils/frameSequ
 import { track } from '../utils/analytics';
 import { guardarRetorno } from '../utils/retorno';
 import ScrollHint from './ScrollHint';
+import VideoExplicativo from './VideoExplicativo';
 import {
   pilares,
   proceso,
@@ -25,6 +26,14 @@ import {
 
 const P = { fontFamily: 'Poppins, sans-serif' };
 
+// Video de introducción del Home (oct. 2026, "video intro WEBSITE GEC.mp4").
+// Codificado para web desde el original de 28 MB (1600 px, H.264 crf 25, AAC
+// 96k, +faststart → 5.3 MB); el original no entra al repo.
+const INTRO_GEC = {
+  src: '/assets/videos/intro-gec.mp4',
+  poster: '/assets/videos/intro-gec-poster.webp',
+};
+
 function Eyebrow({ children, color = 'rgba(237,234,228,.45)' }) {
   return (
     <div className="flex items-center gap-3.5">
@@ -32,81 +41,6 @@ function Eyebrow({ children, color = 'rgba(237,234,228,.45)' }) {
       <span className="text-[11px] uppercase" style={{ ...P, letterSpacing: '.34em', color }}>
         {children}
       </span>
-    </div>
-  );
-}
-
-/* ───────────────────── Video explicativo (Meraki) ─────────────────────
-   Pieza "Desde adentro hacia afuera" (73 s, solo textos + SFX) — muestra
-   ejemplos y posibilidades después de la promesa de valor y sus
-   tres pasos. Se codificó para web desde el
-   original de 20.6 MB (1600 px, H.264 crf 26, AAC 96k, +faststart → 4.9 MB);
-   el original sigue en public/assets/videos sin entrar al repo.
-   `preload="none"` + póster: no se descarga nada hasta que la persona da
-   play, para no sumarle peso al Home (que ya carga la secuencia del Hero). */
-const EXPLICATIVO = {
-  src: '/assets/videos/explicativo-gec.mp4',
-  poster: '/assets/videos/explicativo-gec-poster.webp',
-};
-
-function VideoExplicativo() {
-  const [activo, setActivo] = useState(false);
-  return (
-    <div className="relative">
-      {/* Resplandor dorado detrás de la tarjeta — el mismo halo cálido del
-          video (fondo claro) contra la sección negra. */}
-      <div
-        aria-hidden="true"
-        // Sin desbordar a los lados: con -inset-x el halo empujaba el ancho del
-        // documento más allá del viewport en teléfono.
-        className="pointer-events-none absolute inset-x-0 -inset-y-8 rounded-[48px] opacity-60 blur-[70px]"
-        style={{ background: 'radial-gradient(60% 60% at 50% 50%, rgba(245,179,1,.18), transparent 70%)' }}
-      />
-      <div className="relative aspect-video w-full overflow-hidden rounded-[clamp(18px,2.4vw,32px)] border border-white/10 bg-[#F4F4F2] shadow-[0_40px_120px_-40px_rgba(0,0,0,.9)]">
-        {activo ? (
-          <video
-            src={EXPLICATIVO.src}
-            poster={EXPLICATIVO.poster}
-            controls
-            autoPlay
-            playsInline
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setActivo(true);
-              track('content_opened', { tipo: 'video', id: 'explicativo-gec' });
-            }}
-            aria-label="Reproducir el video explicativo de GEC"
-            className="group absolute inset-0 cursor-pointer border-0 bg-transparent p-0 focus-visible:outline focus-visible:outline-4 focus-visible:-outline-offset-4 focus-visible:outline-[#F5B301]"
-          >
-            <img
-              src={EXPLICATIVO.poster}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-            />
-            <span className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
-            <span className="absolute inset-0 grid place-items-center">
-              <span className="relative grid h-[clamp(64px,7vw,92px)] w-[clamp(64px,7vw,92px)] place-items-center rounded-full bg-[#F5B301] text-[#0B0B0C] shadow-[0_18px_50px_-10px_rgba(245,179,1,.65)] transition-transform duration-300 group-hover:scale-105">
-                {/* Anillo que late — se apaga con prefers-reduced-motion
-                    (motion-safe). */}
-                <span className="absolute inset-0 rounded-full bg-[#F5B301]/40 motion-safe:animate-ping" />
-                <Play className="relative translate-x-[2px]" size={30} strokeWidth={2.2} fill="currentColor" aria-hidden="true" />
-              </span>
-            </span>
-            <span
-              className="absolute bottom-[clamp(14px,2vw,26px)] left-[clamp(14px,2vw,26px)] rounded-full bg-[#0B0B0C]/80 px-3.5 py-1.5 text-[12px] font-semibold text-[#EDEAE4] backdrop-blur-sm"
-              style={P}
-            >
-              1:13
-            </span>
-          </button>
-        )}
-      </div>
     </div>
   );
 }
@@ -214,7 +148,12 @@ export function Manifiesto() {
           ))}
         </div>
         <div id="video-explicativo-gec" className="pt-9 md:pt-11">
-          <VideoExplicativo />
+          <VideoExplicativo
+            video={INTRO_GEC}
+            duracion="1:22"
+            id="intro-gec"
+            etiqueta="Reproducir el video de introducción de GEC"
+          />
         </div>
         <p className="m-0 text-center text-[clamp(18px,2vw,26px)] font-medium text-[#EDEAE4]" style={P}>
           Marcas que crecen desde adentro hacia afuera.
