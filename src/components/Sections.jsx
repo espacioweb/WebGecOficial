@@ -26,12 +26,14 @@ import {
 
 const P = { fontFamily: 'Poppins, sans-serif' };
 
-// Video de introducción del Home (oct. 2026, "video intro WEBSITE GEC.mp4").
-// Codificado para web desde el original de 28 MB (1600 px, H.264 crf 25, AAC
-// 96k, +faststart → 5.3 MB); el original no entra al repo.
+// Video del Home (oct. 2026, "que-podemos-hacer-por-tu-negocio.mp4": nueva
+// versión del video de intro, 81 s con audio). Codificado para web desde el
+// original de 46.7 MB (1600 px, H.264 crf 25, AAC 96k, +faststart → 6.2 MB); el
+// original no entra al repo. El nombre cambió respecto a intro-gec.mp4 a
+// propósito: con el mismo nombre el navegador seguiría mostrando el anterior.
 const INTRO_GEC = {
-  src: '/assets/videos/intro-gec.mp4',
-  poster: '/assets/videos/intro-gec-poster.webp',
+  src: '/assets/videos/que-podemos-hacer.mp4',
+  poster: '/assets/videos/que-podemos-hacer-poster.webp',
 };
 
 function Eyebrow({ children, color = 'rgba(237,234,228,.45)' }) {
@@ -151,7 +153,7 @@ export function Manifiesto() {
           <VideoExplicativo
             video={INTRO_GEC}
             duracion="1:22"
-            id="intro-gec"
+            id="que-podemos-hacer"
             etiqueta="Reproducir el video de introducción de GEC"
           />
         </div>
