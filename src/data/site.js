@@ -206,6 +206,41 @@ export const fuerzas = [
   { n: '06', en: 'Learn', es: 'Contenido educativo que acompaña la evolución de tu marca.', img: '/ref/fondo-combinacion.jpg' },
 ];
 
+// Testimonios en video (oct. 2026): clientes reales que GEC entregó con su
+// enlace de YouTube, a diferencia del bloque `testimonios` de más abajo (texto
+// inventado, sigue oculto). `titulo` es el título público del video en YouTube
+// (verificado por oEmbed). La miniatura se bajó de YouTube a webp local para no
+// depender de un tercero al pintar; el logo sale de `public/assets/marcas`.
+export const testimoniosVideo = [
+  {
+    id: 'QTRH7Jnx4fA',
+    nombre: 'Harold Lovo',
+    cargo: 'Gerente de mercadeo',
+    empresa: 'Supermercados La Colonia',
+    logo: '/assets/marcas/la-colonia.webp',
+    thumb: '/assets/testimonios/la-colonia.webp',
+    titulo: 'SUPERMERCADOS LA COLONIA - CELEBRAMOS LOS 10 AÑOS DE GRUPO ESPACIO CREATIVO',
+  },
+  {
+    id: 'AMaxZtTQgWI',
+    nombre: 'Henry Arévalo',
+    cargo: 'CEO',
+    empresa: 'SEV (Servicios Educativos del Valle)',
+    logo: '/assets/marcas/eagles-nest.webp',
+    thumb: '/assets/testimonios/sev.webp',
+    titulo: 'EAGLES NEST SCHOOL / NIDO DE AGUILAS - CELEBRAMOS LOS 10 AÑOS DE GRUPO ESPACIO CREATIVO',
+  },
+  {
+    id: 'jBY2pmEmn98',
+    nombre: 'Raúl Cáceres',
+    cargo: 'Mercadeo',
+    empresa: 'UJCV',
+    logo: '/assets/marcas/ujcv.webp',
+    thumb: '/assets/testimonios/ujcv.webp',
+    titulo: 'UJCV - UNIVERSIDAD JOSÉ CECILIO DEL VALLE - CELEBRAMOS LOS 10 AÑOS DE GRUPO ESPACIO CREATIVO',
+  },
+];
+
 // H-05 de la guía — "Sectores" es contenido aprobado, textual.
 export const sectores = [
   'Automotriz',

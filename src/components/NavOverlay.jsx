@@ -12,6 +12,7 @@ const PILARES_LINKS = pilares.map((p) => ({ href: p.ruta, label: p.name }));
 
 const EXTRA = [
   { href: '/inside-your-brand/', label: 'Inside Your Brand' },
+  { href: '#testimonios', label: 'Testimonios' },
   { href: '#familia', label: 'La familia Meraki' },
   { href: '#contacto', label: 'Hablemos' },
 ];

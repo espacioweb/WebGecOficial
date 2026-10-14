@@ -8,6 +8,7 @@ const P = { fontFamily: 'Poppins, sans-serif' };
 const HITOS = [
   { id: 'top', label: 'Inicio' },
   { id: 'ecosistema', label: 'Ecosistema' },
+  { id: 'testimonios', label: 'Testimonios' },
   { id: 'familia', label: 'La familia' },
   { id: 'contacto', label: 'Hablemos' },
 ];

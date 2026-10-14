@@ -899,6 +899,21 @@ hito de sección (7) más 2 intermedias entre cada par.
     marketing ya no es suficiente", vía el nuevo prop `antesDeValor` de `PilarPage`. Solo
     Marketing; los otros pilares no lo llevan.
 
+- **Testimonios en video en el Home (2026-10-13).** Sección `TestimoniosVideo`
+  (`src/components/TestimoniosVideo.jsx`, montada en `Home.jsx` entre Autoridad y La familia
+  Meraki, `id="testimonios"`): grid de 3 tarjetas con miniatura, logo del cliente, nombre,
+  cargo y empresa; al abrir una, el video de YouTube corre en un modal (portal a `<body>`,
+  detiene Lenis, Escape/clic afuera/X, devuelve el foco). Datos en `testimoniosVideo`
+  (`site.js`): Harold Lovo (Supermercados La Colonia), Henry Arévalo (CEO, SEV — Servicios
+  Educativos del Valle) y Raúl Cáceres (Mercadeo, UJCV), clientes reales con enlace
+  entregado por GEC. Miniaturas locales en `public/assets/testimonios/`; el iframe de
+  YouTube solo se monta al abrir. "Testimonios" se sumó al menú hamburguesa y al riel
+  lateral (`HITOS`). **No contradice la regla de la guía**: son testimonios reales y
+  autorizados; el componente `Testimonios` de texto inventado sigue oculto en
+  `Sections.jsx`. El titular es solo "Testimonios" (sin copy inventado). Como "La familia
+  Meraki", el ancla `#testimonios` del menú solo funciona estando en el Home (ver
+  Pendiente 4).
+
 ### ❌ Pendiente
 
 1. **Home — bloque aprobado que aún falta:**

@@ -5,6 +5,7 @@ import { LenisContext } from '../context/LenisContext';
 import { irATarjeta } from '../utils/retorno';
 import useDocumentMeta from '../hooks/useDocumentMeta';
 import ScrollRail from '../components/ScrollRail';
+import TestimoniosVideo from '../components/TestimoniosVideo';
 import {
   Manifiesto,
   Pilares,
@@ -14,6 +15,10 @@ import {
   Contacto,
 } from '../components/Sections';
 
+// OJO: `<TestimoniosVideo />` (oct. 2026) es otra cosa — 3 testimonios en
+// video de clientes reales entregados por GEC. El `Testimonios` de texto de
+// abajo sigue oculto.
+//
 // Marcas y Testimonios quedan fuera del render: la guía prohíbe mostrar
 // testimonios sin ser reales y autorizados, y marcas/logos sin autorización
 // confirmada — ninguno de los dos existe todavía (ver CLAUDE.md, "Riesgo de
@@ -81,6 +86,7 @@ export default function Home() {
         <Pilares />
         <BriefCTA />
         <Autoridad />
+        <TestimoniosVideo />
         <Familia />
         <Contacto />
       </main>
