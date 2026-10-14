@@ -4,6 +4,7 @@ import { useGSAP } from '@gsap/react';
 import { Check, ArrowLeft, X, ArrowRight } from 'lucide-react';
 import { gsap } from '../utils/gsapSetup';
 import useDocumentMeta from '../hooks/useDocumentMeta';
+import { META } from '../data/seo';
 import { WHATSAPP, pilares } from '../data/site';
 import { PAISES, formatTelefono } from '../data/paises';
 import { P } from '../utils/textStyles';
@@ -443,11 +444,7 @@ const RESPUESTAS_INICIALES = {
 export default function BriefPage() {
   const [recovery] = useState(consumeRecoveryLink);
   useEffect(() => { pendingRecoveryLink = null; }, []);
-  useDocumentMeta({
-    title: 'Cuéntanos qué necesita tu empresa | Grupo Espacio Creativo',
-    description: 'Responde unas preguntas breves y te orientamos hacia la solución de GEC más adecuada. Menos de 90 segundos.',
-    path: '/cuentanos-tu-reto/',
-  });
+  useDocumentMeta(META['/cuentanos-tu-reto/']);
 
   return <BriefForm recovery={recovery} />;
 }

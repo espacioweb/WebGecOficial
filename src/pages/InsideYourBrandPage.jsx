@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Lightbulb, Wrench, MessagesSquare, Sparkles, FileQuestion } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
+import { META } from '../data/seo';
 import { WHATSAPP, insideVideo, iybVideosSeed } from '../data/site';
 import { P } from '../utils/textStyles';
 import { B, Eyebrow, CtaPrimary, CtaSecondary } from '../components/PilarPage';
@@ -202,12 +203,7 @@ function BloqueComunidad() {
 export default function InsideYourBrandPage() {
   const videos = useCanalVideos(iybVideosSeed);
 
-  useDocumentMeta({
-    title: 'Inside Your Brand — Centro de conocimiento e innovación | Grupo Espacio Creativo',
-    description:
-      'Conocimiento para comprender el cambio, tomar mejores decisiones y descubrir nuevas posibilidades de crecimiento para las marcas.',
-    path: '/inside-your-brand/',
-  });
+  useDocumentMeta(META['/inside-your-brand/']);
 
   return (
     <main className="bg-[#0A0E13]" style={{ paddingTop: '110px' }}>

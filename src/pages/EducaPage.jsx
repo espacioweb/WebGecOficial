@@ -1,5 +1,6 @@
 import { Flag, Briefcase, Users, TrendingUp, Sparkles, Clapperboard, HeartPulse } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
+import { META } from '../data/seo';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
 import { P } from '../utils/textStyles';
@@ -141,12 +142,7 @@ function BloqueProgramas() {
 // "Eliminamos esta información". CompañIA vive ahora en su sitio propio.
 
 export default function EducaPage() {
-  useDocumentMeta({
-    title: 'Educa — Formación en IA y crecimiento creativo | Grupo Espacio Creativo',
-    description:
-      'Formación para adoptar la IA y desarrollar habilidades estratégicas, creativas y tecnológicas que impulsen el crecimiento creativo empresarial.',
-    path: '/educa/',
-  });
+  useDocumentMeta(META['/educa/']);
 
   return (
     <PilarPage

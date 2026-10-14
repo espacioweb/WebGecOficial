@@ -1,5 +1,6 @@
 import { CalendarCheck, Gamepad2, Vote, MonitorPlay, Sparkles, Target, MousePointerClick, ClipboardList } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
+import { META } from '../data/seo';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
 import PilarPage, { B, HeroCharacter } from '../components/PilarPage';
@@ -7,12 +8,7 @@ import PilarPage, { B, HeroCharacter } from '../components/PilarPage';
 const BRIEF_EXPERIENCE = '/cuentanos-tu-reto/?pilar=experience';
 
 export default function ExperiencePage() {
-  useDocumentMeta({
-    title: 'Experience — Eventos y experiencias interactivas | Grupo Espacio Creativo',
-    description:
-      'Creamos experiencias interactivas para eventos, puntos de venta y entornos digitales que conectan a las marcas con las personas.',
-    path: '/experience/',
-  });
+  useDocumentMeta(META['/experience/']);
 
   return (
     <PilarPage

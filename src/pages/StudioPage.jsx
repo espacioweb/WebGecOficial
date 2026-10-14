@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Building2, Clapperboard, GraduationCap, Megaphone, Radio, Mic, Search, Compass } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
+import { META } from '../data/seo';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
 import { P } from '../utils/textStyles';
@@ -41,11 +42,7 @@ function BloqueReel() {
 }
 
 export default function StudioPage() {
-  useDocumentMeta({
-    title: 'Studio — Producción visual y audiovisual | Grupo Espacio Creativo',
-    description: 'Producimos ideas con criterio y las convertimos en soluciones visuales y audiovisuales que agregan valor a la marca.',
-    path: '/studio/',
-  });
+  useDocumentMeta(META['/studio/']);
 
   return (
     <PilarPage

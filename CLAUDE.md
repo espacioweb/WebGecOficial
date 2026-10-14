@@ -22,6 +22,10 @@
   reglas de Higgsfield de abajo. Una escena a la vez, aprobada antes de la siguiente.
 - **Deploy**: push a `main` → Cloudflare Pages. Se verifica que el sitio publicado sirva el
   bundle y los assets nuevos.
+- **Páginas nuevas**: además de su `<Route>` en `src/App.jsx`, van en `src/data/seo.js`
+  (título, descripción, `fuentes`). De ahí salen el HTML por ruta, el sitemap y el 404 real; sin
+  esa entrada, entrar directo a la URL (o refrescarla) da 404. Videos/imágenes de `public/assets`
+  llevan 1 día de caché: si se reemplaza un archivo, cambiarle el nombre.
 
 ---
 
@@ -914,6 +918,43 @@ hito de sección (7) más 2 intermedias entre cada par.
   Meraki", el ancla `#testimonios` del menú solo funciona estando en el Home (ver
   Pendiente 4).
 
+- **SEO técnico, lote 1 (2026-10-13)** — revisión pedida por el usuario ("qué básico no
+  estamos contemplando"). Lighthouse SEO ya daba 100; lo que faltaba era cómo se entregan las
+  páginas, la velocidad y cosas de fuera del código.
+  - **HTML por página** (`scripts/postbuild.mjs`, corre tras `vite build`): antes toda URL
+    arrancaba con el título, la descripción y el *canonical* del Home y el cuerpo vacío. Ahora
+    `dist/<ruta>/index.html` lleva los de cada página (fuente única: `src/data/seo.js`, que
+    también leen las páginas vía `useDocumentMeta`, textos idénticos a los de antes). El
+    cuerpo sigue siendo de React: **no es prerenderizado completo**. Cada HTML precarga los
+    paquetes de su página (`modulepreload`, vía el manifest de Vite) y quita el preload del
+    fotograma del Hero, que solo sirve en el Home.
+  - **404 real**: `public/_redirects` ya no lleva `/* /index.html 200` (hacía que cualquier URL,
+    hasta `/og-image.jpg`, devolviera el Home con 200). El build genera `404.html` (noindex) y la
+    ruta `*` de React monta `NotFoundPage`. Probado con `wrangler pages dev dist`.
+  - **Sitemap** generado en el build con `<lastmod>` de git (`public/sitemap.xml` manual se
+    borró); `robots.txt` bloquea `/api/`.
+  - **Velocidad**: fuentes de Google ya no entran por `@import` en el CSS (bloqueaba el pintado)
+    sino por `<link>` con preconnect en `index.html`; páginas con `React.lazy` (el Home sigue en
+    el paquete principal; el modal del brief se precarga en reposo): principal 550→385 KB
+    (173→129 KB comprimido). Medido en local con Lighthouse móvil, antes vs después: simulado,
+    Home 70→94-96 y Marketing 85-92→79-80 (el LCP pasó a ser texto y la simulación suma la
+    bajada de fuentes); con red limitada aplicada, Home 66→68 y Marketing 71→74. **Mejora real
+    modesta**, no la de la simulación. Cuello restante en el Home con red lenta: `gtag.js`
+    (176 KB) compite con el JS del sitio; no se tocó porque es el snippet oficial que pegó el
+    usuario (diferirlo puede hacer que Google no lo detecte en el `<head>`).
+  - **Caché** (`public/_headers`): `build.assetsDir: 'static'` separa los archivos con hash
+    (`/static/*`, un año, immutable) de `/assets` y `/logos` (un día).
+  - **Favicon** cuadrado (32/48/96/180 + `favicon.ico`; antes 32×30 y 180×170) e **imagen para
+    compartir** `og.jpg` (59 KB; `og.png` pesaba 443 KB y WhatsApp suele descartar >300 KB).
+  - **Pendiente de este lote** (no se tocó): títulos largos (Inside Your Brand 80 caracteres,
+    Experience 73, Educa/Soluciona 71; Google corta ~60) y el de Educa aún dice "Formación en
+    IA" pese a que su H1 ya no habla de IA; la descripción del brief dice "Menos de 90
+    segundos" y ya hay más pasos; datos estructurados (`LocalBusiness`, `WebSite`,
+    `BreadcrumbList`, `Service`, `VideoObject`). **Del usuario**: Search Console (verificar
+    dominio, enviar sitemap, pedir indexación), Perfil de Negocio de Google, Bing Webmaster y la
+    regla en Cloudflare que redirija `www` → dominio sin www (hoy `www` sirve el sitio completo
+    con 200).
+
 ### ❌ Pendiente
 
 1. **Home — bloque aprobado que aún falta:**
@@ -944,8 +985,7 @@ hito de sección (7) más 2 intermedias entre cada par.
    `window.gtag` (no configurar además `VITE_GA_MEASUREMENT_ID`). Falta: Search Console verificado, Schema Service por pilar, BreadcrumbList en
    páginas internas, y los dos eventos que quedaron sin punto de enganche
    (`intro_skipped`, `innovation_opened` — ver ítems 3 y 1). El sitio sigue siendo un SPA
-   sin prerender/SSR — riesgo real de indexación, ya anotado como TODO en el propio
-   `src/hooks/useDocumentMeta.js`.
+   sin prerender del cuerpo (el `<head>` por página sí sale en el HTML, ver "SEO técnico, lote 1").
 7. **Fase 7 — QA**: depende de que lo anterior avance.
 
 ### Siguiente paso sugerido

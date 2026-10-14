@@ -1,6 +1,10 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import ProgramaModal from './ProgramaModal';
+// El modal arrastra todo el formulario del brief (BriefPage). Se pide al abrirlo
+// y, para que el primer clic no espere, se precarga cuando el navegador queda
+// libre, fuera de la ruta crítica de la carga inicial.
+const cargarModal = () => import('./ProgramaModal');
+const ProgramaModal = lazy(cargarModal);
 
 const PILARES = {
   marketing: 'Marketing',
@@ -21,6 +25,13 @@ const PROGRAMAS = {
 export default function BriefModalController() {
   const location = useLocation();
   const [brief, setBrief] = useState(null);
+
+  useEffect(() => {
+    const idle = window.requestIdleCallback || ((fn) => setTimeout(fn, 3000));
+    const cancel = window.cancelIdleCallback || clearTimeout;
+    const id = idle(() => cargarModal(), { timeout: 8000 });
+    return () => cancel(id);
+  }, []);
 
   useEffect(() => {
     const close = () => setBrief(null);
@@ -57,5 +68,9 @@ export default function BriefModalController() {
   }, [location.key]);
 
   if (!brief || brief.routeKey !== location.key) return null;
-  return <ProgramaModal {...brief} onClose={() => setBrief(null)} />;
+  return (
+    <Suspense fallback={null}>
+      <ProgramaModal {...brief} onClose={() => setBrief(null)} />
+    </Suspense>
+  );
 }

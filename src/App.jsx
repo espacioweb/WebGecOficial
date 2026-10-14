@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Lenis from 'lenis';
 import { gsap, ScrollTrigger } from './utils/gsapSetup';
@@ -9,14 +9,19 @@ import { Footer } from './components/Sections';
 import ScrollToTop from './components/ScrollToTop';
 import BriefModalController from './components/BriefModalController';
 import Home from './pages/Home';
-import MarketingPage from './pages/MarketingPage';
-import StudioPage from './pages/StudioPage';
-import EducaPage from './pages/EducaPage';
-import SolucionaPage from './pages/SolucionaPage';
-import ExperiencePage from './pages/ExperiencePage';
-import BriefPage from './pages/BriefPage';
-import InsideYourBrandPage from './pages/InsideYourBrandPage';
 import { initAnalytics } from './utils/analytics';
+
+// El Home entra en el paquete principal (es la página de aterrizaje); las demás
+// se descargan al visitarlas. Antes todo el sitio —brief incluido— viajaba en
+// un solo archivo de JavaScript y cada página cargaba ~160 KB que no usaba.
+const MarketingPage = lazy(() => import('./pages/MarketingPage'));
+const StudioPage = lazy(() => import('./pages/StudioPage'));
+const EducaPage = lazy(() => import('./pages/EducaPage'));
+const SolucionaPage = lazy(() => import('./pages/SolucionaPage'));
+const ExperiencePage = lazy(() => import('./pages/ExperiencePage'));
+const BriefPage = lazy(() => import('./pages/BriefPage'));
+const InsideYourBrandPage = lazy(() => import('./pages/InsideYourBrandPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 
 function App() {
   const lenisRef = useRef(null);
@@ -86,6 +91,9 @@ function App() {
         <BriefModalController />
         <Header menuOpen={menuOpen} onToggleMenu={() => setMenuOpen((v) => !v)} />
         <NavOverlay open={menuOpen} onClose={() => setMenuOpen(false)} />
+        {/* Fondo del mismo color mientras baja el paquete de la página: sin él se
+            ve un parpadeo claro y el pie salta hacia arriba. */}
+        <Suspense fallback={<div className="min-h-[100dvh] bg-[#0A0E13]" />}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/marketing/" element={<MarketingPage />} />
@@ -95,7 +103,9 @@ function App() {
           <Route path="/experience/" element={<ExperiencePage />} />
           <Route path="/cuentanos-tu-reto/" element={<BriefPage />} />
           <Route path="/inside-your-brand/" element={<InsideYourBrandPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
+        </Suspense>
         <Footer />
       </LenisContext.Provider>
     </BrowserRouter>

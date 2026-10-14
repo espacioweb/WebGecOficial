@@ -18,9 +18,23 @@
       name="description"
       content="Ayudamos a las empresas a crecer desde adentro hacia afuera con estrategia, producción, formación, soluciones y experiencias en un solo ecosistema. Tegucigalpa, Honduras."
     />
+    <!-- Fuentes: antes entraban con @import dentro del CSS, y el navegador no
+         pintaba hasta bajarlo (1 a 3 s en móvil lento). Ahora se piden desde el
+         HTML, en paralelo y sin bloquear el pintado; display=swap muestra el
+         texto de inmediato con una fuente del sistema. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&amp;family=Inter:wght@300;400;500;600&amp;display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&amp;family=Inter:wght@300;400;500;600&amp;display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&amp;family=Inter:wght@300;400;500;600&amp;display=swap" /></noscript>
     <meta name="theme-color" content="#060607" />
     <link rel="canonical" href="https://grupoespaciocreativo.com/" />
 
+    <!-- Google pide un favicon cuadrado y múltiplo de 48 px para mostrarlo junto
+         al resultado. Antes eran 32x30 y 180x170 (no cuadrados). -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="apple-touch-icon" href="/favicon-180.png" />
 
@@ -35,7 +49,8 @@
       content="Estrategia, producción, formación, soluciones y experiencias en un solo ecosistema."
     />
     <meta property="og:url" content="https://grupoespaciocreativo.com/" />
-    <meta property="og:image" content="https://grupoespaciocreativo.com/og.png" />
+    <meta property="og:image" content="https://grupoespaciocreativo.com/og.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Meraki, la mascota de Grupo Espacio Creativo" />
@@ -46,7 +61,7 @@
       name="twitter:description"
       content="Estrategia, producción, formación, soluciones y experiencias en un solo ecosistema."
     />
-    <meta name="twitter:image" content="https://grupoespaciocreativo.com/og.png" />
+    <meta name="twitter:image" content="https://grupoespaciocreativo.com/og.jpg" />
 
     <!-- Schema Organization — FASE 6 de la guía. Nombre/descripción son el
          texto literal aprobado ("Grupo Espacio Creativo - Agencia de
@@ -61,7 +76,7 @@
         "description": "Agencia de Crecimiento Creativo Empresarial.",
         "url": "https://grupoespaciocreativo.com/",
         "logo": "https://grupoespaciocreativo.com/logos/gec-color.png",
-        "image": "https://grupoespaciocreativo.com/og.png",
+        "image": "https://grupoespaciocreativo.com/og.jpg",
         "telephone": ["+504 2234-8414", "+504 9828-3018"],
         "address": {
           "@type": "PostalAddress",

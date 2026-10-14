@@ -1,5 +1,6 @@
 import { Image as ImageIcon, Workflow, Users, ShieldCheck } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
+import { META } from '../data/seo';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
 import { P } from '../utils/textStyles';
@@ -211,12 +212,7 @@ function BloqueProductosGEC() {
 }
 
 export default function SolucionaPage() {
-  useDocumentMeta({
-    title: 'Soluciona — Plataformas y sistemas a la medida | Grupo Espacio Creativo',
-    description:
-      'Convertimos necesidades operativas en herramientas digitales que ordenan procesos, conectan información y facilitan decisiones.',
-    path: '/soluciona/',
-  });
+  useDocumentMeta(META['/soluciona/']);
 
   return (
     <PilarPage

@@ -1,5 +1,6 @@
 import { Compass, Palette, Megaphone, SlidersHorizontal, Target, Users, MessagesSquare, BarChart3, Gem } from 'lucide-react';
 import useDocumentMeta from '../hooks/useDocumentMeta';
+import { META } from '../data/seo';
 import { WHATSAPP } from '../data/site';
 import { C } from '../data/gecIA';
 import PilarPage, { HeroCharacter } from '../components/PilarPage';
@@ -16,11 +17,7 @@ const EXPLICATIVO = {
 const BRIEF_MARKETING = '/cuentanos-tu-reto/?pilar=marketing';
 
 export default function MarketingPage() {
-  useDocumentMeta({
-    title: 'Marketing — Estrategia y comunicación | Grupo Espacio Creativo',
-    description: 'Estrategia y comunicación para impulsar el negocio y construir marcas sólidas.',
-    path: '/marketing/',
-  });
+  useDocumentMeta(META['/marketing/']);
 
   return (
     <PilarPage

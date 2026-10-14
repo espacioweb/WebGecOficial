@@ -4,6 +4,7 @@ import Hero from '../components/Hero';
 import { LenisContext } from '../context/LenisContext';
 import { irATarjeta } from '../utils/retorno';
 import useDocumentMeta from '../hooks/useDocumentMeta';
+import { META } from '../data/seo';
 import ScrollRail from '../components/ScrollRail';
 import TestimoniosVideo from '../components/TestimoniosVideo';
 import {
@@ -59,12 +60,7 @@ export default function Home() {
   // Mismo título/descripción que index.html. Sin esto, al volver al Home
   // desde una página de pilar la pestaña seguía diciendo "Educa — …" (el SPA
   // no recarga el <head>).
-  useDocumentMeta({
-    title: 'Grupo Espacio Creativo — Crecimiento Creativo Empresarial',
-    description:
-      'Ayudamos a las empresas a crecer desde adentro hacia afuera con estrategia, producción, formación, soluciones y experiencias en un solo ecosistema. Tegucigalpa, Honduras.',
-    path: '/',
-  });
+  useDocumentMeta(META['/']);
 
   // "Volver a <pilar>" desde una página de pilar (VolverAlHome en
   // PilarPage.jsx) llega con `state.volverA` = id de la tarjeta: se baja

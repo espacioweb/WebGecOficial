@@ -1,4 +1,9 @@
-# SPA fallback: las rutas del cliente (react-router) no existen como
-# archivos físicos — sin esto, entrar directo a /educa/ o refrescar la
-# página da 404 en Cloudflare Pages en vez de dejar que la app las resuelva.
-/*    /index.html   200
+# Sin comodín `/* /index.html 200` desde oct. 2026.
+#
+# Antes ese comodín hacía que TODA dirección inexistente devolviera el Home con
+# estado 200 (Google lo cuenta como "soft 404"). Ahora cada ruta del sitio tiene
+# su propio HTML (lo genera scripts/postbuild.mjs a partir de src/data/seo.js) y
+# lo que no existe recibe 404.html con estado 404 real.
+#
+# OJO al agregar una página nueva: además de su <Route> en src/App.jsx, súmala
+# a src/data/seo.js. Si no, al entrar directo a esa URL (o refrescarla) dará 404.
